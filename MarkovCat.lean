@@ -2,6 +2,7 @@ import CompCatTheory.Foundation.Category
 import CompCatTheory.Foundation.Product
 import CompCatTheory.Collapse.Monoidal
 import CompCatTheory.Collapse.SymmetricMonoidal
+import MarkovCat.FinStoch
 
 /-!
 # MarkovCat
