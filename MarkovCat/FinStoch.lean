@@ -6,16 +6,17 @@ A concrete Markov category whose objects are natural numbers
 row-stochastic rational matrices.
 
 Built on Lean 4 core without Mathlib: `Rat` is in `Init.Data.Rat`,
-`Fin.foldl` provides finite enumeration, and the relevant arithmetic
-and ordering lemmas (`Rat.add_comm`, `Rat.mul_nonneg`, etc.) are all
-in core.
+`Fin` and `Fin.succ` provide finite enumeration, and the relevant
+arithmetic and ordering lemmas (`Rat.add_comm`, `Rat.mul_nonneg`,
+etc.) are all in core.
 
 Contents (built up across multiple commits):
 
-  - `Fin.sumRat`        sum of a finite rational family
+  - `Fin.sumRat`        sum of a finite rational family (direct recursion)
+  - sum lemmas          succ-unfolding, non-negativity, zero-family
   - `StochasticMatrix`  row-stochastic matrix of `Rat` values
-  - (later) `Category` / `MonoidalCategory` / `SymmetricMonoidalCategory`
-                        / `MarkovCategory` instances on `Nat`
+  - (next)              identity (Kronecker delta), composition (matrix mul)
+  - (later)             Category / Monoidal / Markov instances on Nat
 -/
 
 set_option autoImplicit false
@@ -23,18 +24,42 @@ set_option autoImplicit false
 namespace MarkovCat
 namespace FinStoch
 
-/-- Sum of a finite rational-valued family `f : Fin n → Rat`. -/
-def Fin.sumRat {n : Nat} (f : Fin n → Rat) : Rat :=
-  Fin.foldl n (fun acc i => acc + f i) 0
+/-! ## Finite sums of rationals -/
 
-/-- Sum of zero terms is zero. -/
-@[simp] theorem Fin.sumRat_zero (f : Fin 0 → Rat) : Fin.sumRat f = 0 :=
-  _root_.Fin.foldl_zero _ _
+/-- Sum of a finite rational-valued family `f : Fin n → Rat`, defined by
+    direct recursion on `n` so that `sumRat_zero` and `sumRat_succ` are
+    definitional unfolding lemmas. -/
+def Fin.sumRat : {n : Nat} → (Fin n → Rat) → Rat
+  | 0, _ => 0
+  | _ + 1, f => f 0 + Fin.sumRat (fun i => f i.succ)
 
-/-- A row-stochastic `m × n` matrix of `Rat` entries.
+@[simp] theorem Fin.sumRat_zero (f : Fin 0 → Rat) : Fin.sumRat f = 0 := rfl
 
-    The constraints capture exactly what is needed for the matrix to
-    represent a stochastic kernel `Fin m → Fin n`:
+@[simp] theorem Fin.sumRat_succ {n : Nat} (f : Fin (n + 1) → Rat) :
+    Fin.sumRat f = f 0 + Fin.sumRat (fun i => f i.succ) := rfl
+
+/-- Sum of non-negative terms is non-negative. -/
+theorem Fin.sumRat_nonneg : {n : Nat} → {f : Fin n → Rat}
+    → ((i : Fin n) → 0 ≤ f i) → 0 ≤ Fin.sumRat f
+  | 0,     _, _ => Rat.le_refl
+  | _ + 1, _, h => by
+    rw [Fin.sumRat_succ]
+    exact Rat.add_nonneg (h 0) (Fin.sumRat_nonneg (fun i => h i.succ))
+
+/-- Sum of a constantly zero family is zero. -/
+theorem Fin.sumRat_const_zero : {n : Nat}
+    → Fin.sumRat (fun _ : Fin n => (0 : Rat)) = 0
+  | 0     => rfl
+  | _ + 1 => by
+    rw [Fin.sumRat_succ]
+    rw [Fin.sumRat_const_zero]
+    exact Rat.zero_add 0
+
+/-! ## Stochastic matrices -/
+
+/-- A row-stochastic `m × n` matrix of `Rat` entries.  The constraints
+    capture exactly what is needed for the matrix to represent a
+    stochastic kernel `Fin m → Fin n`:
 
       - Every entry is non-negative.
       - Every row sums to one. -/
