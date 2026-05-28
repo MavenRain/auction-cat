@@ -1,3 +1,5 @@
+import CompCatTheory.Foundation.Category
+
 /-!
 # MarkovCat.FinStoch
 
@@ -187,6 +189,79 @@ theorem sumRat_kron_eq_one : {n : Nat} → (i : Fin n)
     rw [sumRat_kron_eq_one (⟨v, by omega⟩ : Fin k)]
     exact Rat.zero_add 1
 
+/-- The Kronecker delta is symmetric in its two indices. -/
+theorem kron_symm {n : Nat} (i j : Fin n) : kron i j = kron j i := by
+  unfold kron
+  by_cases h : i = j
+  · rw [if_pos h, if_pos h.symm]
+  · rw [if_neg h, if_neg fun h' => h h'.symm]
+
+/-- Selector identity for the Kronecker delta on the left:
+    Σ_l (kron i l * f l) = f i. -/
+theorem sumRat_kron_mul : {n : Nat} → (i : Fin n) → (f : Fin n → Rat)
+    → Fin.sumRat (fun l => kron i l * f l) = f i
+  | 0, i, _ => i.elim0
+  | k + 1, ⟨0, _⟩, f => by
+    rw [Fin.sumRat_succ]
+    have h0 : kron (⟨0, by omega⟩ : Fin (k + 1)) 0 = 1 := kron_self _
+    rw [h0, Rat.one_mul]
+    have hSucc : (l : Fin k)
+        → kron (⟨0, by omega⟩ : Fin (k + 1)) l.succ * f l.succ = 0 := by
+      intro l
+      have hk : kron (⟨0, by omega⟩ : Fin (k + 1)) l.succ = 0 := by
+        apply kron_ne
+        intro heq
+        have hval : (0 : Nat) = l.val + 1 := congrArg Fin.val heq
+        omega
+      rw [hk, Rat.zero_mul]
+    rw [Fin.sumRat_congr hSucc, Fin.sumRat_const_zero]
+    exact Rat.add_zero _
+  | k + 1, ⟨v + 1, hv⟩, f => by
+    rw [Fin.sumRat_succ]
+    have h0 : kron (⟨v + 1, hv⟩ : Fin (k + 1)) 0 = 0 := by
+      apply kron_ne
+      intro heq
+      have hval : v + 1 = (0 : Nat) := congrArg Fin.val heq
+      omega
+    rw [h0, Rat.zero_mul, Rat.zero_add]
+    have hShift : (l : Fin k)
+        → kron (⟨v + 1, hv⟩ : Fin (k + 1)) l.succ * f l.succ
+        = kron (⟨v, by omega⟩ : Fin k) l * (fun l' : Fin k => f l'.succ) l := by
+      intro l
+      congr 1
+      unfold kron
+      by_cases hvl : v = l.val
+      · have h1 : (⟨v + 1, hv⟩ : Fin (k + 1)) = l.succ := by
+          apply Fin.ext
+          show v + 1 = l.val + 1
+          omega
+        have h2 : (⟨v, by omega⟩ : Fin k) = l := by
+          apply Fin.ext
+          show v = l.val
+          exact hvl
+        rw [if_pos h1, if_pos h2]
+      · have h1 : ¬((⟨v + 1, hv⟩ : Fin (k + 1)) = l.succ) := by
+          intro heq
+          apply hvl
+          have hval : v + 1 = l.val + 1 := congrArg Fin.val heq
+          omega
+        have h2 : ¬((⟨v, by omega⟩ : Fin k) = l) := by
+          intro heq
+          apply hvl
+          exact congrArg Fin.val heq
+        rw [if_neg h1, if_neg h2]
+    rw [Fin.sumRat_congr hShift]
+    exact sumRat_kron_mul (⟨v, by omega⟩ : Fin k) (fun l : Fin k => f l.succ)
+
+/-- Selector identity for the Kronecker delta on the right:
+    Σ_l (f l * kron l j) = f j.  Follows from `sumRat_kron_mul` by
+    commuting the product and the symmetry of `kron`. -/
+theorem sumRat_mul_kron {n : Nat} (j : Fin n) (f : Fin n → Rat)
+    : Fin.sumRat (fun l => f l * kron l j) = f j := by
+  rw [Fin.sumRat_congr (fun l => Rat.mul_comm (f l) (kron l j))]
+  rw [Fin.sumRat_congr (fun l => congrArg (· * f l) (kron_symm l j))]
+  exact sumRat_kron_mul j f
+
 /-! ## Stochastic matrices -/
 
 /-- A row-stochastic `m × n` matrix of `Rat` entries.  The constraints
@@ -247,6 +322,91 @@ def StochasticMatrix.comp {m k n : Nat}
       exact Rat.mul_one _
     rw [Fin.sumRat_congr hRowOne]
     exact M.row_sum_one i
+
+/-- Extensionality for `StochasticMatrix`: equal entries determine
+    equal matrices (the `nonneg` and `row_sum_one` fields are
+    Prop-valued and hence proof-irrelevant). -/
+@[ext]
+theorem StochasticMatrix.ext {m n : Nat} {M N : StochasticMatrix m n}
+    (h : (i : Fin m) → (j : Fin n) → M.entry i j = N.entry i j) : M = N := by
+  cases M with | mk eM nM rM =>
+  cases N with | mk eN nN rN =>
+  have hEntry : eM = eN := by funext i j; exact h i j
+  subst hEntry
+  rfl
+
+/-! ## Category axioms for `StochasticMatrix` -/
+
+/-- Left identity: `idMatrix ∘ M = M`. -/
+theorem StochasticMatrix.id_comp {m n : Nat} (M : StochasticMatrix m n)
+    : (idMatrix m).comp M = M := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun l => (idMatrix m).entry i l * M.entry l j) = M.entry i j
+  exact sumRat_kron_mul i (fun l => M.entry l j)
+
+/-- Right identity: `M ∘ idMatrix = M`. -/
+theorem StochasticMatrix.comp_id {m n : Nat} (M : StochasticMatrix m n)
+    : M.comp (idMatrix n) = M := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun l => M.entry i l * (idMatrix n).entry l j) = M.entry i j
+  exact sumRat_mul_kron j (fun l => M.entry i l)
+
+/-- Associativity: `(M ∘ N) ∘ P = M ∘ (N ∘ P)`.
+
+    Both sides expand to the triple sum
+      `Σ_l Σ_q M_iq * N_ql * P_lj`
+    (LHS via distributing P_lj across the inner sum on q; RHS via
+    distributing M_iq across the inner sum on l).  These agree after
+    a Fubini swap. -/
+theorem StochasticMatrix.assoc {m k n p : Nat}
+    (M : StochasticMatrix m k) (N : StochasticMatrix k n)
+    (P : StochasticMatrix n p)
+    : (M.comp N).comp P = M.comp (N.comp P) := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun l => (Fin.sumRat (fun q => M.entry i q * N.entry q l))
+                            * P.entry l j)
+     = Fin.sumRat (fun q => M.entry i q
+                            * Fin.sumRat (fun l => N.entry q l * P.entry l j))
+  -- LHS: distribute P_lj across the inner sum
+  have hLHS : (l : Fin n)
+      → Fin.sumRat (fun q => M.entry i q * N.entry q l) * P.entry l j
+      = Fin.sumRat (fun q => M.entry i q * N.entry q l * P.entry l j) := by
+    intro l
+    rw [Rat.mul_comm _ (P.entry l j)]
+    rw [← Fin.sumRat_const_mul]
+    apply Fin.sumRat_congr
+    intro q
+    exact Rat.mul_comm _ _
+  rw [Fin.sumRat_congr hLHS]
+  -- RHS: distribute M_iq across the inner sum
+  have hRHS : (q : Fin k)
+      → M.entry i q * Fin.sumRat (fun l => N.entry q l * P.entry l j)
+      = Fin.sumRat (fun l => M.entry i q * N.entry q l * P.entry l j) := by
+    intro q
+    rw [← Fin.sumRat_const_mul]
+    apply Fin.sumRat_congr
+    intro l
+    rw [← Rat.mul_assoc]
+  rw [Fin.sumRat_congr hRHS]
+  -- Now both sides are the same double sum, modulo Fubini swap
+  exact Fin.sumRat_swap (fun l q => M.entry i q * N.entry q l * P.entry l j)
+
+/-! ## Category instance -/
+
+/-- `FinStoch` is the Markov category whose objects are natural numbers
+    (interpreted as the finite sets `Fin n`) and whose morphisms are
+    row-stochastic rational matrices.  The Category instance assembles
+    the data and axioms proved above. -/
+instance instCategoryNat : CompCatTheory.Category Nat where
+  Hom := StochasticMatrix
+  id := idMatrix
+  comp := StochasticMatrix.comp
+  id_comp := StochasticMatrix.id_comp
+  comp_id := StochasticMatrix.comp_id
+  assoc := StochasticMatrix.assoc
 
 end FinStoch
 end MarkovCat
