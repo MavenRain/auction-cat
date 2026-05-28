@@ -64,6 +64,47 @@ theorem Fin.sumRat_congr {n : Nat} {f g : Fin n → Rat}
   funext i
   exact h i
 
+/-- Sum is linear: Σ (f + g) = Σ f + Σ g. -/
+theorem Fin.sumRat_add : {n : Nat} → (f g : Fin n → Rat)
+    → Fin.sumRat (fun i => f i + g i) = Fin.sumRat f + Fin.sumRat g
+  | 0,     _, _ => by rw [Fin.sumRat_zero, Fin.sumRat_zero, Fin.sumRat_zero, Rat.add_zero]
+  | k + 1, f, g => by
+    rw [Fin.sumRat_succ, Fin.sumRat_succ, Fin.sumRat_succ]
+    rw [Fin.sumRat_add (fun i => f i.succ) (fun i => g i.succ)]
+    -- (f 0 + g 0) + (Σ f.succ + Σ g.succ) = (f 0 + Σ f.succ) + (g 0 + Σ g.succ)
+    -- Manual rewrite of associativity / commutativity since Lean core has no `ring`.
+    rw [Rat.add_assoc (f 0) (g 0)]
+    rw [← Rat.add_assoc (g 0)]
+    rw [Rat.add_comm (g 0) (Fin.sumRat _)]
+    rw [Rat.add_assoc (Fin.sumRat _) (g 0)]
+    rw [← Rat.add_assoc (f 0) (Fin.sumRat _) (g 0 + Fin.sumRat _)]
+
+/-- Sum is homogeneous in a scalar: Σ (c * f i) = c * Σ f. -/
+theorem Fin.sumRat_const_mul : {n : Nat} → (c : Rat) → (f : Fin n → Rat)
+    → Fin.sumRat (fun i => c * f i) = c * Fin.sumRat f
+  | 0,     c, _ => by rw [Fin.sumRat_zero, Fin.sumRat_zero, Rat.mul_zero]
+  | k + 1, c, f => by
+    rw [Fin.sumRat_succ, Fin.sumRat_succ]
+    rw [Fin.sumRat_const_mul c (fun i => f i.succ)]
+    rw [← Rat.mul_add]
+
+/-- Double-sum swap (Fubini for finite sums). -/
+theorem Fin.sumRat_swap : {m n : Nat} → (f : Fin m → Fin n → Rat)
+    → Fin.sumRat (fun i => Fin.sumRat (fun j => f i j))
+    = Fin.sumRat (fun j => Fin.sumRat (fun i => f i j))
+  | 0,     n, f => by
+    rw [Fin.sumRat_zero]
+    rw [Fin.sumRat_congr (g := fun _ : Fin n => (0 : Rat))
+          (fun _ => Fin.sumRat_zero _)]
+    rw [Fin.sumRat_const_zero]
+  | k + 1, n, f => by
+    rw [Fin.sumRat_succ]
+    rw [Fin.sumRat_swap (fun (i : Fin k) j => f i.succ j)]
+    rw [← Fin.sumRat_add]
+    apply Fin.sumRat_congr
+    intro j
+    exact (Fin.sumRat_succ (fun i => f i j)).symm
+
 /-! ## Kronecker delta -/
 
 /-- Rational-valued Kronecker delta: `1` when `i = j`, `0` otherwise. -/
@@ -169,6 +210,43 @@ def idMatrix (n : Nat) : StochasticMatrix n n where
   entry := kron
   nonneg := kron_nonneg
   row_sum_one := sumRat_kron_eq_one
+
+/-! ## Composition (matrix multiplication) -/
+
+/-- Composition of stochastic matrices via standard matrix multiplication:
+    `(M ∘ N).entry i j = Σ_l M.entry i l * N.entry l j`.
+
+    The non-negativity of the product follows from non-negativity of the
+    factors plus non-negativity of finite sums of non-negatives.
+
+    The row-sum-one property uses the Fubini swap, the homogeneity of
+    sums, and the row-sum-one of both factors:
+        Σ_j Σ_l M_il * N_lj
+      = Σ_l Σ_j M_il * N_lj            (Fubini)
+      = Σ_l (M_il * Σ_j N_lj)          (factor M_il out of inner sum)
+      = Σ_l (M_il * 1)                 (N row sums to 1)
+      = Σ_l M_il                       (mul by 1)
+      = 1.                             (M row sums to 1) -/
+def StochasticMatrix.comp {m k n : Nat}
+    (M : StochasticMatrix m k) (N : StochasticMatrix k n)
+    : StochasticMatrix m n where
+  entry i j := Fin.sumRat (fun l : Fin k => M.entry i l * N.entry l j)
+  nonneg i j :=
+    Fin.sumRat_nonneg (fun l => Rat.mul_nonneg (M.nonneg i l) (N.nonneg l j))
+  row_sum_one i := by
+    rw [Fin.sumRat_swap (fun j l => M.entry i l * N.entry l j)]
+    have hFactor : (l : Fin k)
+        → Fin.sumRat (fun j => M.entry i l * N.entry l j)
+        = M.entry i l * Fin.sumRat (fun j => N.entry l j) :=
+      fun l => Fin.sumRat_const_mul (M.entry i l) (fun j => N.entry l j)
+    rw [Fin.sumRat_congr hFactor]
+    have hRowOne : (l : Fin k)
+        → M.entry i l * Fin.sumRat (fun j => N.entry l j) = M.entry i l := by
+      intro l
+      rw [N.row_sum_one l]
+      exact Rat.mul_one _
+    rw [Fin.sumRat_congr hRowOne]
+    exact M.row_sum_one i
 
 end FinStoch
 end MarkovCat
