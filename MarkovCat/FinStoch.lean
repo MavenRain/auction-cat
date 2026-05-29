@@ -28,6 +28,81 @@ set_option autoImplicit false
 namespace MarkovCat
 namespace FinStoch
 
+/-! ## Fin pairing (for the Kronecker product) -/
+
+/-- Pairing `Fin m × Fin n → Fin (m * n)`: encode `(a, b)` as
+    `a * n + b`. -/
+def Fin.pair {m n : Nat} (a : Fin m) (b : Fin n) : Fin (m * n) :=
+  ⟨a.val * n + b.val, by
+    have ha : a.val + 1 ≤ m := a.isLt
+    have hb : b.val < n := b.isLt
+    have hStep : a.val * n + b.val < (a.val + 1) * n := by
+      have : a.val * n + b.val < a.val * n + n :=
+        Nat.add_lt_add_left hb _
+      have hRw : a.val * n + n = (a.val + 1) * n :=
+        (Nat.succ_mul a.val n).symm
+      omega
+    have hBound : (a.val + 1) * n ≤ m * n :=
+      Nat.mul_le_mul_right n ha
+    omega⟩
+
+@[simp] theorem Fin.pair_val {m n : Nat} (a : Fin m) (b : Fin n) :
+    (Fin.pair a b).val = a.val * n + b.val := rfl
+
+/-- Project `Fin (m * n)` to its first component `Fin m` via Nat
+    division. -/
+def Fin.divFin {m n : Nat} (x : Fin (m * n)) : Fin m :=
+  ⟨x.val / n, by
+    by_cases hn : 0 < n
+    · exact (Nat.div_lt_iff_lt_mul hn).mpr x.isLt
+    · have hn0 : n = 0 := by omega
+      have hMul : m * n = 0 := by rw [hn0, Nat.mul_zero]
+      have := x.isLt
+      omega⟩
+
+/-- Project `Fin (m * n)` to its second component `Fin n` via Nat
+    modulo. -/
+def Fin.modFin {m n : Nat} (x : Fin (m * n)) : Fin n :=
+  ⟨x.val % n, by
+    by_cases hn : 0 < n
+    · exact Nat.mod_lt _ hn
+    · have hn0 : n = 0 := by omega
+      have hMul : m * n = 0 := by rw [hn0, Nat.mul_zero]
+      have := x.isLt
+      omega⟩
+
+@[simp] theorem Fin.divFin_val {m n : Nat} (x : Fin (m * n)) :
+    (Fin.divFin x).val = x.val / n := rfl
+
+@[simp] theorem Fin.modFin_val {m n : Nat} (x : Fin (m * n)) :
+    (Fin.modFin x).val = x.val % n := rfl
+
+/-- Round trip on the first component: `divFin (pair a b) = a` (when `n > 0`). -/
+theorem Fin.pair_divFin {m n : Nat} (hn : 0 < n) (a : Fin m) (b : Fin n) :
+    Fin.divFin (Fin.pair a b) = a := by
+  apply Fin.ext
+  show (a.val * n + b.val) / n = a.val
+  rw [Nat.add_comm, Nat.add_mul_div_right _ _ hn]
+  rw [Nat.div_eq_of_lt b.isLt]
+  exact Nat.zero_add a.val
+
+/-- Round trip on the second component: `modFin (pair a b) = b`. -/
+theorem Fin.pair_modFin {m n : Nat} (a : Fin m) (b : Fin n) :
+    Fin.modFin (Fin.pair a b) = b := by
+  apply Fin.ext
+  show (a.val * n + b.val) % n = b.val
+  rw [Nat.add_comm, Nat.add_mul_mod_self_right]
+  exact Nat.mod_eq_of_lt b.isLt
+
+/-- Reconstruction: pairing the divFin and modFin recovers the
+    original index. -/
+theorem Fin.pair_divFin_modFin {m n : Nat} (x : Fin (m * n)) :
+    Fin.pair (Fin.divFin x) (Fin.modFin x) = x := by
+  apply Fin.ext
+  show (x.val / n) * n + x.val % n = x.val
+  rw [Nat.mul_comm]
+  exact Nat.div_add_mod x.val n
+
 /-! ## Finite sums of rationals -/
 
 /-- Sum of a finite rational-valued family `f : Fin n → Rat`, defined by
