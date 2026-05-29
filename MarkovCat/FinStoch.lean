@@ -165,6 +165,39 @@ theorem Fin.sumRat_const_mul : {n : Nat} → (c : Rat) → (f : Fin n → Rat)
     rw [Fin.sumRat_const_mul c (fun i => f i.succ)]
     rw [← Rat.mul_add]
 
+/-- Peel-from-the-right form of `sumRat_succ`:
+    `Σ g = Σ (g restricted to the first n) + g (last)`. -/
+theorem Fin.sumRat_succ_right : (n : Nat) → (g : Fin (n + 1) → Rat)
+    → Fin.sumRat g
+    = Fin.sumRat (fun a : Fin n => g ⟨a.val, by omega⟩) + g ⟨n, by omega⟩
+  | 0, g => by
+    rw [Fin.sumRat_succ, Fin.sumRat_zero, Fin.sumRat_zero, Rat.add_zero, Rat.zero_add]
+    exact congrArg g (Fin.ext rfl)
+  | k + 1, g => by
+    rw [Fin.sumRat_succ]
+    rw [Fin.sumRat_succ_right k (fun i => g i.succ)]
+    rw [Fin.sumRat_succ (n := k) (fun a : Fin (k + 1) => g ⟨a.val, by omega⟩)]
+    rw [Rat.add_assoc]
+    congr 1
+
+/-- Splitting a sum at a position: the sum over `Fin (m + n)` factors
+    as the sum over the first `m` entries plus the sum over the
+    remaining `n` entries (shifted by `m`). -/
+theorem Fin.sumRat_split : {m : Nat} → (n : Nat) → (f : Fin (m + n) → Rat)
+    → Fin.sumRat f
+    = Fin.sumRat (fun a : Fin m => f ⟨a.val, by omega⟩)
+      + Fin.sumRat (fun b : Fin n => f ⟨m + b.val, by omega⟩)
+  | m, 0, f => by
+    rw [Fin.sumRat_zero, Rat.add_zero]
+    apply Fin.sumRat_congr
+    intro a
+    exact congrArg f (Fin.ext rfl)
+  | m, k + 1, f => by
+    rw [Fin.sumRat_succ_right (m + k) f]
+    rw [Fin.sumRat_split (m := m) k (fun a => f ⟨a.val, by omega⟩)]
+    rw [Fin.sumRat_succ_right k (fun b : Fin (k + 1) => f ⟨m + b.val, by omega⟩)]
+    rw [Rat.add_assoc]
+
 /-- Double-sum swap (Fubini for finite sums). -/
 theorem Fin.sumRat_swap : {m n : Nat} → (f : Fin m → Fin n → Rat)
     → Fin.sumRat (fun i => Fin.sumRat (fun j => f i j))
