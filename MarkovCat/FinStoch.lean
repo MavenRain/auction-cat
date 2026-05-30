@@ -426,6 +426,18 @@ structure StochasticMatrix (m n : Nat) where
   /-- Row stochastic: every row sums to 1. -/
   row_sum_one : (i : Fin m) → Fin.sumRat (fun j => entry i j) = 1
 
+/-- Extensionality for `StochasticMatrix`: equal entries determine
+    equal matrices (the `nonneg` and `row_sum_one` fields are
+    Prop-valued and hence proof-irrelevant). -/
+@[ext]
+theorem StochasticMatrix.ext {m n : Nat} {M N : StochasticMatrix m n}
+    (h : (i : Fin m) → (j : Fin n) → M.entry i j = N.entry i j) : M = N := by
+  cases M with | mk eM nM rM =>
+  cases N with | mk eN nN rN =>
+  have hEntry : eM = eN := by funext i j; exact h i j
+  subst hEntry
+  rfl
+
 /-- A stochastic matrix with at least one row has at least one column.
 
     If `k = 0`, every row's sum is `Σ over Fin 0 = 0`, but the
@@ -497,6 +509,35 @@ def StochasticMatrix.kron {m k m' k' : Nat}
     -- M's row sum is 1.
     exact M.row_sum_one (Fin.first x)
 
+/-- The Kronecker product of identity matrices is the identity. -/
+theorem StochasticMatrix.kron_identity (m n : Nat) :
+    StochasticMatrix.kron (idMatrix m) (idMatrix n) = idMatrix (m * n) := by
+  apply StochasticMatrix.ext
+  intro x y
+  have hLHS :
+      (StochasticMatrix.kron (idMatrix m) (idMatrix n)).entry x y
+      = MarkovCat.FinStoch.kron (Fin.first x) (Fin.first y)
+        * MarkovCat.FinStoch.kron (Fin.second x) (Fin.second y) := rfl
+  have hRHS : (idMatrix (m * n)).entry x y = MarkovCat.FinStoch.kron x y := rfl
+  rw [hLHS, hRHS]
+  by_cases hxy : x = y
+  · subst hxy
+    simp only [kron_self]
+    exact Rat.one_mul 1
+  · rw [kron_ne hxy]
+    by_cases h1 : Fin.first x = Fin.first y
+    · have h2 : Fin.second x ≠ Fin.second y := by
+        intro h2
+        apply hxy
+        have hPair :
+            Fin.pair (Fin.first x) (Fin.second x)
+            = Fin.pair (Fin.first y) (Fin.second y) := by
+          rw [h1, h2]
+        rw [Fin.pair_first_second, Fin.pair_first_second] at hPair
+        exact hPair
+      rw [kron_ne h2, Rat.mul_zero]
+    · rw [kron_ne h1, Rat.zero_mul]
+
 /-! ## Composition (matrix multiplication) -/
 
 /-- Composition of stochastic matrices via standard matrix multiplication:
@@ -533,18 +574,6 @@ def StochasticMatrix.comp {m k n : Nat}
       exact Rat.mul_one _
     rw [Fin.sumRat_congr hRowOne]
     exact M.row_sum_one i
-
-/-- Extensionality for `StochasticMatrix`: equal entries determine
-    equal matrices (the `nonneg` and `row_sum_one` fields are
-    Prop-valued and hence proof-irrelevant). -/
-@[ext]
-theorem StochasticMatrix.ext {m n : Nat} {M N : StochasticMatrix m n}
-    (h : (i : Fin m) → (j : Fin n) → M.entry i j = N.entry i j) : M = N := by
-  cases M with | mk eM nM rM =>
-  cases N with | mk eN nN rN =>
-  have hEntry : eM = eN := by funext i j; exact h i j
-  subst hEntry
-  rfl
 
 /-! ## Category axioms for `StochasticMatrix` -/
 
