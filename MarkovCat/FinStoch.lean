@@ -221,6 +221,40 @@ theorem Fin.sumRat_swap : {m n : Nat} → (f : Fin m → Fin n → Rat)
     intro j
     exact (Fin.sumRat_succ (fun i => f i j)).symm
 
+/-- Unpairing identity for finite sums: a sum over `Fin (m * n)` factors
+    as a double sum over `Fin m × Fin n` via `Fin.pair`.
+
+    Proved by induction on n.  The base case uses `m * 0 = 0` def-eq.
+    The step case uses `m * (k+1) = m * k + m` def-eq, then
+    `sumRat_split` at position `m * k` (separating the `Fin (m * k)`
+    initial part from the trailing `Fin m`), then the IH on the first
+    part, then massaging the RHS via `sumRat_succ_right` and
+    `sumRat_add`. -/
+theorem Fin.sumRat_unpair : (m : Nat) → (n : Nat) → (f : Fin (m * n) → Rat)
+    → Fin.sumRat f
+    = Fin.sumRat (fun a : Fin m => Fin.sumRat (fun b : Fin n => f (Fin.pair a b)))
+  | m, 0, f => by
+    rw [Fin.sumRat_zero]
+    rw [show (fun a : Fin m => Fin.sumRat (fun b : Fin 0 => f (Fin.pair a b)))
+        = (fun _ : Fin m => (0 : Rat)) from funext (fun _ => Fin.sumRat_zero _)]
+    rw [Fin.sumRat_const_zero]
+  | m, k + 1, f => by
+    rw [Fin.sumRat_split (m := m * k) m f]
+    rw [Fin.sumRat_unpair m k (fun i : Fin (m * k) =>
+      f ⟨i.val, by
+        have hStep : m * k ≤ m * (k + 1) := Nat.mul_le_mul_left m (Nat.le_succ k)
+        omega⟩)]
+    rw [show (fun a : Fin m => Fin.sumRat (fun b : Fin (k + 1) => f (Fin.pair a b)))
+        = (fun a : Fin m => Fin.sumRat (fun b' : Fin k =>
+                                          f (Fin.pair a ⟨b'.val, by omega⟩))
+                            + f (Fin.pair a ⟨k, by omega⟩)) from
+        funext (fun a => Fin.sumRat_succ_right k (fun b => f (Fin.pair a b)))]
+    rw [Fin.sumRat_add (fun a : Fin m =>
+                          Fin.sumRat (fun b' : Fin k =>
+                                        f (Fin.pair a ⟨b'.val, by omega⟩)))
+                       (fun a : Fin m => f (Fin.pair a ⟨k, by omega⟩))]
+    congr 1
+
 /-! ## Kronecker delta -/
 
 /-- Rational-valued Kronecker delta: `1` when `i = j`, `0` otherwise. -/
@@ -392,6 +426,20 @@ structure StochasticMatrix (m n : Nat) where
   /-- Row stochastic: every row sums to 1. -/
   row_sum_one : (i : Fin m) → Fin.sumRat (fun j => entry i j) = 1
 
+/-- A stochastic matrix with at least one row has at least one column.
+
+    If `k = 0`, every row's sum is `Σ over Fin 0 = 0`, but the
+    `row_sum_one` field of a `StochasticMatrix` requires that sum to
+    be `1`.  So `k = 0` and `m > 0` is contradictory. -/
+private theorem StochasticMatrix.cols_pos {m k : Nat}
+    (M : StochasticMatrix m k) (hm : 0 < m) : 0 < k := by
+  cases k with
+  | zero =>
+    have hrow := M.row_sum_one ⟨0, hm⟩
+    rw [Fin.sumRat_zero] at hrow
+    exact absurd hrow (by decide)
+  | succ k' => exact Nat.succ_pos k'
+
 /-! ## Identity matrix -/
 
 /-- The identity stochastic matrix: the Kronecker delta on the diagonal. -/
@@ -399,6 +447,55 @@ def idMatrix (n : Nat) : StochasticMatrix n n where
   entry := kron
   nonneg := kron_nonneg
   row_sum_one := sumRat_kron_eq_one
+
+/-! ## Kronecker product (the monoidal tensor on `FinStoch`) -/
+
+/-- Kronecker product of stochastic matrices.
+
+    `(M ⊗ N).entry x y = M.entry (first x) (first y) * N.entry (second x) (second y)`
+
+    where `first x : Fin m` is the inner index and `second x : Fin m'`
+    is the outer (block) index of `x : Fin (m * m')`. -/
+def StochasticMatrix.kron {m k m' k' : Nat}
+    (M : StochasticMatrix m k) (N : StochasticMatrix m' k')
+    : StochasticMatrix (m * m') (k * k') where
+  entry x y :=
+    M.entry (Fin.first x) (Fin.first y) * N.entry (Fin.second x) (Fin.second y)
+  nonneg _ _ :=
+    Rat.mul_nonneg (M.nonneg _ _) (N.nonneg _ _)
+  row_sum_one x := by
+    -- Derive positivity of m, m', k, k'.
+    have hmm' : 0 < m * m' := Nat.lt_of_le_of_lt (Nat.zero_le _) x.isLt
+    have hm : 0 < m := Nat.pos_of_mul_pos_right hmm'
+    have hm' : 0 < m' := Nat.pos_of_mul_pos_left hmm'
+    have hk : 0 < k := M.cols_pos hm
+    -- Factor the sum over Fin (k * k') as a double sum.
+    rw [Fin.sumRat_unpair k k' _]
+    -- After Fin.first_pair / Fin.second_pair, the inner sum factors as
+    -- M.entry (first x) c * N.entry (second x) d
+    rw [show (fun c : Fin k => Fin.sumRat (fun d : Fin k' =>
+            M.entry (Fin.first x) (Fin.first (Fin.pair c d))
+              * N.entry (Fin.second x) (Fin.second (Fin.pair c d))))
+        = (fun c : Fin k => Fin.sumRat (fun d : Fin k' =>
+            M.entry (Fin.first x) c * N.entry (Fin.second x) d)) from
+        funext (fun c => Fin.sumRat_congr (fun d => by
+          rw [Fin.first_pair c d, Fin.second_pair hk c d]))]
+    -- Factor M.entry out of the inner sum (it does not depend on d).
+    rw [show (fun c : Fin k => Fin.sumRat (fun d : Fin k' =>
+            M.entry (Fin.first x) c * N.entry (Fin.second x) d))
+        = (fun c : Fin k =>
+            M.entry (Fin.first x) c
+              * Fin.sumRat (fun d : Fin k' => N.entry (Fin.second x) d)) from
+        funext (fun c => Fin.sumRat_const_mul _ _)]
+    -- N's row sum is 1.
+    rw [show (fun c : Fin k =>
+            M.entry (Fin.first x) c
+              * Fin.sumRat (fun d : Fin k' => N.entry (Fin.second x) d))
+        = (fun c : Fin k => M.entry (Fin.first x) c) from
+        funext (fun c => by
+          rw [N.row_sum_one (Fin.second x)]; exact Rat.mul_one _)]
+    -- M's row sum is 1.
+    exact M.row_sum_one (Fin.first x)
 
 /-! ## Composition (matrix multiplication) -/
 
