@@ -1118,5 +1118,62 @@ theorem associatorInvFin_pair {X Y Z : Nat}
   rw [← Nat.mul_assoc]
   rw [← Nat.add_assoc]
 
+/-! ## Projection consistency through the associator
+
+  `associatorFin` and `associatorInvFin` are val-preserving, so the
+  iterated `Fin.first` / `Fin.second` projections commute with them
+  in the way one expects: the triple `(a, b, c)` is recovered the same
+  way from either bracketing.  The six lemmas below are val-level
+  identities that follow from `Nat.mod_mod_of_dvd`,
+  `Nat.div_div_eq_div_mul`, and one `omega` invocation for the mixed
+  `div`/`mod` identity. -/
+
+/-- Mixed div/mod identity: `(n / X) % Y = (n % (X * Y)) / X`. -/
+private theorem Nat.div_mod_eq_mod_mul_div (n X Y : Nat) :
+    (n / X) % Y = (n % (X * Y)) / X :=
+  (Nat.mod_mul_right_div_self n X Y).symm
+
+/-- `Fin.first ∘ associatorFin = Fin.first ∘ Fin.first`. -/
+theorem first_associatorFin {X Y Z : Nat} (i : Fin ((X * Y) * Z)) :
+    Fin.first (associatorFin i) = Fin.first (Fin.first i) := by
+  apply Fin.ext
+  show i.val % X = (i.val % (X * Y)) % X
+  rw [Nat.mod_mod_of_dvd i.val (Nat.dvd_mul_right X Y)]
+
+/-- `Fin.first ∘ Fin.second ∘ associatorFin = Fin.second ∘ Fin.first`. -/
+theorem first_second_associatorFin {X Y Z : Nat} (i : Fin ((X * Y) * Z)) :
+    Fin.first (Fin.second (associatorFin i)) = Fin.second (Fin.first i) := by
+  apply Fin.ext
+  show (i.val / X) % Y = (i.val % (X * Y)) / X
+  exact Nat.div_mod_eq_mod_mul_div i.val X Y
+
+/-- `Fin.second ∘ Fin.second ∘ associatorFin = Fin.second`. -/
+theorem second_second_associatorFin {X Y Z : Nat} (i : Fin ((X * Y) * Z)) :
+    Fin.second (Fin.second (associatorFin i)) = Fin.second i := by
+  apply Fin.ext
+  show (i.val / X) / Y = i.val / (X * Y)
+  rw [Nat.div_div_eq_div_mul]
+
+/-- `Fin.first ∘ Fin.first ∘ associatorInvFin = Fin.first`. -/
+theorem first_first_associatorInvFin {X Y Z : Nat} (j : Fin (X * (Y * Z))) :
+    Fin.first (Fin.first (associatorInvFin j)) = Fin.first j := by
+  apply Fin.ext
+  show (j.val % (X * Y)) % X = j.val % X
+  rw [Nat.mod_mod_of_dvd j.val (Nat.dvd_mul_right X Y)]
+
+/-- `Fin.second ∘ Fin.first ∘ associatorInvFin = Fin.first ∘ Fin.second`. -/
+theorem second_first_associatorInvFin {X Y Z : Nat} (j : Fin (X * (Y * Z))) :
+    Fin.second (Fin.first (associatorInvFin j)) = Fin.first (Fin.second j) := by
+  apply Fin.ext
+  show (j.val % (X * Y)) / X = (j.val / X) % Y
+  exact (Nat.div_mod_eq_mod_mul_div j.val X Y).symm
+
+/-- `Fin.second ∘ associatorInvFin = Fin.second ∘ Fin.second`. -/
+theorem second_associatorInvFin {X Y Z : Nat} (j : Fin (X * (Y * Z))) :
+    Fin.second (associatorInvFin j) = Fin.second (Fin.second j) := by
+  apply Fin.ext
+  show j.val / (X * Y) = (j.val / X) / Y
+  rw [Nat.div_div_eq_div_mul]
+
 end FinStoch
 end MarkovCat
