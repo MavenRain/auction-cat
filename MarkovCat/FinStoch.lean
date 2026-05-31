@@ -1175,5 +1175,83 @@ theorem second_associatorInvFin {X Y Z : Nat} (j : Fin (X * (Y * Z))) :
   show j.val / (X * Y) = (j.val / X) / Y
   rw [Nat.div_div_eq_div_mul]
 
+/-! ## Associator naturality
+
+  With the projection lemmas in hand, the associator naturality
+  square reduces to two `sumRat_kron_mul` / `sumRat_mul_kron`
+  applications plus six projection rewrites plus one `Rat.mul_assoc`. -/
+
+/-- Flip a Kronecker delta past the associator reindexing: the val
+    equation `(associatorFin k).val = k.val = (associatorInvFin j).val`
+    makes both forms agree. -/
+private theorem kron_associatorFin {X Y Z : Nat}
+    (k : Fin ((X * Y) * Z)) (j : Fin (X * (Y * Z))) :
+    kron (associatorFin k) j = kron k (associatorInvFin j) := by
+  have h : associatorFin k = j ↔ k = associatorInvFin j := by
+    constructor
+    · intro hkj
+      apply Fin.ext
+      have hVal := congrArg Fin.val hkj
+      rw [associatorFin_val] at hVal
+      show k.val = (associatorInvFin j).val
+      rw [associatorInvFin_val]
+      exact hVal
+    · intro hkj
+      apply Fin.ext
+      have hVal := congrArg Fin.val hkj
+      rw [associatorInvFin_val] at hVal
+      show (associatorFin k).val = j.val
+      rw [associatorFin_val]
+      exact hVal
+  unfold kron
+  by_cases hEq : associatorFin k = j
+  · rw [if_pos hEq, if_pos (h.mp hEq)]
+  · rw [if_neg hEq, if_neg (fun hk => hEq (h.mpr hk))]
+
+/-- Associator naturality:
+    `((f ⊗ g) ⊗ h) ≫ α = α ≫ (f ⊗ (g ⊗ h))`. -/
+theorem associator_naturality {X Y Z X' Y' Z' : Nat}
+    (f : StochasticMatrix X X')
+    (g : StochasticMatrix Y Y')
+    (h : StochasticMatrix Z Z') :
+    (StochasticMatrix.kron (StochasticMatrix.kron f g) h).comp (associator X' Y' Z')
+    = (associator X Y Z).comp
+        (StochasticMatrix.kron f (StochasticMatrix.kron g h)) := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin ((X' * Y') * Z') =>
+        (StochasticMatrix.kron (StochasticMatrix.kron f g) h).entry i k
+        * kron (associatorFin k) j)
+     = Fin.sumRat (fun k : Fin (X * (Y * Z)) =>
+        kron (associatorFin i) k
+        * (StochasticMatrix.kron f (StochasticMatrix.kron g h)).entry k j)
+  -- Flip the LHS kron via kron_associatorFin.
+  rw [show (fun k : Fin ((X' * Y') * Z') =>
+        (StochasticMatrix.kron (StochasticMatrix.kron f g) h).entry i k
+        * kron (associatorFin k) j)
+      = (fun k : Fin ((X' * Y') * Z') =>
+        (StochasticMatrix.kron (StochasticMatrix.kron f g) h).entry i k
+        * kron k (associatorInvFin j)) from
+      funext (fun k => by rw [kron_associatorFin k j])]
+  -- Pick the unique k on LHS via sumRat_mul_kron.
+  rw [sumRat_mul_kron (associatorInvFin j)
+      (fun k => (StochasticMatrix.kron (StochasticMatrix.kron f g) h).entry i k)]
+  -- Pick the unique k on RHS via sumRat_kron_mul.
+  rw [sumRat_kron_mul (associatorFin i)
+      (fun k => (StochasticMatrix.kron f (StochasticMatrix.kron g h)).entry k j)]
+  -- After unfolding kron entries, this is a triple-product equality
+  -- modulo associator projections and Rat.mul_assoc.
+  show (f.entry (Fin.first (Fin.first i)) (Fin.first (Fin.first (associatorInvFin j)))
+        * g.entry (Fin.second (Fin.first i)) (Fin.second (Fin.first (associatorInvFin j))))
+       * h.entry (Fin.second i) (Fin.second (associatorInvFin j))
+     = f.entry (Fin.first (associatorFin i)) (Fin.first j)
+       * (g.entry (Fin.first (Fin.second (associatorFin i))) (Fin.first (Fin.second j))
+          * h.entry (Fin.second (Fin.second (associatorFin i))) (Fin.second (Fin.second j)))
+  rw [first_first_associatorInvFin, second_first_associatorInvFin,
+      second_associatorInvFin]
+  rw [first_associatorFin, first_second_associatorFin,
+      second_second_associatorFin]
+  exact Rat.mul_assoc _ _ _
+
 end FinStoch
 end MarkovCat
