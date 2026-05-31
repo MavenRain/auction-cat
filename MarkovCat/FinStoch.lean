@@ -509,6 +509,33 @@ def StochasticMatrix.kron {m k m' k' : Nat}
     -- M's row sum is 1.
     exact M.row_sum_one (Fin.first x)
 
+/-- Auxiliary: reorder a four-term product `(a * b) * (c * d) = (a * c) * (b * d)`.
+    Used in the Kronecker-mixed-product proof. -/
+private theorem mul_swap4 (a b c d : Rat) :
+    (a * b) * (c * d) = (a * c) * (b * d) := by
+  rw [Rat.mul_assoc a b (c * d)]
+  rw [← Rat.mul_assoc b c d]
+  rw [Rat.mul_comm b c]
+  rw [Rat.mul_assoc c b d]
+  rw [← Rat.mul_assoc a c (b * d)]
+
+/-- A product of finite sums distributes as a double sum:
+    `(Σ_l f l) * (Σ_l' g l') = Σ_l Σ_l' (f l * g l')`. -/
+theorem Fin.sumRat_mul_sumRat {k k' : Nat}
+    (f : Fin k → Rat) (g : Fin k' → Rat) :
+    (Fin.sumRat f) * (Fin.sumRat g)
+    = Fin.sumRat (fun l : Fin k => Fin.sumRat (fun l' : Fin k' => f l * g l')) := by
+  -- (Σ f) * (Σ g) = (Σ g) * (Σ f)    [mul_comm]
+  --              = Σ_l ((Σ g) * f l)  [← sumRat_const_mul]
+  --              = Σ_l (f l * Σ g)    [mul_comm in summand]
+  --              = Σ_l Σ_l' (f l * g l')   [← sumRat_const_mul in each summand]
+  rw [Rat.mul_comm (Fin.sumRat f) (Fin.sumRat g)]
+  rw [← Fin.sumRat_const_mul (Fin.sumRat g) f]
+  apply Fin.sumRat_congr
+  intro l
+  rw [Rat.mul_comm (Fin.sumRat g) (f l)]
+  rw [← Fin.sumRat_const_mul (f l) g]
+
 /-- The Kronecker product of identity matrices is the identity. -/
 theorem StochasticMatrix.kron_identity (m n : Nat) :
     StochasticMatrix.kron (idMatrix m) (idMatrix n) = idMatrix (m * n) := by
@@ -574,6 +601,51 @@ def StochasticMatrix.comp {m k n : Nat}
       exact Rat.mul_one _
     rw [Fin.sumRat_congr hRowOne]
     exact M.row_sum_one i
+
+/-- Mixed-product property of the Kronecker product:
+    `(M₁ ∘ M₂) ⊗ (N₁ ∘ N₂) = (M₁ ⊗ N₁) ∘ (M₂ ⊗ N₂)`.
+
+    This is the `map_comp` obligation for the tensor functor on FinStoch. -/
+theorem StochasticMatrix.kron_comp {m k n m' k' n' : Nat}
+    (M₁ : StochasticMatrix m k) (M₂ : StochasticMatrix k n)
+    (N₁ : StochasticMatrix m' k') (N₂ : StochasticMatrix k' n') :
+    StochasticMatrix.kron (M₁.comp M₂) (N₁.comp N₂)
+    = (StochasticMatrix.kron M₁ N₁).comp (StochasticMatrix.kron M₂ N₂) := by
+  apply StochasticMatrix.ext
+  intro x y
+  -- Derive 0 < k to feed second_pair on Fin (k * k') indices.
+  have hmm' : 0 < m * m' := Nat.lt_of_le_of_lt (Nat.zero_le _) x.isLt
+  have hm : 0 < m := Nat.pos_of_mul_pos_right hmm'
+  have hk : 0 < k := M₁.cols_pos hm
+  -- Expand both sides to their underlying sum forms.
+  show (Fin.sumRat (fun l : Fin k =>
+            M₁.entry (Fin.first x) l * M₂.entry l (Fin.first y)))
+        * (Fin.sumRat (fun l' : Fin k' =>
+            N₁.entry (Fin.second x) l' * N₂.entry l' (Fin.second y)))
+     = Fin.sumRat (fun z : Fin (k * k') =>
+          M₁.entry (Fin.first x) (Fin.first z) * N₁.entry (Fin.second x) (Fin.second z)
+          * (M₂.entry (Fin.first z) (Fin.first y) * N₂.entry (Fin.second z) (Fin.second y)))
+  -- LHS: distribute the product of finite sums into a double sum.
+  rw [Fin.sumRat_mul_sumRat]
+  -- RHS: apply sumRat_unpair to break Fin (k * k') into Fin k × Fin k'.
+  rw [Fin.sumRat_unpair k k' _]
+  -- Substitute first (pair e f) = e, second (pair e f) = f.
+  rw [show (fun e : Fin k => Fin.sumRat (fun f : Fin k' =>
+              M₁.entry (Fin.first x) (Fin.first (Fin.pair e f))
+                * N₁.entry (Fin.second x) (Fin.second (Fin.pair e f))
+              * (M₂.entry (Fin.first (Fin.pair e f)) (Fin.first y)
+                  * N₂.entry (Fin.second (Fin.pair e f)) (Fin.second y))))
+      = (fun e : Fin k => Fin.sumRat (fun f : Fin k' =>
+              (M₁.entry (Fin.first x) e * N₁.entry (Fin.second x) f)
+              * (M₂.entry e (Fin.first y) * N₂.entry f (Fin.second y)))) from
+      funext (fun e => Fin.sumRat_congr (fun f => by
+        rw [Fin.first_pair e f, Fin.second_pair hk e f]))]
+  -- Reorder each summand via mul_swap4.
+  apply Fin.sumRat_congr
+  intro e
+  apply Fin.sumRat_congr
+  intro f
+  exact mul_swap4 _ _ _ _
 
 /-! ## Category axioms for `StochasticMatrix` -/
 
