@@ -1096,5 +1096,27 @@ theorem associator_inv_hom (X Y Z : Nat) :
         (fun k : Fin ((X * Y) * Z) => kron (associatorFin k) j)]
   rw [associatorFin_associatorInvFin]
 
+/-- `associatorFin` pushed past a triple `pair (pair a b) c`. -/
+theorem associatorFin_pair {X Y Z : Nat}
+    (a : Fin X) (b : Fin Y) (c : Fin Z) :
+    associatorFin (Fin.pair (Fin.pair a b) c) = Fin.pair a (Fin.pair b c) := by
+  apply Fin.ext
+  show (X * Y) * c.val + (X * b.val + a.val)
+       = X * (Y * c.val + b.val) + a.val
+  rw [Nat.mul_add]
+  rw [← Nat.mul_assoc]
+  rw [← Nat.add_assoc]
+
+/-- `associatorInvFin` pushed past a triple `pair a (pair b c)`. -/
+theorem associatorInvFin_pair {X Y Z : Nat}
+    (a : Fin X) (b : Fin Y) (c : Fin Z) :
+    associatorInvFin (Fin.pair a (Fin.pair b c)) = Fin.pair (Fin.pair a b) c := by
+  apply Fin.ext
+  show X * (Y * c.val + b.val) + a.val
+       = (X * Y) * c.val + (X * b.val + a.val)
+  rw [Nat.mul_add]
+  rw [← Nat.mul_assoc]
+  rw [← Nat.add_assoc]
+
 end FinStoch
 end MarkovCat
