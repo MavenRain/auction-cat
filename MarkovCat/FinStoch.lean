@@ -924,5 +924,103 @@ theorem rightUnitor_inv_hom (X : Nat) :
       funext (fun a => Fin.sumRat_fin_one _)]
   exact sumRat_kron_mul i (fun a : Fin X => kron a j)
 
+/-! ## Naturality of the unitors
+
+  Both unitors are natural transformations: tensoring with `idMatrix 1`
+  on the unit side commutes with applying the underlying morphism on
+  the non-unit side, modulo the unitor's re-indexing. -/
+
+/-- The Kronecker delta on `Fin 1` is always `1`: both arguments are
+    forced to the unique element. -/
+private theorem kron_fin_one (a b : Fin 1) : kron a b = 1 := by
+  have hab : a = b := by
+    apply Fin.ext
+    have ha := a.isLt
+    have hb := b.isLt
+    omega
+  rw [hab]
+  exact kron_self b
+
+/-- Left-unitor naturality: `(𝟙_{1} ⊗ f) ≫ leftUnitor Y = leftUnitor X ≫ f`. -/
+theorem leftUnitor_naturality {X Y : Nat} (f : StochasticMatrix X Y) :
+    (StochasticMatrix.kron (idMatrix 1) f).comp (leftUnitor Y)
+    = (leftUnitor X).comp f := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin (1 * Y) =>
+        (kron (Fin.first i) (Fin.first k)
+          * f.entry (Fin.second i) (Fin.second k))
+        * kron (Fin.second k) j)
+     = Fin.sumRat (fun k : Fin X => kron (Fin.second i) k * f.entry k j)
+  -- RHS collapses to f.entry (Fin.second i) j via sumRat_kron_mul.
+  rw [sumRat_kron_mul (Fin.second i) (fun k : Fin X => f.entry k j)]
+  -- Expand LHS via sumRat_unpair on Fin (1 * Y).
+  rw [Fin.sumRat_unpair 1 Y _]
+  -- Replace Fin.first / Fin.second on pair a b with a / b.
+  rw [show (fun a : Fin 1 => Fin.sumRat (fun b : Fin Y =>
+              (kron (Fin.first i) (Fin.first (Fin.pair a b))
+                * f.entry (Fin.second i) (Fin.second (Fin.pair a b)))
+              * kron (Fin.second (Fin.pair a b)) j))
+      = (fun a : Fin 1 => Fin.sumRat (fun b : Fin Y =>
+              (kron (Fin.first i) a * f.entry (Fin.second i) b)
+              * kron b j)) from
+      funext (fun a => Fin.sumRat_congr (fun b => by
+        rw [Fin.first_pair a b, Fin.second_pair Nat.one_pos a b]))]
+  -- Collapse the trivial Fin 1 factor using kron_fin_one.
+  rw [show (fun a : Fin 1 => Fin.sumRat (fun b : Fin Y =>
+              (kron (Fin.first i) a * f.entry (Fin.second i) b)
+              * kron b j))
+      = (fun _ : Fin 1 => Fin.sumRat (fun b : Fin Y =>
+              f.entry (Fin.second i) b * kron b j)) from
+      funext (fun a => Fin.sumRat_congr (fun b => by
+        rw [kron_fin_one (Fin.first i) a, Rat.one_mul]))]
+  -- Outer sum is over Fin 1 of a constant.
+  rw [Fin.sumRat_fin_one (fun _ : Fin 1 =>
+        Fin.sumRat (fun b : Fin Y => f.entry (Fin.second i) b * kron b j))]
+  -- Inner sum collapses via sumRat_mul_kron.
+  exact sumRat_mul_kron j (fun b : Fin Y => f.entry (Fin.second i) b)
+
+/-- Right-unitor naturality: `(f ⊗ 𝟙_{1}) ≫ rightUnitor Y = rightUnitor X ≫ f`. -/
+theorem rightUnitor_naturality {X Y : Nat} (f : StochasticMatrix X Y) :
+    (StochasticMatrix.kron f (idMatrix 1)).comp (rightUnitor Y)
+    = (rightUnitor X).comp f := by
+  apply StochasticMatrix.ext
+  intro i j
+  -- j : Fin Y gives 0 < Y, needed for Fin.second_pair on Fin (Y * 1).
+  have hY : 0 < Y := Nat.lt_of_le_of_lt (Nat.zero_le _) j.isLt
+  show Fin.sumRat (fun k : Fin (Y * 1) =>
+        (f.entry (Fin.first i) (Fin.first k)
+          * kron (Fin.second i) (Fin.second k))
+        * kron (Fin.first k) j)
+     = Fin.sumRat (fun k : Fin X => kron (Fin.first i) k * f.entry k j)
+  -- RHS collapses to f.entry (Fin.first i) j via sumRat_kron_mul.
+  rw [sumRat_kron_mul (Fin.first i) (fun k : Fin X => f.entry k j)]
+  -- Expand LHS via sumRat_unpair on Fin (Y * 1).
+  rw [Fin.sumRat_unpair Y 1 _]
+  rw [show (fun a : Fin Y => Fin.sumRat (fun b : Fin 1 =>
+              (f.entry (Fin.first i) (Fin.first (Fin.pair a b))
+                * kron (Fin.second i) (Fin.second (Fin.pair a b)))
+              * kron (Fin.first (Fin.pair a b)) j))
+      = (fun a : Fin Y => Fin.sumRat (fun b : Fin 1 =>
+              (f.entry (Fin.first i) a * kron (Fin.second i) b)
+              * kron a j)) from
+      funext (fun a => Fin.sumRat_congr (fun b => by
+        rw [Fin.first_pair a b, Fin.second_pair hY a b]))]
+  -- Collapse the trivial Fin 1 factor using kron_fin_one.
+  rw [show (fun a : Fin Y => Fin.sumRat (fun b : Fin 1 =>
+              (f.entry (Fin.first i) a * kron (Fin.second i) b)
+              * kron a j))
+      = (fun a : Fin Y => Fin.sumRat (fun _ : Fin 1 =>
+              f.entry (Fin.first i) a * kron a j)) from
+      funext (fun a => Fin.sumRat_congr (fun b => by
+        rw [kron_fin_one (Fin.second i) b, Rat.mul_one]))]
+  -- Inner Fin 1 sums collapse pointwise.
+  rw [show (fun a : Fin Y => Fin.sumRat (fun _ : Fin 1 =>
+              f.entry (Fin.first i) a * kron a j))
+      = (fun a : Fin Y => f.entry (Fin.first i) a * kron a j) from
+      funext (fun a => Fin.sumRat_fin_one _)]
+  -- Outer sum collapses via sumRat_mul_kron.
+  exact sumRat_mul_kron j (fun a : Fin Y => f.entry (Fin.first i) a)
+
 end FinStoch
 end MarkovCat
