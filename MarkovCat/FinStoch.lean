@@ -1022,5 +1022,79 @@ theorem rightUnitor_naturality {X Y : Nat} (f : StochasticMatrix X Y) :
   -- Outer sum collapses via sumRat_mul_kron.
   exact sumRat_mul_kron j (fun a : Fin Y => f.entry (Fin.first i) a)
 
+/-! ## Associator
+
+  The associator `((X ⊗ Y) ⊗ Z) → (X ⊗ (Y ⊗ Z))` re-brackets the triple
+  product.  Both source and target have the same underlying `Fin.val`
+  encoding: `((a, b), c)` and `(a, (b, c))` both compute to
+  `(X * Y) * c.val + X * b.val + a.val`.  So the associator is the
+  "val-preserving" reindexing along the equation `(X*Y)*Z = X*(Y*Z)`. -/
+
+/-- Re-index `Fin ((X*Y)*Z)` to `Fin (X*(Y*Z))` by preserving `val`. -/
+def associatorFin {X Y Z : Nat} (i : Fin ((X * Y) * Z))
+    : Fin (X * (Y * Z)) :=
+  ⟨i.val, by rw [← Nat.mul_assoc]; exact i.isLt⟩
+
+/-- Re-index `Fin (X*(Y*Z))` to `Fin ((X*Y)*Z)` by preserving `val`. -/
+def associatorInvFin {X Y Z : Nat} (i : Fin (X * (Y * Z)))
+    : Fin ((X * Y) * Z) :=
+  ⟨i.val, by rw [Nat.mul_assoc]; exact i.isLt⟩
+
+@[simp] theorem associatorFin_val {X Y Z : Nat} (i : Fin ((X * Y) * Z)) :
+    (associatorFin i).val = i.val := rfl
+
+@[simp] theorem associatorInvFin_val {X Y Z : Nat} (i : Fin (X * (Y * Z))) :
+    (associatorInvFin i).val = i.val := rfl
+
+/-- Round trip: `associatorInvFin ∘ associatorFin = id`. -/
+theorem associatorInvFin_associatorFin {X Y Z : Nat}
+    (i : Fin ((X * Y) * Z)) : associatorInvFin (associatorFin i) = i := by
+  apply Fin.ext
+  rfl
+
+/-- Round trip: `associatorFin ∘ associatorInvFin = id`. -/
+theorem associatorFin_associatorInvFin {X Y Z : Nat}
+    (j : Fin (X * (Y * Z))) : associatorFin (associatorInvFin j) = j := by
+  apply Fin.ext
+  rfl
+
+/-- The associator as a stochastic matrix.  Sends `i : Fin ((X*Y)*Z)`
+    deterministically to its image under the val-preserving bijection
+    `Fin ((X*Y)*Z) ≃ Fin (X*(Y*Z))`. -/
+def associator (X Y Z : Nat) : StochasticMatrix ((X * Y) * Z) (X * (Y * Z)) where
+  entry i j := kron (associatorFin i) j
+  nonneg _ _ := kron_nonneg _ _
+  row_sum_one i := sumRat_kron_eq_one (associatorFin i)
+
+/-- The inverse associator. -/
+def associatorInv (X Y Z : Nat) : StochasticMatrix (X * (Y * Z)) ((X * Y) * Z) where
+  entry i j := kron (associatorInvFin i) j
+  nonneg _ _ := kron_nonneg _ _
+  row_sum_one i := sumRat_kron_eq_one (associatorInvFin i)
+
+/-- `associator ≫ associatorInv = 𝟙_{(X*Y)*Z}`. -/
+theorem associator_hom_inv (X Y Z : Nat) :
+    (associator X Y Z).comp (associatorInv X Y Z) = idMatrix ((X * Y) * Z) := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin (X * (Y * Z)) =>
+        kron (associatorFin i) k * kron (associatorInvFin k) j)
+     = kron i j
+  rw [sumRat_kron_mul (associatorFin i)
+        (fun k : Fin (X * (Y * Z)) => kron (associatorInvFin k) j)]
+  rw [associatorInvFin_associatorFin]
+
+/-- `associatorInv ≫ associator = 𝟙_{X*(Y*Z)}`. -/
+theorem associator_inv_hom (X Y Z : Nat) :
+    (associatorInv X Y Z).comp (associator X Y Z) = idMatrix (X * (Y * Z)) := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin ((X * Y) * Z) =>
+        kron (associatorInvFin i) k * kron (associatorFin k) j)
+     = kron i j
+  rw [sumRat_kron_mul (associatorInvFin i)
+        (fun k : Fin ((X * Y) * Z) => kron (associatorFin k) j)]
+  rw [associatorFin_associatorInvFin]
+
 end FinStoch
 end MarkovCat
