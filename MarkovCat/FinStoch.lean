@@ -814,5 +814,115 @@ def rightUnitorInv (X : Nat) : StochasticMatrix X (X * 1) where
         funext (fun a => Fin.sumRat_fin_one (fun _ => kron i a))]
     exact sumRat_kron_eq_one i
 
+/-! ## Isomorphism laws for the unitors
+
+  In `Fin (1 * X)`, the first projection `Fin.first` lands in `Fin 1`
+  and is forced to `0`, so `i = j` iff `Fin.second i = Fin.second j`.
+  Symmetrically for `Fin (X * 1)` with `Fin.first`.  These two facts
+  reduce each iso law to a single `sumRat_kron_mul` application. -/
+
+/-- For `i, j : Fin (1 * X)`, the Kronecker delta is preserved by the
+    second projection (which is a bijection `Fin (1 * X) ≃ Fin X`). -/
+private theorem kron_second_eq_left {X : Nat} (i j : Fin (1 * X)) :
+    kron (Fin.second i) (Fin.second j) = kron i j := by
+  unfold kron
+  by_cases hij : i = j
+  · subst hij
+    rw [if_pos rfl, if_pos rfl]
+  · rw [if_neg hij]
+    have hne : Fin.second i ≠ Fin.second j := by
+      intro hs
+      apply hij
+      apply Fin.ext
+      have hsVal : (Fin.second i).val = (Fin.second j).val := by rw [hs]
+      rw [Fin.second_val, Fin.second_val] at hsVal
+      rw [Nat.div_one, Nat.div_one] at hsVal
+      exact hsVal
+    rw [if_neg hne]
+
+/-- For `i, j : Fin (X * 1)`, the Kronecker delta is preserved by the
+    first projection (which is a bijection `Fin (X * 1) ≃ Fin X`). -/
+private theorem kron_first_eq_right {X : Nat} (i j : Fin (X * 1)) :
+    kron (Fin.first i) (Fin.first j) = kron i j := by
+  unfold kron
+  by_cases hij : i = j
+  · subst hij
+    rw [if_pos rfl, if_pos rfl]
+  · rw [if_neg hij]
+    have hne : Fin.first i ≠ Fin.first j := by
+      intro hs
+      apply hij
+      apply Fin.ext
+      have hsVal : (Fin.first i).val = (Fin.first j).val := by rw [hs]
+      rw [Fin.first_val, Fin.first_val] at hsVal
+      have hi : i.val < X := by
+        have hil := i.isLt
+        have hmul : X * 1 = X := Nat.mul_one X
+        omega
+      have hj : j.val < X := by
+        have hjl := j.isLt
+        have hmul : X * 1 = X := Nat.mul_one X
+        omega
+      rw [Nat.mod_eq_of_lt hi, Nat.mod_eq_of_lt hj] at hsVal
+      exact hsVal
+    rw [if_neg hne]
+
+/-- `leftUnitor ≫ leftUnitorInv = 𝟙_{1*X}`. -/
+theorem leftUnitor_hom_inv (X : Nat) :
+    (leftUnitor X).comp (leftUnitorInv X) = idMatrix (1 * X) := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin X => kron (Fin.second i) k * kron k (Fin.second j))
+     = kron i j
+  rw [sumRat_kron_mul (Fin.second i) (fun k : Fin X => kron k (Fin.second j))]
+  exact kron_second_eq_left i j
+
+/-- `leftUnitorInv ≫ leftUnitor = 𝟙_X`. -/
+theorem leftUnitor_inv_hom (X : Nat) :
+    (leftUnitorInv X).comp (leftUnitor X) = idMatrix X := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin (1 * X) => kron i (Fin.second k) * kron (Fin.second k) j)
+     = kron i j
+  rw [Fin.sumRat_unpair 1 X _]
+  rw [show (fun a : Fin 1 => Fin.sumRat (fun b : Fin X =>
+                kron i (Fin.second (Fin.pair a b))
+                * kron (Fin.second (Fin.pair a b)) j))
+      = (fun _ : Fin 1 => Fin.sumRat (fun b : Fin X => kron i b * kron b j)) from
+      funext (fun a => Fin.sumRat_congr (fun b => by
+        rw [Fin.second_pair Nat.one_pos a b]))]
+  rw [Fin.sumRat_fin_one (fun _ : Fin 1 =>
+        Fin.sumRat (fun b : Fin X => kron i b * kron b j))]
+  exact sumRat_kron_mul i (fun b : Fin X => kron b j)
+
+/-- `rightUnitor ≫ rightUnitorInv = 𝟙_{X*1}`. -/
+theorem rightUnitor_hom_inv (X : Nat) :
+    (rightUnitor X).comp (rightUnitorInv X) = idMatrix (X * 1) := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin X => kron (Fin.first i) k * kron k (Fin.first j))
+     = kron i j
+  rw [sumRat_kron_mul (Fin.first i) (fun k : Fin X => kron k (Fin.first j))]
+  exact kron_first_eq_right i j
+
+/-- `rightUnitorInv ≫ rightUnitor = 𝟙_X`. -/
+theorem rightUnitor_inv_hom (X : Nat) :
+    (rightUnitorInv X).comp (rightUnitor X) = idMatrix X := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin (X * 1) => kron i (Fin.first k) * kron (Fin.first k) j)
+     = kron i j
+  rw [Fin.sumRat_unpair X 1 _]
+  rw [show (fun a : Fin X => Fin.sumRat (fun b : Fin 1 =>
+                kron i (Fin.first (Fin.pair a b))
+                * kron (Fin.first (Fin.pair a b)) j))
+      = (fun a : Fin X => Fin.sumRat (fun _ : Fin 1 => kron i a * kron a j)) from
+      funext (fun a => Fin.sumRat_congr (fun b => by
+        rw [Fin.first_pair a b]))]
+  rw [show (fun a : Fin X => Fin.sumRat (fun _ : Fin 1 => kron i a * kron a j))
+      = (fun a : Fin X => kron i a * kron a j) from
+      funext (fun a => Fin.sumRat_fin_one _)]
+  exact sumRat_kron_mul i (fun a : Fin X => kron a j)
+
 end FinStoch
 end MarkovCat
