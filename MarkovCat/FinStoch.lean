@@ -126,6 +126,13 @@ def Fin.sumRat : {n : Nat} → (Fin n → Rat) → Rat
 @[simp] theorem Fin.sumRat_succ {n : Nat} (f : Fin (n + 1) → Rat) :
     Fin.sumRat f = f 0 + Fin.sumRat (fun i => f i.succ) := rfl
 
+/-- Sum over a singleton index family: just the single element. -/
+@[simp] theorem Fin.sumRat_fin_one (f : Fin 1 → Rat) :
+    Fin.sumRat f = f 0 := by
+  show f 0 + Fin.sumRat (fun i : Fin 0 => f i.succ) = f 0
+  rw [Fin.sumRat_zero]
+  exact Rat.add_zero _
+
 /-- Sum of non-negative terms is non-negative. -/
 theorem Fin.sumRat_nonneg : {n : Nat} → {f : Fin n → Rat}
     → ((i : Fin n) → 0 ≤ f i) → 0 ≤ Fin.sumRat f
@@ -742,6 +749,70 @@ def tensorFunctor : (Nat × Nat) ⥤ Nat where
   map_id := fun mn => StochasticMatrix.kron_identity mn.1 mn.2
   map_comp := fun MN MN' =>
     StochasticMatrix.kron_comp MN.1 MN'.1 MN.2 MN'.2
+
+/-! ## Left and right unitors
+
+  The monoidal unit on FinStoch is the natural number `1`.  Because
+  `1 * X = X` and `X * 1 = X` only hold propositionally (not
+  definitionally), the unitors are non-trivial deterministic
+  stochastic matrices that re-index `Fin (1 * X)` (resp. `Fin (X * 1)`)
+  to `Fin X` via the pairing projections. -/
+
+/-- The left unitor `1 ⊗ X → X`, expressed as a stochastic matrix
+    `StochasticMatrix (1 * X) X`.
+
+    `Fin (1 * X)` is the set of pairs `(0, b)` with `b : Fin X`; this
+    matrix sends each input `i` to its second component
+    `Fin.second i : Fin X` and assigns mass `1` to the matching
+    column. -/
+def leftUnitor (X : Nat) : StochasticMatrix (1 * X) X where
+  entry i j := kron (Fin.second i) j
+  nonneg _ _ := kron_nonneg _ _
+  row_sum_one i := sumRat_kron_eq_one (Fin.second i)
+
+/-- The right unitor `X ⊗ 1 → X`, projecting onto the first component
+    of the pair `(a, 0) : Fin X × Fin 1` represented by
+    `i : Fin (X * 1)`. -/
+def rightUnitor (X : Nat) : StochasticMatrix (X * 1) X where
+  entry i j := kron (Fin.first i) j
+  nonneg _ _ := kron_nonneg _ _
+  row_sum_one i := sumRat_kron_eq_one (Fin.first i)
+
+/-- Inverse of the left unitor: embed `i : Fin X` into `Fin (1 * X)`
+    as the unique element with second component `i`. -/
+def leftUnitorInv (X : Nat) : StochasticMatrix X (1 * X) where
+  entry i j := kron i (Fin.second j)
+  nonneg _ _ := kron_nonneg _ _
+  row_sum_one i := by
+    show Fin.sumRat (fun j : Fin (1 * X) => kron i (Fin.second j)) = 1
+    rw [Fin.sumRat_unpair 1 X _]
+    rw [show (fun a : Fin 1 => Fin.sumRat (fun b : Fin X =>
+                                  kron i (Fin.second (Fin.pair a b))))
+        = (fun _ : Fin 1 => Fin.sumRat (fun b : Fin X => kron i b)) from
+        funext (fun a => Fin.sumRat_congr (fun b => by
+          rw [Fin.second_pair Nat.one_pos a b]))]
+    rw [show (fun _ : Fin 1 => Fin.sumRat (fun b : Fin X => kron i b))
+        = (fun _ : Fin 1 => (1 : Rat)) from
+        funext (fun _ => sumRat_kron_eq_one i)]
+    exact Fin.sumRat_fin_one (fun _ => 1)
+
+/-- Inverse of the right unitor: embed `i : Fin X` into `Fin (X * 1)`
+    as the unique element with first component `i`. -/
+def rightUnitorInv (X : Nat) : StochasticMatrix X (X * 1) where
+  entry i j := kron i (Fin.first j)
+  nonneg _ _ := kron_nonneg _ _
+  row_sum_one i := by
+    show Fin.sumRat (fun j : Fin (X * 1) => kron i (Fin.first j)) = 1
+    rw [Fin.sumRat_unpair X 1 _]
+    rw [show (fun a : Fin X => Fin.sumRat (fun b : Fin 1 =>
+                                  kron i (Fin.first (Fin.pair a b))))
+        = (fun a : Fin X => Fin.sumRat (fun _ : Fin 1 => kron i a)) from
+        funext (fun a => Fin.sumRat_congr (fun b => by
+          rw [Fin.first_pair a b]))]
+    rw [show (fun a : Fin X => Fin.sumRat (fun _ : Fin 1 => kron i a))
+        = (fun a : Fin X => kron i a) from
+        funext (fun a => Fin.sumRat_fin_one (fun _ => kron i a))]
+    exact sumRat_kron_eq_one i
 
 end FinStoch
 end MarkovCat
