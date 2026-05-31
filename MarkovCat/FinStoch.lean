@@ -1,4 +1,5 @@
 import CompCatTheory.Foundation.Category
+import CompCatTheory.Foundation.Product
 
 /-!
 # MarkovCat.FinStoch
@@ -24,6 +25,8 @@ Contents (built up across multiple commits):
 -/
 
 set_option autoImplicit false
+
+open CompCatTheory
 
 namespace MarkovCat
 namespace FinStoch
@@ -719,6 +722,26 @@ instance instCategoryNat : CompCatTheory.Category Nat where
   id_comp := StochasticMatrix.id_comp
   comp_id := StochasticMatrix.comp_id
   assoc := StochasticMatrix.assoc
+
+/-! ## Tensor product as a bifunctor -/
+
+/-- The Kronecker product assembled as a bifunctor
+    `(- ⊗ -) : Nat × Nat ⥤ Nat` on the FinStoch category.
+
+    - On objects: `(m, n) ↦ m * n`.
+    - On morphisms: `(M, N) ↦ M ⊗ N` (Kronecker product).
+
+    The functoriality obligations are exactly `kron_identity` and
+    `kron_comp` proved above.  This is the data that the eventual
+    `MonoidalCategory` instance consumes for its `tensor` field; the
+    associator, unitors, and pentagon/triangle coherences are built on
+    top of this. -/
+def tensorFunctor : (Nat × Nat) ⥤ Nat where
+  obj := fun mn => mn.1 * mn.2
+  map := fun MN => StochasticMatrix.kron MN.1 MN.2
+  map_id := fun mn => StochasticMatrix.kron_identity mn.1 mn.2
+  map_comp := fun MN MN' =>
+    StochasticMatrix.kron_comp MN.1 MN'.1 MN.2 MN'.2
 
 end FinStoch
 end MarkovCat
