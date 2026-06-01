@@ -1297,5 +1297,67 @@ theorem associator_eq_detMatrix (X Y Z : Nat) :
 theorem associatorInv_eq_detMatrix (X Y Z : Nat) :
     associatorInv X Y Z = detMatrix (@associatorInvFin X Y Z) := rfl
 
+/-- For `y : Fin (b * d)` with `0 < b`, the pair `(a, c)` equals `y`
+    iff its components match `y`'s projections. -/
+private theorem Fin.pair_eq_iff {b d : Nat} (hb : 0 < b)
+    (a : Fin b) (c : Fin d) (y : Fin (b * d)) :
+    Fin.pair a c = y ↔ a = Fin.first y ∧ c = Fin.second y := by
+  constructor
+  · intro h
+    refine ⟨?_, ?_⟩
+    · have := congrArg Fin.first h
+      rw [Fin.first_pair] at this
+      exact this
+    · have := congrArg Fin.second h
+      rw [Fin.second_pair hb] at this
+      exact this
+  · intro ⟨h1, h2⟩
+    rw [h1, h2]
+    exact Fin.pair_first_second y
+
+/-- Kronecker product of two deterministic kernels is the
+    deterministic kernel of the paired function. -/
+theorem kron_detMatrix {a b c d : Nat}
+    (φ : Fin a → Fin b) (ψ : Fin c → Fin d) :
+    StochasticMatrix.kron (detMatrix φ) (detMatrix ψ)
+    = detMatrix (fun x : Fin (a * c) =>
+        Fin.pair (φ (Fin.first x)) (ψ (Fin.second x))) := by
+  apply StochasticMatrix.ext
+  intro x y
+  show kron (φ (Fin.first x)) (Fin.first y)
+       * kron (ψ (Fin.second x)) (Fin.second y)
+     = kron (Fin.pair (φ (Fin.first x)) (ψ (Fin.second x))) y
+  have hbd : 0 < b * d := Nat.lt_of_le_of_lt (Nat.zero_le _) y.isLt
+  have hb : 0 < b := Nat.pos_of_mul_pos_right hbd
+  unfold kron
+  by_cases hPair : Fin.pair (φ (Fin.first x)) (ψ (Fin.second x)) = y
+  · have ⟨hF, hS⟩ := (Fin.pair_eq_iff hb _ _ y).mp hPair
+    rw [if_pos hF, if_pos hS, if_pos hPair, Rat.one_mul]
+  · rw [if_neg hPair]
+    by_cases hF : φ (Fin.first x) = Fin.first y
+    · have hS : ψ (Fin.second x) ≠ Fin.second y :=
+        fun h => hPair ((Fin.pair_eq_iff hb _ _ y).mpr ⟨hF, h⟩)
+      rw [if_pos hF, if_neg hS, Rat.mul_zero]
+    · rw [if_neg hF, Rat.zero_mul]
+
+/-- Pentagon coherence for the FinStoch associator. -/
+theorem pentagon_FinStoch (W X Y Z : Nat) :
+    (StochasticMatrix.kron (associator W X Y) (idMatrix Z)).comp
+        ((associator W (X*Y) Z).comp
+          (StochasticMatrix.kron (idMatrix W) (associator X Y Z)))
+    = (associator (W*X) Y Z).comp (associator W X (Y*Z)) := by
+  rw [associator_eq_detMatrix W X Y, idMatrix_eq_detMatrix Z, kron_detMatrix]
+  rw [associator_eq_detMatrix W (X*Y) Z]
+  rw [idMatrix_eq_detMatrix W, associator_eq_detMatrix X Y Z, kron_detMatrix]
+  rw [associator_eq_detMatrix (W*X) Y Z, associator_eq_detMatrix W X (Y*Z)]
+  rw [detMatrix_comp, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext x
+  apply Fin.ext
+  simp only [Fin.pair_val, Fin.first_val, Fin.second_val, associatorFin_val,
+             Nat.div_add_mod]
+  rw [← Nat.mul_assoc W X Y]
+  exact Nat.div_add_mod x.val ((W*X)*Y)
+
 end FinStoch
 end MarkovCat
