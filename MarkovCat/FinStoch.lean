@@ -1340,6 +1340,14 @@ theorem kron_detMatrix {a b c d : Nat}
       rw [if_pos hF, if_neg hS, Rat.mul_zero]
     · rw [if_neg hF, Rat.zero_mul]
 
+/-- `leftUnitor Y = detMatrix Fin.second` (with `Fin.second : Fin (1 * Y) → Fin Y`). -/
+theorem leftUnitor_eq_detMatrix (Y : Nat) :
+    leftUnitor Y = detMatrix (fun i : Fin (1 * Y) => Fin.second i) := rfl
+
+/-- `rightUnitor X = detMatrix Fin.first` (with `Fin.first : Fin (X * 1) → Fin X`). -/
+theorem rightUnitor_eq_detMatrix (X : Nat) :
+    rightUnitor X = detMatrix (fun i : Fin (X * 1) => Fin.first i) := rfl
+
 /-- Pentagon coherence for the FinStoch associator. -/
 theorem pentagon_FinStoch (W X Y Z : Nat) :
     (StochasticMatrix.kron (associator W X Y) (idMatrix Z)).comp
@@ -1358,6 +1366,31 @@ theorem pentagon_FinStoch (W X Y Z : Nat) :
              Nat.div_add_mod]
   rw [← Nat.mul_assoc W X Y]
   exact Nat.div_add_mod x.val ((W*X)*Y)
+
+/-- Helper Nat lemma for the triangle proof: closing the `X * 1` /
+    `X` discrepancy in the two sides without triggering the motive
+    problem with `i`'s type. -/
+private theorem Nat.triangle_aux (n X : Nat) :
+    X * (n / X) + n % X = X * (n / (X * 1)) + n % (X * 1) % X := by
+  rw [Nat.mul_one]
+  rw [Nat.mod_mod_of_dvd n (Nat.dvd_refl X)]
+
+/-- Triangle coherence for the FinStoch associator and unitors:
+    `α_{X, 1, Y} ≫ (id_X ⊗ leftUnitor Y) = rightUnitor X ⊗ id_Y`. -/
+theorem triangle_FinStoch (X Y : Nat) :
+    (associator X 1 Y).comp
+        (StochasticMatrix.kron (idMatrix X) (leftUnitor Y))
+    = StochasticMatrix.kron (rightUnitor X) (idMatrix Y) := by
+  rw [associator_eq_detMatrix X 1 Y]
+  rw [idMatrix_eq_detMatrix X, leftUnitor_eq_detMatrix Y, kron_detMatrix]
+  rw [rightUnitor_eq_detMatrix X, idMatrix_eq_detMatrix Y, kron_detMatrix]
+  rw [detMatrix_comp]
+  congr 1
+  funext i
+  apply Fin.ext
+  simp only [Fin.pair_val, Fin.first_val, Fin.second_val,
+             associatorFin_val, Nat.div_one]
+  exact Nat.triangle_aux i.val X
 
 end FinStoch
 end MarkovCat
