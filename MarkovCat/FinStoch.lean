@@ -1419,6 +1419,34 @@ def braiding (X Y : Nat) : StochasticMatrix (X * Y) (Y * X) :=
 theorem braiding_eq_detMatrix (X Y : Nat) :
     braiding X Y = detMatrix (@braidingFin X Y) := rfl
 
+/-- `Fin.first ∘ braidingFin = Fin.second`. -/
+theorem first_braidingFin {X Y : Nat} (i : Fin (X * Y)) :
+    Fin.first (braidingFin i) = Fin.second i :=
+  Fin.first_pair (Fin.second i) (Fin.first i)
+
+/-- `Fin.second ∘ braidingFin = Fin.first` (needs `0 < Y`). -/
+theorem second_braidingFin {X Y : Nat} (hY : 0 < Y) (i : Fin (X * Y)) :
+    Fin.second (braidingFin i) = Fin.first i :=
+  Fin.second_pair hY (Fin.second i) (Fin.first i)
+
+/-- `braidingFin` is an involution. -/
+theorem braidingFin_involution {X Y : Nat} (i : Fin (X * Y)) :
+    braidingFin (braidingFin i) = i := by
+  have hXY : 0 < X * Y := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hY : 0 < Y := Nat.pos_of_mul_pos_left hXY
+  unfold braidingFin
+  rw [Fin.first_pair, Fin.second_pair hY]
+  exact Fin.pair_first_second i
+
+/-- Braiding is self-inverse: `β_{X,Y} ≫ β_{Y,X} = 𝟙 (X ⊗ Y)`. -/
+theorem braiding_symmetry (X Y : Nat) :
+    (braiding X Y).comp (braiding Y X) = idMatrix (X * Y) := by
+  rw [braiding_eq_detMatrix X Y, braiding_eq_detMatrix Y X, detMatrix_comp]
+  rw [idMatrix_eq_detMatrix (X * Y)]
+  congr 1
+  funext i
+  exact braidingFin_involution i
+
 instance instMonoidalCategoryNat : CompCatTheory.MonoidalCategory Nat where
   tensor := tensorFunctor
   tensorUnit := 1
