@@ -1,5 +1,6 @@
 import CompCatTheory.Foundation.Category
 import CompCatTheory.Foundation.Product
+import CompCatTheory.Collapse.Monoidal
 
 /-!
 # MarkovCat.FinStoch
@@ -1391,6 +1392,34 @@ theorem triangle_FinStoch (X Y : Nat) :
   simp only [Fin.pair_val, Fin.first_val, Fin.second_val,
              associatorFin_val, Nat.div_one]
   exact Nat.triangle_aux i.val X
+
+/-! ## MonoidalCategory instance for FinStoch
+
+  All the data and laws assembled above package into a
+  `MonoidalCategory Nat` instance with FinStoch's structure:
+  tensor = Kronecker product, unit = 1, associator and unitors as
+  the val-preserving deterministic kernels. -/
+
+instance instMonoidalCategoryNat : CompCatTheory.MonoidalCategory Nat where
+  tensor := tensorFunctor
+  tensorUnit := 1
+  associator := associator
+  associatorInv := associatorInv
+  associator_hom_inv := associator_hom_inv
+  associator_inv_hom := associator_inv_hom
+  associator_naturality := associator_naturality
+  leftUnitor := leftUnitor
+  leftUnitorInv := leftUnitorInv
+  leftUnitor_hom_inv := leftUnitor_hom_inv
+  leftUnitor_inv_hom := leftUnitor_inv_hom
+  leftUnitor_naturality := leftUnitor_naturality
+  rightUnitor := rightUnitor
+  rightUnitorInv := rightUnitorInv
+  rightUnitor_hom_inv := rightUnitor_hom_inv
+  rightUnitor_inv_hom := rightUnitor_inv_hom
+  rightUnitor_naturality := rightUnitor_naturality
+  pentagon := pentagon_FinStoch
+  triangle := triangle_FinStoch
 
 end FinStoch
 end MarkovCat
