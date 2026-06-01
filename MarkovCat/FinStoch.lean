@@ -1,6 +1,7 @@
 import CompCatTheory.Foundation.Category
 import CompCatTheory.Foundation.Product
 import CompCatTheory.Collapse.Monoidal
+import CompCatTheory.Collapse.SymmetricMonoidal
 
 /-!
 # MarkovCat.FinStoch
@@ -1399,6 +1400,24 @@ theorem triangle_FinStoch (X Y : Nat) :
   `MonoidalCategory Nat` instance with FinStoch's structure:
   tensor = Kronecker product, unit = 1, associator and unitors as
   the val-preserving deterministic kernels. -/
+
+/-! ## Braiding
+
+  The braiding `X ⊗ Y → Y ⊗ X` is the deterministic kernel induced
+  by the swap function on pair indices. -/
+
+/-- Swap function: `Fin (X * Y) → Fin (Y * X)` sending the pair `(a, b)`
+    to the pair `(b, a)`. -/
+def braidingFin {X Y : Nat} (i : Fin (X * Y)) : Fin (Y * X) :=
+  Fin.pair (Fin.second i) (Fin.first i)
+
+/-- The braiding as a stochastic matrix. -/
+def braiding (X Y : Nat) : StochasticMatrix (X * Y) (Y * X) :=
+  detMatrix braidingFin
+
+/-- `braiding X Y = detMatrix braidingFin`. -/
+theorem braiding_eq_detMatrix (X Y : Nat) :
+    braiding X Y = detMatrix (@braidingFin X Y) := rfl
 
 instance instMonoidalCategoryNat : CompCatTheory.MonoidalCategory Nat where
   tensor := tensorFunctor
