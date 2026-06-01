@@ -1253,5 +1253,49 @@ theorem associator_naturality {X Y Z X' Y' Z' : Nat}
       second_second_associatorFin]
   exact Rat.mul_assoc _ _ _
 
+/-! ## Deterministic kernels
+
+  Every val-preserving reindexing on FinStoch (the identity, the
+  associator, the unitors) is a "deterministic kernel": its entry
+  at `(i, j)` is the Kronecker delta on `(φ i, j)` for some
+  underlying function `φ : Fin m → Fin n`.  Compositions and
+  Kronecker products of deterministic kernels are again
+  deterministic kernels, which collapses pentagon and triangle
+  coherence to underlying-function equalities. -/
+
+/-- The deterministic stochastic kernel induced by a function
+    `φ : Fin m → Fin n`: send each row `i` to the unique column
+    `φ i` with mass `1`. -/
+def detMatrix {m n : Nat} (φ : Fin m → Fin n) : StochasticMatrix m n where
+  entry i j := kron (φ i) j
+  nonneg i j := kron_nonneg (φ i) j
+  row_sum_one i := sumRat_kron_eq_one (φ i)
+
+@[simp] theorem detMatrix_entry {m n : Nat} (φ : Fin m → Fin n)
+    (i : Fin m) (j : Fin n) :
+    (detMatrix φ).entry i j = kron (φ i) j := rfl
+
+/-- Composition of deterministic kernels is the kernel of the
+    composed function: `detMatrix φ ≫ detMatrix ψ = detMatrix (ψ ∘ φ)`. -/
+theorem detMatrix_comp {m n p : Nat}
+    (φ : Fin m → Fin n) (ψ : Fin n → Fin p) :
+    (detMatrix φ).comp (detMatrix ψ) = detMatrix (fun i => ψ (φ i)) := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin n => kron (φ i) k * kron (ψ k) j) = kron (ψ (φ i)) j
+  exact sumRat_kron_mul (φ i) (fun k : Fin n => kron (ψ k) j)
+
+/-- `idMatrix n = detMatrix id`: the identity kernel sends `i` to itself. -/
+theorem idMatrix_eq_detMatrix (n : Nat) :
+    idMatrix n = detMatrix (fun i : Fin n => i) := rfl
+
+/-- `associator X Y Z = detMatrix associatorFin`. -/
+theorem associator_eq_detMatrix (X Y Z : Nat) :
+    associator X Y Z = detMatrix (@associatorFin X Y Z) := rfl
+
+/-- `associatorInv X Y Z = detMatrix associatorInvFin`. -/
+theorem associatorInv_eq_detMatrix (X Y Z : Nat) :
+    associatorInv X Y Z = detMatrix (@associatorInvFin X Y Z) := rfl
+
 end FinStoch
 end MarkovCat
