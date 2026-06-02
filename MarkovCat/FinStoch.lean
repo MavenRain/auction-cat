@@ -1506,6 +1506,29 @@ theorem braiding_naturality {X Y X' Y' : Nat}
   -- Goal: f * g = g * f (Rat).
   exact Rat.mul_comm _ _
 
+/-- `braidingFin` pushed past `pair`. -/
+theorem braidingFin_pair {X Y : Nat} (a : Fin X) (b : Fin Y) :
+    braidingFin (Fin.pair a b) = Fin.pair b a := by
+  have hX : 0 < X := Nat.lt_of_le_of_lt (Nat.zero_le _) a.isLt
+  unfold braidingFin
+  rw [Fin.first_pair, Fin.second_pair hX]
+
+/-- `associatorFin i = pair (Fin.first (Fin.first i))
+                            (pair (Fin.second (Fin.first i)) (Fin.second i))`.
+    Decomposition of `associatorFin` via the triple `(a, b, c)` extracted
+    from `i`. -/
+theorem associatorFin_eq_pair {X Y Z : Nat} (i : Fin ((X * Y) * Z)) :
+    associatorFin i
+    = Fin.pair (Fin.first (Fin.first i))
+               (Fin.pair (Fin.second (Fin.first i)) (Fin.second i)) := by
+  have h : i = Fin.pair
+              (Fin.pair (Fin.first (Fin.first i)) (Fin.second (Fin.first i)))
+              (Fin.second i) := by
+    rw [Fin.pair_first_second (Fin.first i)]
+    exact (Fin.pair_first_second i).symm
+  conv => lhs; rw [h]
+  exact associatorFin_pair _ _ _
+
 instance instMonoidalCategoryNat : CompCatTheory.MonoidalCategory Nat where
   tensor := tensorFunctor
   tensorUnit := 1
