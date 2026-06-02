@@ -1580,5 +1580,43 @@ instance instMonoidalCategoryNat : CompCatTheory.MonoidalCategory Nat where
   pentagon := pentagon_FinStoch
   triangle := triangle_FinStoch
 
+/-! ## SymmetricMonoidalCategory instance for FinStoch -/
+
+instance instSymmetricMonoidalCategoryNat :
+    CompCatTheory.SymmetricMonoidalCategory Nat where
+  braiding := braiding
+  braiding_symmetry := braiding_symmetry
+  braiding_naturality := braiding_naturality
+  hexagon := hexagon_FinStoch
+
+/-! ## Markov category structure
+
+  The copy and discard kernels make FinStoch a Markov category:
+
+  - `copy X : X → X ⊗ X` duplicates a state.
+  - `discard X : X → 𝟙_⊗` forgets a state.
+
+  These are deterministic kernels: copy sends `i` to the diagonal
+  `(i, i)`, discard sends every `i` to the unique element of `Fin 1`. -/
+
+/-- The diagonal embedding `Fin X → Fin (X * X)`, `i ↦ (i, i)`. -/
+def copyFin {X : Nat} (i : Fin X) : Fin (X * X) := Fin.pair i i
+
+/-- The copy kernel as a stochastic matrix. -/
+def copy (X : Nat) : StochasticMatrix X (X * X) := detMatrix copyFin
+
+theorem copy_eq_detMatrix (X : Nat) :
+    copy X = detMatrix (@copyFin X) := rfl
+
+/-- The projection `Fin X → Fin 1`, sending every `i` to the unique
+    element of `Fin 1`. -/
+def discardFin {X : Nat} (_ : Fin X) : Fin 1 := ⟨0, Nat.one_pos⟩
+
+/-- The discard kernel as a stochastic matrix. -/
+def discard (X : Nat) : StochasticMatrix X 1 := detMatrix discardFin
+
+theorem discard_eq_detMatrix (X : Nat) :
+    discard X = detMatrix (@discardFin X) := rfl
+
 end FinStoch
 end MarkovCat
