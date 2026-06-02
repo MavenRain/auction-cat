@@ -1,5 +1,4 @@
-import MarkovCat
-import CompCatTheory.Collapse.Optic
+import OpenGamesCat.Basic
 
 /-!
 # OpenGamesCat
@@ -7,15 +6,15 @@ import CompCatTheory.Collapse.Optic
 Bayesian open games as morphisms in a Markov category, following
 Bolt-Hedges-Zahn (Compositionality 2023).
 
-Contents (planned for v0.2):
+Contents:
 
-- `OpenGame` (Bayesian open game = optic in MarkovCat)
-- `Equilibrium` (best-response fixpoint predicate)
-- Monoidal product (simultaneous play)
-- Sequential composition
+- `OpenGamesCat.Basic` (`OpenGame` = optic in MarkovCat,
+  identity and sequential composition).
 
-Currently a placeholder; built on top of `MarkovCat` and
-`CompCatTheory.Collapse.Optic`.
+Planned:
+
+- Monoidal product (simultaneous play).
+- Equilibrium relation (best-response fixpoint).
 -/
 
 set_option autoImplicit false
