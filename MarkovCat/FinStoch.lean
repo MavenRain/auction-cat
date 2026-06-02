@@ -1529,6 +1529,36 @@ theorem associatorFin_eq_pair {X Y Z : Nat} (i : Fin ((X * Y) * Z)) :
   conv => lhs; rw [h]
   exact associatorFin_pair _ _ _
 
+/-- Hexagon coherence for FinStoch. -/
+theorem hexagon_FinStoch (X Y Z : Nat) :
+    (associator X Y Z).comp
+        ((braiding X (Y * Z)).comp (associator Y Z X))
+    = (StochasticMatrix.kron (braiding X Y) (idMatrix Z)).comp
+        ((associator Y X Z).comp
+          (StochasticMatrix.kron (idMatrix Y) (braiding X Z))) := by
+  rw [associator_eq_detMatrix X Y Z]
+  rw [braiding_eq_detMatrix X (Y * Z)]
+  rw [associator_eq_detMatrix Y Z X]
+  rw [braiding_eq_detMatrix X Y, idMatrix_eq_detMatrix Z, kron_detMatrix]
+  rw [associator_eq_detMatrix Y X Z]
+  rw [idMatrix_eq_detMatrix Y, braiding_eq_detMatrix X Z, kron_detMatrix]
+  rw [detMatrix_comp, detMatrix_comp, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext i
+  have hXYZ : 0 < (X * Y) * Z := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hXY : 0 < X * Y := Nat.pos_of_mul_pos_right hXYZ
+  have hX : 0 < X := Nat.pos_of_mul_pos_right hXY
+  have hY : 0 < Y := Nat.pos_of_mul_pos_left hXY
+  -- LHS reduction: assoc (braiding (assoc i)) → pair b (pair c a).
+  rw [associatorFin_eq_pair i, braidingFin_pair, associatorFin_pair]
+  -- For RHS, unfold braidingFin so pair-pushing matches.
+  unfold braidingFin
+  -- RHS reduction:
+  --   assoc (pair (pair b a) c) → pair b (pair a c)
+  --   first/second/first/second peeling closes the goal.
+  rw [associatorFin_pair, Fin.first_pair, Fin.second_pair hY,
+      Fin.first_pair, Fin.second_pair hX]
+
 instance instMonoidalCategoryNat : CompCatTheory.MonoidalCategory Nat where
   tensor := tensorFunctor
   tensorUnit := 1
