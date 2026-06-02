@@ -1447,6 +1447,65 @@ theorem braiding_symmetry (X Y : Nat) :
   funext i
   exact braidingFin_involution i
 
+/-- Flip a Kronecker delta past a braiding reindexing. -/
+private theorem kron_braidingFin {X Y : Nat}
+    (k : Fin (X * Y)) (j : Fin (Y * X)) :
+    kron (braidingFin k) j = kron k (braidingFin j) := by
+  have h : braidingFin k = j ↔ k = braidingFin j := by
+    constructor
+    · intro hkj
+      have := congrArg braidingFin hkj
+      rw [braidingFin_involution] at this
+      exact this
+    · intro hkj
+      have := congrArg braidingFin hkj
+      rw [braidingFin_involution] at this
+      exact this
+  unfold kron
+  by_cases hEq : braidingFin k = j
+  · rw [if_pos hEq, if_pos (h.mp hEq)]
+  · rw [if_neg hEq, if_neg (fun hk => hEq (h.mpr hk))]
+
+/-- Braiding naturality:
+    `(f ⊗ g) ≫ β_{X',Y'} = β_{X,Y} ≫ (g ⊗ f)`. -/
+theorem braiding_naturality {X Y X' Y' : Nat}
+    (f : StochasticMatrix X X') (g : StochasticMatrix Y Y') :
+    (StochasticMatrix.kron f g).comp (braiding X' Y')
+    = (braiding X Y).comp (StochasticMatrix.kron g f) := by
+  apply StochasticMatrix.ext
+  intro i j
+  have hXY : 0 < X * Y := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hY : 0 < Y := Nat.pos_of_mul_pos_left hXY
+  have hYX' : 0 < Y' * X' := Nat.lt_of_le_of_lt (Nat.zero_le _) j.isLt
+  have hX' : 0 < X' := Nat.pos_of_mul_pos_left hYX'
+  show Fin.sumRat (fun k : Fin (X' * Y') =>
+        (f.entry (Fin.first i) (Fin.first k) * g.entry (Fin.second i) (Fin.second k))
+        * kron (braidingFin k) j)
+     = Fin.sumRat (fun k : Fin (Y * X) =>
+        kron (braidingFin i) k
+        * (g.entry (Fin.first k) (Fin.first j) * f.entry (Fin.second k) (Fin.second j)))
+  -- Flip LHS kron via kron_braidingFin.
+  rw [show (fun k : Fin (X' * Y') =>
+        (f.entry (Fin.first i) (Fin.first k) * g.entry (Fin.second i) (Fin.second k))
+        * kron (braidingFin k) j)
+      = (fun k : Fin (X' * Y') =>
+        (f.entry (Fin.first i) (Fin.first k) * g.entry (Fin.second i) (Fin.second k))
+        * kron k (braidingFin j)) from
+      funext (fun k => by rw [kron_braidingFin k j])]
+  -- Pick the unique k on LHS via sumRat_mul_kron.
+  rw [sumRat_mul_kron (braidingFin j)
+      (fun k : Fin (X' * Y') =>
+        f.entry (Fin.first i) (Fin.first k) * g.entry (Fin.second i) (Fin.second k))]
+  -- Pick the unique k on RHS via sumRat_kron_mul.
+  rw [sumRat_kron_mul (braidingFin i)
+      (fun k : Fin (Y * X) =>
+        g.entry (Fin.first k) (Fin.first j) * f.entry (Fin.second k) (Fin.second j))]
+  -- Push projections.
+  rw [first_braidingFin, second_braidingFin hX',
+      first_braidingFin, second_braidingFin hY]
+  -- Goal: f * g = g * f (Rat).
+  exact Rat.mul_comm _ _
+
 instance instMonoidalCategoryNat : CompCatTheory.MonoidalCategory Nat where
   tensor := tensorFunctor
   tensorUnit := 1
