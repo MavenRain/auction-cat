@@ -1618,5 +1618,78 @@ def discard (X : Nat) : StochasticMatrix X 1 := detMatrix discardFin
 theorem discard_eq_detMatrix (X : Nat) :
     discard X = detMatrix (@discardFin X) := rfl
 
+/-- Discard naturality: every morphism preserves discard. -/
+theorem discard_natural {X Y : Nat} (f : StochasticMatrix X Y) :
+    f.comp (discard Y) = discard X := by
+  apply StochasticMatrix.ext
+  intro i j
+  show Fin.sumRat (fun k : Fin Y => f.entry i k * kron ⟨0, Nat.one_pos⟩ j)
+     = kron ⟨0, Nat.one_pos⟩ j
+  have hj : j = ⟨0, Nat.one_pos⟩ := by
+    apply Fin.ext
+    have := j.isLt
+    omega
+  rw [hj, kron_self ⟨0, Nat.one_pos⟩]
+  rw [show (fun k : Fin Y => f.entry i k * 1) = (fun k => f.entry i k) from
+      funext (fun k => Rat.mul_one _)]
+  exact f.row_sum_one i
+
+/-- Cocommutativity of copy: `copy X ≫ braiding X X = copy X`. -/
+theorem copy_cocomm (X : Nat) :
+    (copy X).comp (braiding X X) = copy X := by
+  rw [copy_eq_detMatrix X, braiding_eq_detMatrix X X, detMatrix_comp]
+  congr 1
+  funext i
+  show braidingFin (copyFin i) = copyFin i
+  unfold copyFin
+  exact braidingFin_pair i i
+
+/-- Left counit: `copy X ≫ (discard X ⊗ id_X) ≫ leftUnitor X = id_X`. -/
+theorem copy_counit_left (X : Nat) :
+    (copy X).comp
+        ((StochasticMatrix.kron (discard X) (idMatrix X)).comp (leftUnitor X))
+    = idMatrix X := by
+  rw [copy_eq_detMatrix X, discard_eq_detMatrix X, idMatrix_eq_detMatrix X,
+      kron_detMatrix]
+  rw [leftUnitor_eq_detMatrix X, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext i
+  have hX : 0 < X := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  show Fin.second (Fin.pair (discardFin (Fin.first (copyFin i)))
+                            (Fin.second (copyFin i))) = i
+  unfold copyFin discardFin
+  rw [Fin.second_pair hX, Fin.second_pair Nat.one_pos]
+
+/-- Right counit: `copy X ≫ (id_X ⊗ discard X) ≫ rightUnitor X = id_X`. -/
+theorem copy_counit_right (X : Nat) :
+    (copy X).comp
+        ((StochasticMatrix.kron (idMatrix X) (discard X)).comp (rightUnitor X))
+    = idMatrix X := by
+  rw [copy_eq_detMatrix X, discard_eq_detMatrix X, idMatrix_eq_detMatrix X,
+      kron_detMatrix]
+  rw [rightUnitor_eq_detMatrix X, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext i
+  show Fin.first (Fin.pair (Fin.first (copyFin i))
+                           (discardFin (Fin.second (copyFin i)))) = i
+  unfold copyFin discardFin
+  rw [Fin.first_pair, Fin.first_pair]
+
+/-- Coassociativity of copy. -/
+theorem copy_coassoc (X : Nat) :
+    (copy X).comp (StochasticMatrix.kron (idMatrix X) (copy X))
+    = (copy X).comp
+        ((StochasticMatrix.kron (copy X) (idMatrix X)).comp (associator X X X)) := by
+  rw [copy_eq_detMatrix X, idMatrix_eq_detMatrix X, kron_detMatrix]
+  rw [kron_detMatrix]
+  rw [associator_eq_detMatrix X X X]
+  rw [detMatrix_comp, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext i
+  have hX : 0 < X := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  unfold copyFin
+  rw [Fin.first_pair, Fin.second_pair hX]
+  rw [associatorFin_pair]
+
 end FinStoch
 end MarkovCat

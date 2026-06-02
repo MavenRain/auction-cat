@@ -78,4 +78,20 @@ class MarkovCategory (C : Type u)
   discard_natural {X Y : C} (f : Hom X Y) :
     f ≫ discard Y = discard X
 
+/-! ## MarkovCategory instance for FinStoch
+
+  Assembles the copy/discard data and the five Markov-category laws
+  (defined in `MarkovCat.FinStoch`) into a `MarkovCategory Nat`
+  instance, layered on top of the Category, MonoidalCategory, and
+  SymmetricMonoidalCategory instances also in `MarkovCat.FinStoch`. -/
+
+instance instMarkovCategoryNat : MarkovCategory Nat where
+  copy := FinStoch.copy
+  discard := FinStoch.discard
+  copy_coassoc := FinStoch.copy_coassoc
+  copy_counit_left := FinStoch.copy_counit_left
+  copy_counit_right := FinStoch.copy_counit_right
+  copy_cocomm := FinStoch.copy_cocomm
+  discard_natural := FinStoch.discard_natural
+
 end MarkovCat
