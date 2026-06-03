@@ -27,6 +27,7 @@ set_option autoImplicit false
 
 open CompCatTheory
 open Category Functor MonoidalCategory
+open MarkovCat.FinStoch
 
 namespace AuctionCat
 
@@ -53,5 +54,34 @@ def make {V U B A : C}
   update := utility
 
 end Bidder
+
+/-! ## Concrete bidders over FinStoch -/
+
+/-- The utility function for a "truthful" bidder over `Fin n`
+    valuations and a `Fin (2 * n)` per-bidder outcome
+    (allocation × price).
+
+    Utility = (valuation - price) if won, else 0.  Uses Nat
+    truncated subtraction, capped within `Fin n`. -/
+def truthfulUtilityFn (n : Nat) (x : Fin (n * (2 * n))) : Fin n :=
+  let hn2n : 0 < n * (2 * n) :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) x.isLt
+  let hn : 0 < n := Nat.pos_of_mul_pos_right hn2n
+  let v := Fin.first x
+  let outcome := Fin.second x
+  let a := Fin.first outcome
+  let p := Fin.second outcome
+  if a.val = 1 then
+    ⟨v.val - p.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, hn⟩
+
+/-- A truthful bidder over `Fin n` valuations: bid your valuation.
+
+    Strategy is `copy n : Fin n → Fin (n * n)` (the diagonal map
+    in `FinStoch`), so the bid equals the valuation.  Utility uses
+    `truthfulUtilityFn`. -/
+def truthfulBidder (n : Nat) : Bidder n n n (2 * n) :=
+  Bidder.make (copy n) (detMatrix (truthfulUtilityFn n))
 
 end AuctionCat

@@ -1,6 +1,7 @@
 import AuctionCat.Bidder
 import AuctionCat.Mechanism
 import AuctionCat.FirstPrice
+import AuctionCat.SecondPrice
 
 /-!
 # AuctionCat
