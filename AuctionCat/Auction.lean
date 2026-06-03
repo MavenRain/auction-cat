@@ -56,4 +56,20 @@ def spsbAuction (n : Nat) :
     StochasticMatrix (tensorObj n n) (tensorObj n n) :=
   auctionScore n (secondPriceSealedBid n)
 
+/-! ## Mechanism + paired bidding strategy
+
+  Composes a deterministic strategy for each of the two bidders with
+  a mechanism, giving the joint-valuation-to-joint-outcome kernel
+  for the resulting open game when those strategies are used. -/
+
+/-- Compose paired deterministic strategies `bid1`, `bid2` with a
+    mechanism `mech` to obtain a joint-valuation-to-joint-outcome
+    kernel.  Joint valuations enter, each bidder transforms their
+    valuation through their strategy, the resulting joint bids feed
+    into the mechanism, and joint outcomes come out. -/
+def biddedMechanism (n : Nat) (bid1 bid2 : Fin n → Fin n)
+    (mech : StochasticMatrix (n * n) ((2 * n) * (2 * n))) :
+    StochasticMatrix (n * n) ((2 * n) * (2 * n)) :=
+  (StochasticMatrix.kron (detMatrix bid1) (detMatrix bid2)).comp mech
+
 end AuctionCat

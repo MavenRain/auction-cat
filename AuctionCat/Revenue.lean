@@ -148,4 +148,8 @@ theorem IsRevenueEquivalent.trans' {n : Nat}
     IsRevenueEquivalent n M1 M3 prior :=
   h12.trans h23
 
+/-- The uniform prior over joint valuations `Fin (n * n)`. -/
+def uniformPrior (n : Nat) : Fin (n * n) → Rat :=
+  fun _ => 1 / ((n * n : Nat) : Rat)
+
 end AuctionCat
