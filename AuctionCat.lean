@@ -2,6 +2,9 @@ import AuctionCat.Bidder
 import AuctionCat.Mechanism
 import AuctionCat.FirstPrice
 import AuctionCat.SecondPrice
+import AuctionCat.Dutch
+import AuctionCat.English
+import AuctionCat.Reserve
 import AuctionCat.Auction
 
 /-!
