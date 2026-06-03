@@ -84,4 +84,39 @@ def truthfulUtilityFn (n : Nat) (x : Fin (n * (2 * n))) : Fin n :=
 def truthfulBidder (n : Nat) : Bidder n n n (2 * n) :=
   Bidder.make (copy n) (detMatrix (truthfulUtilityFn n))
 
+/-- A deterministic bidder over `Fin n` valuations using an arbitrary
+    bidding strategy `bid : Fin n → Fin n`.
+
+    The view forwards the true valuation `v` as internal state and
+    submits `bid v` as the bid.  The utility is computed using the
+    true valuation (not the submitted bid), so the bidder's payoff
+    reflects their real preferences regardless of the strategy
+    chosen.  This lets us express deviator strategies (over- or
+    under-bidding) and equilibrium strategies (e.g., half-shading
+    in first-price symmetric IPV). -/
+def deviatorBidder (n : Nat) (bid : Fin n → Fin n) :
+    Bidder n n n (2 * n) :=
+  Bidder.make
+    (detMatrix (fun v : Fin n => Fin.pair v (bid v)))
+    (detMatrix (truthfulUtilityFn n))
+
+/-- The truthful bidder is the deviator-bidder with the identity
+    bidding strategy. -/
+theorem truthfulBidder_eq_deviator_id (n : Nat) :
+    truthfulBidder n = deviatorBidder n (fun v => v) := rfl
+
+/-- The half-shading bidding strategy: bid half your valuation.
+
+    Under symmetric uniform IPV with two bidders, this is the
+    Bayes-Nash equilibrium strategy for first-price-sealed-bid in
+    the continuous-valuation limit; the discrete-Fin version is
+    bound by truncated integer division. -/
+def halfShading (n : Nat) (v : Fin n) : Fin n :=
+  ⟨v.val / 2, by have := v.isLt; omega⟩
+
+/-- The half-shading bidder: a deviator bidder with `halfShading`
+    as the bidding strategy. -/
+def halfShadeBidder (n : Nat) : Bidder n n n (2 * n) :=
+  deviatorBidder n (halfShading n)
+
 end AuctionCat
