@@ -6,6 +6,7 @@ import AuctionCat.Dutch
 import AuctionCat.English
 import AuctionCat.Reserve
 import AuctionCat.Auction
+import AuctionCat.Revenue
 
 /-!
 # AuctionCat
