@@ -41,11 +41,10 @@ def fpsbFn (n : Nat) (i : Fin (n * n)) : Fin ((2 * n) * (2 * n)) :=
   let hn  : 0 < n     := Nat.pos_of_mul_pos_left hnn
   let b1  := Fin.first i
   let b2  := Fin.second i
-  let winner1 : Bool := b1.val ≥ b2.val
-  let a1 : Fin 2 := if winner1 then ⟨1, by decide⟩ else ⟨0, by decide⟩
-  let a2 : Fin 2 := if winner1 then ⟨0, by decide⟩ else ⟨1, by decide⟩
-  let p1 : Fin n := if winner1 then b1 else ⟨0, hn⟩
-  let p2 : Fin n := if winner1 then ⟨0, hn⟩ else b2
+  let a1 : Fin 2 := if b1.val ≥ b2.val then ⟨1, by decide⟩ else ⟨0, by decide⟩
+  let a2 : Fin 2 := if b1.val ≥ b2.val then ⟨0, by decide⟩ else ⟨1, by decide⟩
+  let p1 : Fin n := if b1.val ≥ b2.val then b1 else ⟨0, hn⟩
+  let p2 : Fin n := if b1.val ≥ b2.val then ⟨0, hn⟩ else b2
   Fin.pair (Fin.pair a1 p1) (Fin.pair a2 p2)
 
 /-- The first-price sealed-bid mechanism over `FinStoch` for two

@@ -74,4 +74,27 @@ def expectedRevenue (n : Nat)
     * Fin.sumRat (fun o : Fin ((2 * n) * (2 * n)) =>
         M.entry v o * (outcomeRevenue n o : Nat).cast))
 
+/-! ## Pointwise revenue comparison
+
+  For truthful bidding (joint bid = joint valuation), first-price
+  extracts the highest bid as revenue, while second-price extracts
+  the lowest.  Hence at every outcome, the first-price revenue is
+  weakly greater than the second-price revenue. -/
+
+/-- Pointwise revenue comparison: first-price ≥ second-price at every
+    joint-bid input.  Specialised to the truthful case via the
+    auction assembly (truthful bidders submit valuations as bids). -/
+theorem fpsb_revenue_ge_spsb (n : Nat) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbFn n i) ≥ outcomeRevenue n (spsbFn n i) := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue fpsbFn spsbFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hb : i.val / n ≤ i.val % n
+  · simp [hb]
+  · simp [hb]; omega
+
 end AuctionCat
