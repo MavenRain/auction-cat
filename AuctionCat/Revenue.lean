@@ -97,4 +97,55 @@ theorem fpsb_revenue_ge_spsb (n : Nat) (i : Fin (n * n)) :
   · simp [hb]
   · simp [hb]; omega
 
+/-! ## Revenue equivalence as a relation
+
+  The canonical statement of Myerson's Revenue Equivalence Theorem
+  (RET) is that, in the IPV setting with risk-neutral bidders playing
+  symmetric Bayes-Nash equilibrium, all auction formats that
+  allocate to the highest-valuation bidder and give zero expected
+  surplus to the lowest type yield the same expected revenue.
+
+  We record the relation `IsRevenueEquivalent` here as a `Prop`
+  comparing two mechanisms' expected revenues under a common prior,
+  and prove it is an equivalence relation.  The canonical RET — that
+  fpsb under equilibrium shading and spsb under truthful bidding are
+  related by this relation for any symmetric IPV prior — is left as a
+  named target for the future once the envelope-theorem layer
+  arrives. -/
+
+/-- Two mechanisms are *revenue equivalent under `prior`* iff their
+    expected revenues agree.
+
+    This is a pointwise statement at the level of expected revenues;
+    the canonical RET ties this to equilibrium-strategy-adjusted
+    versions of the four standard auction formats. -/
+def IsRevenueEquivalent (n : Nat)
+    (M1 M2 : StochasticMatrix (n * n) ((2 * n) * (2 * n)))
+    (prior : Fin (n * n) → Rat) : Prop :=
+  expectedRevenue n M1 prior = expectedRevenue n M2 prior
+
+/-- Reflexivity: every mechanism is revenue equivalent to itself. -/
+theorem IsRevenueEquivalent.refl' {n : Nat}
+    (M : StochasticMatrix (n * n) ((2 * n) * (2 * n)))
+    (prior : Fin (n * n) → Rat) :
+    IsRevenueEquivalent n M M prior :=
+  Eq.refl _
+
+/-- Symmetry of the relation. -/
+theorem IsRevenueEquivalent.symm' {n : Nat}
+    {M1 M2 : StochasticMatrix (n * n) ((2 * n) * (2 * n))}
+    {prior : Fin (n * n) → Rat}
+    (h : IsRevenueEquivalent n M1 M2 prior) :
+    IsRevenueEquivalent n M2 M1 prior :=
+  h.symm
+
+/-- Transitivity of the relation. -/
+theorem IsRevenueEquivalent.trans' {n : Nat}
+    {M1 M2 M3 : StochasticMatrix (n * n) ((2 * n) * (2 * n))}
+    {prior : Fin (n * n) → Rat}
+    (h12 : IsRevenueEquivalent n M1 M2 prior)
+    (h23 : IsRevenueEquivalent n M2 M3 prior) :
+    IsRevenueEquivalent n M1 M3 prior :=
+  h12.trans h23
+
 end AuctionCat
