@@ -58,6 +58,16 @@ def comp {X S Y R Z Q : C}
 
 scoped infixr:80 " ≫ₒ " => OpenGame.comp
 
+/-- Close an open game under a continuation `k : Y → R`, yielding
+    the score morphism `X → S`.
+
+    Concretely: feed the forward channel through the continuation
+    on its `Y`-side, then run the backward channel.  The result is a
+    morphism in the underlying category from the input to the
+    backward output. -/
+def score {X S Y R : C} (f : OpenGame X S Y R) (k : Hom Y R) : Hom X S :=
+  f.view ≫ tensorHom (𝟙 f.M) k ≫ f.update
+
 end OpenGame
 
 /-! ## Middle interchange
