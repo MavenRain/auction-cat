@@ -5,7 +5,9 @@ import AuctionCat.FirstPrice3
 import AuctionCat.SecondPrice
 import AuctionCat.SecondPrice3
 import AuctionCat.Dutch
+import AuctionCat.Dutch3
 import AuctionCat.English
+import AuctionCat.English3
 import AuctionCat.Reserve
 import AuctionCat.Auction
 import AuctionCat.Revenue
