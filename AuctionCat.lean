@@ -10,6 +10,7 @@ import AuctionCat.Auction
 import AuctionCat.Revenue
 import AuctionCat.Examples
 import AuctionCat.BayesNash
+import AuctionCat.Envelope
 
 /-!
 # AuctionCat
