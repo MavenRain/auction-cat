@@ -123,4 +123,22 @@ private theorem Fin.sumRat_count_lt : ∀ (n k : Nat), k ≤ n →
     rw [Fin.sumRat_count_lt n k hk]
     exact Rat.add_comm _ _
 
+/-- `Fin.sumRat` of a negated family is the negation of the sum. -/
+private theorem Fin.sumRat_neg : {n : Nat} → (f : Fin n → Rat) →
+    Fin.sumRat (fun i => -(f i)) = -(Fin.sumRat f)
+  | 0, _ => by
+    rw [Fin.sumRat_zero, Fin.sumRat_zero]; rfl
+  | k+1, f => by
+    rw [Fin.sumRat_succ, Fin.sumRat_succ]
+    rw [Fin.sumRat_neg (fun i => f i.succ)]
+    rw [Rat.neg_add]
+
+/-- `Fin.sumRat` distributes over Rat subtraction. -/
+private theorem Fin.sumRat_sub {n : Nat} (f g : Fin n → Rat) :
+    Fin.sumRat (fun i => f i - g i) = Fin.sumRat f - Fin.sumRat g := by
+  rw [show (fun i => f i - g i) = (fun i => f i + (-(g i))) from
+      funext (fun i => Rat.sub_eq_add_neg _ _)]
+  rw [Fin.sumRat_add, Fin.sumRat_neg]
+  exact (Rat.sub_eq_add_neg _ _).symm
+
 end AuctionCat
