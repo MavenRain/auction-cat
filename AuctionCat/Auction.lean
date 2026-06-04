@@ -72,4 +72,21 @@ def biddedMechanism (n : Nat) (bid1 bid2 : Fin n → Fin n)
     StochasticMatrix (n * n) ((2 * n) * (2 * n)) :=
   (StochasticMatrix.kron (detMatrix bid1) (detMatrix bid2)).comp mech
 
+/-! ## Generic n-bidder open game
+
+  Using `OpenGame.iterKron`, we can combine an arbitrary number of
+  truthful bidders into a single open game.  The result's types
+  involve iterated tensor products `tensorPowObj` rather than the
+  hard-coded `tensorObj n n`, so it's polymorphic in the bidder
+  count. -/
+
+/-- An n-bidder open game where every bidder is a truthful bidder
+    over `Fin valuationSize` valuations. -/
+def truthfulAuctionN (valuationSize numBidders : Nat) :
+    OpenGame (tensorPowObj valuationSize numBidders)
+             (tensorPowObj valuationSize numBidders)
+             (tensorPowObj valuationSize numBidders)
+             (tensorPowObj (2 * valuationSize) numBidders) :=
+  OpenGame.iterKron (truthfulBidder valuationSize) numBidders
+
 end AuctionCat

@@ -117,4 +117,34 @@ scoped infixr:75 " ⊗ₒ " => OpenGame.kron
 
 end OpenGame
 
+/-! ## Iterated tensor
+
+  `tensorPowObj X n` is the iterated tensor product `X ⊗ X ⊗ … ⊗ X`
+  (n copies, right-associated, with the empty product the tensor
+  unit).  In the FinStoch instantiation this is `Nat.pow X n`
+  (modulo `1 * X = X` rewrites). -/
+
+/-- Iterated tensor product `X ⊗ X ⊗ … ⊗ X` (n copies, right
+    associated). -/
+def tensorPowObj {C : Type u} [Category.{u, v} C]
+    [MonoidalCategory C] (X : C) : Nat → C
+  | 0 => tensorUnit
+  | k + 1 => tensorObj X (tensorPowObj X k)
+
+namespace OpenGame
+
+variable {C : Type u} [Category.{u, v} C]
+  [MonoidalCategory C] [SymmetricMonoidalCategory C]
+
+/-- The iterated monoidal product of `n` copies of an open game.
+    For `n = 0` it is the identity open game on the tensor unit;
+    for `n + 1` it is `b ⊗ₒ (iterKron b n)`. -/
+def iterKron {X S Y R : C} (b : OpenGame X S Y R) :
+    (n : Nat) → OpenGame (tensorPowObj X n) (tensorPowObj S n)
+                          (tensorPowObj Y n) (tensorPowObj R n)
+  | 0     => OpenGame.id tensorUnit tensorUnit
+  | k + 1 => kron b (iterKron b k)
+
+end OpenGame
+
 end OpenGamesCat
