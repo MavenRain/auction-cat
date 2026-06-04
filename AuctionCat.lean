@@ -3,6 +3,7 @@ import AuctionCat.Mechanism
 import AuctionCat.FirstPrice
 import AuctionCat.FirstPrice3
 import AuctionCat.SecondPrice
+import AuctionCat.SecondPrice3
 import AuctionCat.Dutch
 import AuctionCat.English
 import AuctionCat.Reserve
