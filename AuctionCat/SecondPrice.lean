@@ -81,4 +81,29 @@ theorem vickrey_truthful_dominant (n : Nat) (v b1 b2 : Fin n) :
   simp [hv, hb1] <;>
   omega
 
+/-! ## Bidder-1 utility under a strategy
+
+  Lifts the utility-level truthfulness theorem to the "bidder 1
+  utility under strategy `bid` against truthful bidder 2" function,
+  which is the bidder-1 component of the `spsbAuction` kernel's
+  deterministic output at the valuation profile `(v1, v2)` when
+  bidder 1 uses `bid` and bidder 2 is truthful. -/
+
+/-- Bidder 1's utility in a 2-bidder Vickrey auction when bidder 1
+    uses the strategy `bid` and bidder 2 bids truthfully. -/
+def spsbBidder1Utility (n : Nat) (bid : Fin n → Fin n)
+    (v1 v2 : Fin n) : Fin n :=
+  vickreyUtility n v1 (bid v1) v2
+
+/-- Truthfulness is dominant for bidder 1: bidding own valuation
+    yields utility at least as high as any deviation strategy
+    `bid`, against any opposing valuation `v2` (here played by a
+    truthful bidder 2). -/
+theorem spsb_bidder1_truthful_dominates
+    (n : Nat) (bid : Fin n → Fin n) (v1 v2 : Fin n) :
+    (spsbBidder1Utility n (fun v => v) v1 v2).val
+    ≥ (spsbBidder1Utility n bid v1 v2).val := by
+  unfold spsbBidder1Utility
+  exact vickrey_truthful_dominant n v1 (bid v1) v2
+
 end AuctionCat
