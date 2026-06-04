@@ -1,7 +1,9 @@
 import AuctionCat.Bidder
 import AuctionCat.Mechanism
 import AuctionCat.FirstPrice
+import AuctionCat.FirstPrice3
 import AuctionCat.SecondPrice
+import AuctionCat.SecondPrice3
 
 /-!
 # AuctionCat.Auction
@@ -88,5 +90,42 @@ def truthfulAuctionN (valuationSize numBidders : Nat) :
              (tensorPowObj valuationSize numBidders)
              (tensorPowObj (2 * valuationSize) numBidders) :=
   OpenGame.iterKron (truthfulBidder valuationSize) numBidders
+
+/-! ## Three-bidder auction assembly
+
+  Parallels the two-bidder `auctionGame` / `auctionScore`, but with
+  three truthful bidders combined via left-associated `OpenGame.kron`
+  so the result's type matches the left-associated `Fin (n * n * n)`
+  convention used by `firstPriceSealedBid3` / `secondPriceSealedBid3`. -/
+
+/-- Three truthful bidders combined via left-associated
+    `OpenGame.kron`.  The result's input / output types are
+    `Fin (n*n*n)` (joint valuation, joint bid, joint utility) and
+    `Fin ((2*n)*(2*n)*(2*n))` (joint outcome). -/
+def auctionGame3 (n : Nat) :
+    OpenGame ((n * n) * n) ((n * n) * n) ((n * n) * n)
+             (((2 * n) * (2 * n)) * (2 * n)) :=
+  OpenGame.kron
+    (OpenGame.kron (truthfulBidder n) (truthfulBidder n))
+    (truthfulBidder n)
+
+/-- The closed-form 3-bidder auction score: feed the combined
+    bidders' bids into a mechanism `mech`, then run each bidder's
+    utility computation.  Result is a stochastic kernel from joint
+    valuations to joint utilities. -/
+def auctionScore3 (n : Nat)
+    (mech : StochasticMatrix (n * n * n) ((2 * n) * (2 * n) * (2 * n))) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  OpenGame.score (auctionGame3 n) mech
+
+/-- First-price-sealed-bid auction with three truthful bidders. -/
+def fpsb3Auction (n : Nat) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  auctionScore3 n (firstPriceSealedBid3 n)
+
+/-- Second-price-sealed-bid (Vickrey) auction with three truthful bidders. -/
+def spsb3Auction (n : Nat) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  auctionScore3 n (secondPriceSealedBid3 n)
 
 end AuctionCat
