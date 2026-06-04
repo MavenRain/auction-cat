@@ -141,4 +141,130 @@ private theorem Fin.sumRat_sub {n : Nat} (f g : Fin n → Rat) :
   rw [Fin.sumRat_add, Fin.sumRat_neg]
   exact (Rat.sub_eq_add_neg _ _).symm
 
+/-- Cast of a Nat truncated subtraction equals Rat subtraction when
+    the subtrahend is bounded by the minuend. -/
+private theorem Nat.cast_sub_rat (a b : Nat) (h : a ≤ b) :
+    ((b - a : Nat) : Rat) = (b : Nat).cast - (a : Nat).cast := by
+  have heq : (b - a) + a = b := Nat.sub_add_cancel h
+  have hcast : ((b - a : Nat) : Rat) + (a : Nat).cast = (b : Nat).cast := by
+    rw [← Rat.natCast_add]; rw [heq]
+  rw [← hcast]
+  exact Rat.add_sub_cancel.symm
+
+/-- The range indicator `[a ≤ t < b]` equals `[t < b] - [t < a]`
+    (as Rat-valued 0/1 indicators) when `a ≤ b`. -/
+private theorem indicator_range_eq_sub (a b : Nat) (h : a ≤ b) (t : Nat) :
+    (if a ≤ t ∧ t < b then (1 : Rat) else 0)
+    = (if t < b then (1 : Rat) else 0) - (if t < a then (1 : Rat) else 0) := by
+  by_cases ha : t < a
+  · have hb : t < b := Nat.lt_of_lt_of_le ha h
+    have hand : ¬(a ≤ t ∧ t < b) :=
+      fun ⟨hat, _⟩ => absurd hat (Nat.not_le_of_lt ha)
+    rw [if_neg hand, if_pos hb, if_pos ha]
+    exact Rat.sub_self.symm
+  · have ha' : a ≤ t := Nat.le_of_not_lt ha
+    by_cases hb : t < b
+    · rw [if_pos ⟨ha', hb⟩, if_pos hb, if_neg ha]
+      rw [Rat.sub_eq_add_neg]
+      show 1 = 1 + (-0)
+      rw [Rat.neg_zero, Rat.add_zero]
+    · have hand : ¬(a ≤ t ∧ t < b) :=
+        fun ⟨_, htb⟩ => absurd htb hb
+      rw [if_neg hand, if_neg hb, if_neg ha]
+      rw [Rat.sub_eq_add_neg]
+      show 0 = 0 + (-0)
+      rw [Rat.neg_zero, Rat.add_zero]
+
+/-- The truthful Vickrey utility val collapses to the truncated Nat
+    subtraction (regardless of the case split in `vickreyUtility`). -/
+private theorem vickreyUtility_val_eq (n : Nat) (v b2 : Fin n) :
+    (vickreyUtility n v v b2).val = v.val - b2.val := by
+  unfold vickreyUtility
+  by_cases h : v.val ≥ b2.val
+  · rw [if_pos h]
+  · rw [if_neg h]
+    have hlt : v.val < b2.val := Nat.lt_of_not_le h
+    have hzero : v.val - b2.val = 0 :=
+      Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+    exact hzero.symm
+
+/-- Range count: number of `t : Fin n` with `a ≤ t.val < b` equals
+    `b - a` (Nat truncated subtraction) when `b ≤ n`.  Holds for any
+    `a, b` (when `a > b`, both sides are zero). -/
+private theorem Fin.sumRat_count_range (n a b : Nat) (hbn : b ≤ n) :
+    Fin.sumRat (fun t : Fin n => if a ≤ t.val ∧ t.val < b then (1 : Rat) else 0)
+    = ((b - a : Nat) : Rat) := by
+  by_cases hab : a ≤ b
+  · rw [show (fun t : Fin n => if a ≤ t.val ∧ t.val < b then (1 : Rat) else 0)
+          = (fun t : Fin n => (if t.val < b then (1 : Rat) else 0)
+                                - (if t.val < a then (1 : Rat) else 0))
+        from funext (fun t => indicator_range_eq_sub a b hab t.val)]
+    rw [Fin.sumRat_sub]
+    have han : a ≤ n := Nat.le_trans hab hbn
+    rw [Fin.sumRat_count_lt n b hbn, Fin.sumRat_count_lt n a han]
+    exact (Nat.cast_sub_rat a b hab).symm
+  · have hab' : b < a := Nat.lt_of_not_le hab
+    have hab'' : b ≤ a := Nat.le_of_lt hab'
+    rw [show (fun t : Fin n => if a ≤ t.val ∧ t.val < b then (1 : Rat) else 0)
+          = (fun _ : Fin n => (0 : Rat))
+        from funext (fun t => by
+          have hne : ¬(a ≤ t.val ∧ t.val < b) := fun ⟨h1, h2⟩ => by omega
+          rw [if_neg hne])]
+    rw [Fin.sumRat_const_zero]
+    have hba : b - a = 0 := Nat.sub_eq_zero_of_le hab''
+    rw [hba]; rfl
+
+/-- **Envelope theorem** for the two-bidder Vickrey auction (discrete
+    form, general).  In equilibrium under any prior, bidder 1's
+    expected utility at type `v1` equals the cumulative allocation
+    probability at lower types:
+
+      U(v1) = Σ_{t : t.val < v1.val} Q(t).
+
+    This is the discrete analogue of `U(v) = ∫_0^v Q(t) dt`. -/
+theorem vickrey_envelope (n : Nat) (prior : Fin n → Rat) (v1 : Fin n) :
+    vickreyEqUtility n prior v1 = vickreyEnvelopeIntegral n prior v1 := by
+  unfold vickreyEqUtility vickreyEnvelopeIntegral vickreyAllocation
+  -- Step 1: Replace (vickreyUtility val).cast with the count via
+  -- Fin.sumRat_count_range, then factor prior(v2) inside the inner sum.
+  rw [show (fun v2 : Fin n =>
+              prior v2 * ((vickreyUtility n v1 v1 v2).val : Nat).cast)
+        = (fun v2 : Fin n =>
+              Fin.sumRat (fun t : Fin n =>
+                if v2.val ≤ t.val ∧ t.val < v1.val then prior v2 else 0))
+      from funext (fun v2 => by
+        rw [vickreyUtility_val_eq n v1 v2]
+        rw [(Fin.sumRat_count_range n v2.val v1.val
+              (Nat.le_of_lt v1.isLt)).symm]
+        rw [← Fin.sumRat_const_mul]
+        apply Fin.sumRat_congr
+        intro t
+        by_cases h : v2.val ≤ t.val ∧ t.val < v1.val
+        · rw [if_pos h, if_pos h, Rat.mul_one]
+        · rw [if_neg h, if_neg h, Rat.mul_zero])]
+  -- Step 2: Swap sums.
+  rw [Fin.sumRat_swap (fun v2 t =>
+        if v2.val ≤ t.val ∧ t.val < v1.val then prior v2 else 0)]
+  -- Step 3: Match the RHS form pointwise per t.
+  apply Fin.sumRat_congr
+  intro t
+  by_cases ht : t.val < v1.val
+  · -- t.val < v1.val: inner sum simplifies to Σ_v2 (if v2.val ≤ t.val then prior else 0).
+    rw [if_pos ht]
+    apply Fin.sumRat_congr
+    intro v2
+    by_cases hv2 : v2.val ≤ t.val
+    · rw [if_pos ⟨hv2, ht⟩, if_pos hv2]
+    · rw [if_neg (fun ⟨h1, _⟩ => hv2 h1), if_neg hv2]
+  · -- t.val ≥ v1.val: inner sum is 0.
+    rw [if_neg ht]
+    rw [show (fun v2 : Fin n =>
+              if v2.val ≤ t.val ∧ t.val < v1.val then prior v2 else 0)
+          = (fun _ : Fin n => (0 : Rat))
+        from funext (fun v2 => by
+          have hne : ¬(v2.val ≤ t.val ∧ t.val < v1.val) :=
+            fun ⟨_, h2⟩ => ht h2
+          rw [if_neg hne])]
+    rw [Fin.sumRat_const_zero]
+
 end AuctionCat
