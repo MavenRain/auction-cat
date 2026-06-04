@@ -96,4 +96,31 @@ example :
         vickreyAllocation
   native_decide
 
+/-! ## Count helper
+
+  The count of `t : Fin n` with `t.val < k` (for `k ≤ n`) equals
+  `k` as a `Rat`.  This is the building block of the general
+  envelope identity — the inner sum of the swap-form right-hand side
+  is exactly such a count, weighted by the prior. -/
+
+private theorem Fin.sumRat_count_lt : ∀ (n k : Nat), k ≤ n →
+    Fin.sumRat (fun t : Fin n => if t.val < k then (1 : Rat) else 0)
+    = (k : Nat).cast
+  | 0, 0, _ => by rw [Fin.sumRat_zero]; rfl
+  | 0, _+1, h => absurd h (by omega)
+  | n+1, 0, _ => by
+    rw [show (fun t : Fin (n+1) => if t.val < 0 then (1 : Rat) else 0)
+          = (fun _ : Fin (n+1) => (0 : Rat))
+        from funext (fun t => by
+          have : ¬ (t.val < 0) := Nat.not_lt_zero _
+          simp [this])]
+    rw [Fin.sumRat_const_zero]
+    rfl
+  | n+1, k+1, h => by
+    rw [Fin.sumRat_succ]
+    simp
+    have hk : k ≤ n := by omega
+    rw [Fin.sumRat_count_lt n k hk]
+    exact Rat.add_comm _ _
+
 end AuctionCat
