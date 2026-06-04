@@ -267,4 +267,139 @@ theorem vickrey_envelope (n : Nat) (prior : Fin n → Rat) (v1 : Fin n) :
           rw [if_neg hne])]
     rw [Fin.sumRat_const_zero]
 
+/-! ## Payment formula and Revenue Equivalence
+
+  Combining the envelope theorem with the basic utility identity
+  `U(v) = v * Q(v) - E[payment | v]` gives the explicit payment
+  formula:
+
+    vickreyExpectedPayment n prior v1
+      = v1.val * vickreyAllocation n prior v1 - vickreyEnvelopeIntegral n prior v1
+
+  Since the right-hand side depends only on the allocation rule
+  (`vickreyAllocation`) and the cumulative integral (which in turn
+  depends only on the allocation rule), any mechanism implementing
+  the same allocation rule and the same lowest-type utility yields
+  the same expected payment — Myerson's Revenue Equivalence
+  Theorem. -/
+
+/-- Pointwise cast identity: `(v1 - v2).cast + [v2 ≤ v1] * v2.cast = [v2 ≤ v1] * v1.cast`. -/
+private theorem cast_sum_identity (v1 v2 : Nat) :
+    ((v1 - v2 : Nat) : Rat)
+        + (if v2 ≤ v1 then (v2 : Nat).cast else 0)
+    = (if v2 ≤ v1 then (v1 : Nat).cast else 0) := by
+  by_cases h : v2 ≤ v1
+  · rw [if_pos h, if_pos h]
+    rw [Nat.cast_sub_rat v2 v1 h]
+    rw [Rat.sub_add_cancel]
+  · rw [if_neg h, if_neg h]
+    have hlt : v1 < v2 := Nat.lt_of_not_le h
+    have hsub : v1 - v2 = 0 := Nat.sub_eq_zero_of_le (Nat.le_of_lt hlt)
+    rw [hsub]
+    show (0 : Rat) + 0 = 0
+    rw [Rat.add_zero]
+
+/-- Utility + payment = `v * Q` (Myerson identity for Vickrey, discrete
+    form).  Bidder 1's expected utility plus expected payment equals
+    the valuation `v1` times the expected allocation probability. -/
+theorem vickrey_utility_plus_payment (n : Nat) (prior : Fin n → Rat)
+    (v1 : Fin n) :
+    vickreyEqUtility n prior v1 + vickreyExpectedPayment n prior v1
+    = (v1.val : Nat).cast * vickreyAllocation n prior v1 := by
+  unfold vickreyEqUtility vickreyExpectedPayment vickreyAllocation
+  -- Replace vickreyUtility val with truncated Nat sub.
+  rw [show (fun v2 : Fin n => prior v2 * ((vickreyUtility n v1 v1 v2).val : Nat).cast)
+        = (fun v2 : Fin n => prior v2 * ((v1.val - v2.val : Nat) : Rat))
+      from funext (fun v2 => by rw [vickreyUtility_val_eq])]
+  -- Combine the two sums into one.
+  rw [← Fin.sumRat_add]
+  -- Factor prior(v2) and combine the (v1 - v2).cast + [v2 ≤ v1] * v2.cast term.
+  rw [show (fun v2 : Fin n =>
+              prior v2 * ((v1.val - v2.val : Nat) : Rat)
+              + (if v2.val ≤ v1.val then prior v2 * (v2.val : Nat).cast else 0))
+        = (fun v2 : Fin n =>
+              prior v2 * (((v1.val - v2.val : Nat) : Rat)
+                          + (if v2.val ≤ v1.val then (v2.val : Nat).cast else 0)))
+      from funext (fun v2 => by
+        by_cases h : v2.val ≤ v1.val
+        · rw [if_pos h, if_pos h, Rat.mul_add]
+        · rw [if_neg h, if_neg h, Rat.add_zero, Rat.add_zero])]
+  -- Apply the cast sum identity.
+  rw [show (fun v2 : Fin n =>
+              prior v2 * (((v1.val - v2.val : Nat) : Rat)
+                          + (if v2.val ≤ v1.val then (v2.val : Nat).cast else 0)))
+        = (fun v2 : Fin n =>
+              prior v2 * (if v2.val ≤ v1.val then (v1.val : Nat).cast else 0))
+      from funext (fun v2 => by rw [cast_sum_identity])]
+  -- Factor v1.cast out of the if and use sumRat_const_mul.
+  rw [show (fun v2 : Fin n =>
+              prior v2 * (if v2.val ≤ v1.val then (v1.val : Nat).cast else 0))
+        = (fun v2 : Fin n =>
+              (v1.val : Nat).cast * (if v2.val ≤ v1.val then prior v2 else 0))
+      from funext (fun v2 => by
+        by_cases h : v2.val ≤ v1.val
+        · rw [if_pos h, if_pos h, Rat.mul_comm]
+        · rw [if_neg h, if_neg h, Rat.mul_zero, Rat.mul_zero])]
+  rw [Fin.sumRat_const_mul]
+
+/-- **Myerson payment formula**: expected payment in Vickrey under
+    truthful equals `v1 * Q(v1) - U(v1)`, where `U` is given by the
+    envelope integral.  This is the canonical RET statement: any two
+    mechanisms with the same allocation rule and same envelope
+    integral yield the same expected payment. -/
+theorem vickrey_payment_formula (n : Nat) (prior : Fin n → Rat)
+    (v1 : Fin n) :
+    vickreyExpectedPayment n prior v1
+    = (v1.val : Nat).cast * vickreyAllocation n prior v1
+      - vickreyEnvelopeIntegral n prior v1 := by
+  have h1 := vickrey_utility_plus_payment n prior v1
+  have h2 := vickrey_envelope n prior v1
+  -- h1 : U + P = v * Q
+  -- h2 : U = integral
+  rw [h2] at h1
+  -- h1 : integral + P = v * Q
+  calc vickreyExpectedPayment n prior v1
+      = vickreyExpectedPayment n prior v1 + vickreyEnvelopeIntegral n prior v1
+        - vickreyEnvelopeIntegral n prior v1 := by
+        rw [Rat.add_sub_cancel]
+    _ = vickreyEnvelopeIntegral n prior v1 + vickreyExpectedPayment n prior v1
+        - vickreyEnvelopeIntegral n prior v1 := by
+        rw [Rat.add_comm (vickreyExpectedPayment n prior v1)
+                         (vickreyEnvelopeIntegral n prior v1)]
+    _ = (v1.val : Nat).cast * vickreyAllocation n prior v1
+        - vickreyEnvelopeIntegral n prior v1 := by
+        rw [h1]
+
+/-- The canonical Myerson payment given an allocation rule `Q`:
+    `P(v) = v * Q(v) - Σ_{t < v} Q(t)`.
+
+    This is the unique payment function compatible with Bayes-Nash
+    incentive compatibility, individual rationality (`U(0) = 0`),
+    and a given allocation rule, by Myerson's envelope characterisation. -/
+def paymentFromAllocation {n : Nat} (Q : Fin n → Rat) (v1 : Fin n) : Rat :=
+  (v1.val : Nat).cast * Q v1
+  - Fin.sumRat (fun t : Fin n => if t.val < v1.val then Q t else 0)
+
+/-- **Revenue Equivalence Theorem (RET)** — Vickrey case.
+
+    Bidder 1's expected payment in the two-bidder Vickrey auction
+    under truthful bidding equals the Myerson payment formula
+    applied to the Vickrey allocation rule.  Consequently, any
+    other mechanism implementing the same allocation rule (and
+    satisfying the IC + IR boundary condition U(0) = 0) yields the
+    same expected payment, and therefore the same expected
+    revenue. -/
+theorem revenue_equivalence (n : Nat) (prior : Fin n → Rat) (v1 : Fin n) :
+    vickreyExpectedPayment n prior v1
+    = paymentFromAllocation (vickreyAllocation n prior) v1 := by
+  unfold paymentFromAllocation
+  exact vickrey_payment_formula n prior v1
+
+/-- **RET corollary**: two mechanisms with the same allocation rule
+    yield the same Myerson payment. -/
+theorem revenue_equivalence_via_allocation
+    {n : Nat} {Q1 Q2 : Fin n → Rat} (h : Q1 = Q2) (v1 : Fin n) :
+    paymentFromAllocation Q1 v1 = paymentFromAllocation Q2 v1 := by
+  rw [h]
+
 end AuctionCat
