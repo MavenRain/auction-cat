@@ -1,6 +1,7 @@
 import AuctionCat.Bidder
 import AuctionCat.Mechanism
 import AuctionCat.FirstPrice
+import AuctionCat.FirstPrice3
 import AuctionCat.SecondPrice
 import AuctionCat.Dutch
 import AuctionCat.English
