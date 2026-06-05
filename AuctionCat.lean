@@ -16,6 +16,7 @@ import AuctionCat.Examples
 import AuctionCat.BayesNash
 import AuctionCat.Envelope
 import AuctionCat.KernelTruth
+import AuctionCat.Vickrey3
 
 /-!
 # AuctionCat
