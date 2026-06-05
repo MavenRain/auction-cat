@@ -149,4 +149,28 @@ theorem kron_copy_copy (n : Nat) :
   rw [kron_detMatrix]
   rfl
 
+/-- The deterministic underlying function of the middle-four
+    interchange `((A ⊗ B) ⊗ (D ⊗ E)) → ((A ⊗ D) ⊗ (B ⊗ E))`: send
+    `((a, b), (d, e))` to `((a, d), (b, e))`. -/
+def middleInterchangeFn (A B D E : Nat) (x : Fin ((A * B) * (D * E))) :
+    Fin ((A * D) * (B * E)) :=
+  Fin.pair
+    (Fin.pair (Fin.first (Fin.first x)) (Fin.first (Fin.second x)))
+    (Fin.pair (Fin.second (Fin.first x)) (Fin.second (Fin.second x)))
+
+/-! The `middleInterchange` of `OpenGamesCat` instantiated in
+    `FinStoch` reduces to `detMatrix (middleInterchangeFn A B D E)`
+    by chaining `associator_eq_detMatrix` + `idMatrix_eq_detMatrix`
+    + `braiding_eq_detMatrix` + `associatorInv_eq_detMatrix` +
+    `kron_detMatrix` + `detMatrix_comp` and concluding by
+    `Fin.ext` + a Nat arithmetic identity in `x.val, A, B, D, E`.
+
+    The final val computation is non-linear (involves products of
+    distinct variables) and exceeds `omega`'s reach; it requires a
+    custom Nat lemma chaining `Nat.mod_mod_of_dvd`,
+    `Nat.div_div_eq_div_mul`, and the mixed div/mod identities used
+    for `associatorFin` projections, with extra terms from
+    `braidingFin` (which is not val-preserving).  Left as a
+    follow-on. -/
+
 end AuctionCat
