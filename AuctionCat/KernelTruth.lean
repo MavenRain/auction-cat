@@ -158,19 +158,61 @@ def middleInterchangeFn (A B D E : Nat) (x : Fin ((A * B) * (D * E))) :
     (Fin.pair (Fin.first (Fin.first x)) (Fin.first (Fin.second x)))
     (Fin.pair (Fin.second (Fin.first x)) (Fin.second (Fin.second x)))
 
-/-! The `middleInterchange` of `OpenGamesCat` instantiated in
-    `FinStoch` reduces to `detMatrix (middleInterchangeFn A B D E)`
-    by chaining `associator_eq_detMatrix` + `idMatrix_eq_detMatrix`
-    + `braiding_eq_detMatrix` + `associatorInv_eq_detMatrix` +
-    `kron_detMatrix` + `detMatrix_comp` and concluding by
-    `Fin.ext` + a Nat arithmetic identity in `x.val, A, B, D, E`.
-
-    The final val computation is non-linear (involves products of
-    distinct variables) and exceeds `omega`'s reach; it requires a
-    custom Nat lemma chaining `Nat.mod_mod_of_dvd`,
-    `Nat.div_div_eq_div_mul`, and the mixed div/mod identities used
-    for `associatorFin` projections, with extra terms from
-    `braidingFin` (which is not val-preserving).  Left as a
-    follow-on. -/
+/-- `OpenGamesCat.middleInterchange` (in `FinStoch`) equals the
+    deterministic kernel of `middleInterchangeFn`.  Proved
+    structurally by decomposing `x` into its nested pair form and
+    pushing the five-step composition through `associatorFin_pair`,
+    `associatorInvFin_pair`, and `braidingFin_pair`. -/
+theorem middleInterchange_eq_detMatrix (A B D E : Nat) :
+    (OpenGamesCat.middleInterchange A B D E :
+        StochasticMatrix ((A * B) * (D * E)) ((A * D) * (B * E)))
+    = detMatrix (middleInterchangeFn A B D E) := by
+  unfold OpenGamesCat.middleInterchange
+  -- Unfold typeclass-level tensorHom/𝟙/associator/braiding to FinStoch
+  show (MarkovCat.FinStoch.associator A B (D * E)).comp
+        ((StochasticMatrix.kron (MarkovCat.FinStoch.idMatrix A)
+            (MarkovCat.FinStoch.associatorInv B D E)).comp
+          ((StochasticMatrix.kron (MarkovCat.FinStoch.idMatrix A)
+              (StochasticMatrix.kron (MarkovCat.FinStoch.braiding B D)
+                (MarkovCat.FinStoch.idMatrix E))).comp
+            ((StochasticMatrix.kron (MarkovCat.FinStoch.idMatrix A)
+                (MarkovCat.FinStoch.associator D B E)).comp
+              (MarkovCat.FinStoch.associatorInv A D (B * E)))))
+       = detMatrix (middleInterchangeFn A B D E)
+  rw [associator_eq_detMatrix A B (D * E),
+      idMatrix_eq_detMatrix A,
+      associatorInv_eq_detMatrix B D E,
+      braiding_eq_detMatrix B D,
+      idMatrix_eq_detMatrix E,
+      kron_detMatrix,
+      kron_detMatrix,
+      associator_eq_detMatrix D B E,
+      kron_detMatrix,
+      associatorInv_eq_detMatrix A D (B * E),
+      kron_detMatrix]
+  rw [detMatrix_comp, detMatrix_comp, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext x
+  have hABDE : 0 < (A * B) * (D * E) :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) x.isLt
+  have hAB : 0 < A * B := Nat.pos_of_mul_pos_right hABDE
+  have hDE : 0 < D * E := Nat.pos_of_mul_pos_left hABDE
+  have hA : 0 < A := Nat.pos_of_mul_pos_right hAB
+  have hB : 0 < B := Nat.pos_of_mul_pos_left hAB
+  have hD : 0 < D := Nat.pos_of_mul_pos_right hDE
+  have hBD : 0 < B * D := Nat.mul_pos hB hD
+  have hx : x = Fin.pair (Fin.pair (Fin.first (Fin.first x))
+                                    (Fin.second (Fin.first x)))
+                          (Fin.pair (Fin.first (Fin.second x))
+                                    (Fin.second (Fin.second x))) := by
+    rw [Fin.pair_first_second (Fin.first x),
+        Fin.pair_first_second (Fin.second x)]
+    exact (Fin.pair_first_second x).symm
+  rw [hx]
+  unfold middleInterchangeFn
+  simp only [associatorFin_pair, associatorInvFin_pair, braidingFin_pair,
+             Fin.first_pair, Fin.second_pair hA,
+             Fin.second_pair hD, Fin.second_pair hAB,
+             Fin.second_pair hBD]
 
 end AuctionCat
