@@ -123,4 +123,30 @@ theorem spsb_bidder1_kernel_dominance (n : Nat) (bid : Fin n → Fin n)
                    (bid (Fin.first v_joint)) (Fin.second v_joint)
   exact_mod_cast h_util
 
+/-! ## Open-game-pipeline reductions (toward `spsbAuction = detMatrix spsbAuctionFn`)
+
+  This block builds toward the connection from `spsbAuction n`
+  (defined via the OpenGame pipeline as `score (auctionGame n)
+  (secondPriceSealedBid n)`) to its explicit deterministic
+  underlying function `spsbAuctionFn n`.
+
+  The proof structure walks the composition
+    view ≫ tensorHom (𝟙 M) mech ≫ update
+  with each piece a detMatrix; `detMatrix_comp` + `kron_detMatrix`
+  collapse the composition to a single detMatrix.  Identifying the
+  underlying function as `spsbAuctionFn n` requires computing
+  `(auctionGame n).view` and `(auctionGame n).update` explicitly. -/
+
+/-- Tensor of two `copy` kernels (the view side of two truthful
+    bidders before middle-interchange): each copies its input to
+    a diagonal pair, then the pair-of-diagonals is exposed. -/
+theorem kron_copy_copy (n : Nat) :
+    StochasticMatrix.kron (copy n) (copy n)
+    = detMatrix (fun x : Fin (n * n) =>
+        Fin.pair (Fin.pair (Fin.first x) (Fin.first x))
+                 (Fin.pair (Fin.second x) (Fin.second x))) := by
+  show StochasticMatrix.kron (detMatrix copyFin) (detMatrix copyFin) = _
+  rw [kron_detMatrix]
+  rfl
+
 end AuctionCat
