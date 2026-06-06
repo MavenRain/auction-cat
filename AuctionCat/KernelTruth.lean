@@ -215,4 +215,184 @@ theorem middleInterchange_eq_detMatrix (A B D E : Nat) :
              Fin.second_pair hD, Fin.second_pair hAB,
              Fin.second_pair hBD]
 
+/-- The deterministic underlying function of `(auctionGame n).view`:
+    given a joint valuation `v : Fin (n * n)`, duplicate it to
+    `Fin.pair v v : Fin ((n * n) * (n * n))`. -/
+def auctionViewFn (n : Nat) (v : Fin (n * n)) : Fin ((n * n) * (n * n)) :=
+  Fin.pair v v
+
+/-- The deterministic underlying function of `(auctionGame n).update`.
+    Given input `x : Fin ((n*n) * ((2*n)*(2*n)))` carrying the joint
+    valuation `(v1, v2)` and joint outcome `(o1, o2)`, apply each
+    bidder's truthful utility against their own valuation+outcome
+    pair, producing a `Fin (n * n)` joint utility. -/
+def auctionUpdateFn (n : Nat)
+    (x : Fin ((n * n) * ((2 * n) * (2 * n)))) : Fin (n * n) :=
+  Fin.pair
+    (truthfulUtilityFn n
+       (Fin.pair (Fin.first (Fin.first x)) (Fin.first (Fin.second x))))
+    (truthfulUtilityFn n
+       (Fin.pair (Fin.second (Fin.first x)) (Fin.second (Fin.second x))))
+
+/-- `(auctionGame n).view = detMatrix (auctionViewFn n)`.  The
+    parallel-copy then middle-interchange composition reduces to
+    "duplicate the joint valuation". -/
+theorem auctionGame_view_eq_detMatrix (n : Nat) :
+    (auctionGame n).view = detMatrix (auctionViewFn n) := by
+  have h_mid : (OpenGamesCat.middleInterchange n n n n :
+                  StochasticMatrix ((n * n) * (n * n)) ((n * n) * (n * n)))
+              = detMatrix (middleInterchangeFn n n n n) :=
+    middleInterchange_eq_detMatrix n n n n
+  have h_view : (auctionGame n).view
+              = StochasticMatrix.comp
+                  (StochasticMatrix.kron (detMatrix (@copyFin n))
+                                          (detMatrix (@copyFin n)))
+                  (detMatrix (middleInterchangeFn n n n n)) := by
+    show StochasticMatrix.comp
+          (StochasticMatrix.kron (copy n) (copy n))
+          (OpenGamesCat.middleInterchange n n n n :
+              StochasticMatrix ((n * n) * (n * n)) ((n * n) * (n * n)))
+        = _
+    rw [copy_eq_detMatrix, h_mid]
+    rfl
+  rw [h_view, kron_detMatrix, detMatrix_comp]
+  congr 1
+  funext v
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold middleInterchangeFn copyFin auctionViewFn
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+  rw [Fin.pair_first_second v]
+
+/-- `(auctionGame n).update = detMatrix (auctionUpdateFn n)`.  The
+    middle-interchange-then-parallel-utility composition reduces to
+    "rearrange (v_joint, o_joint) into (v1, o1) and (v2, o2), then
+    apply truthfulUtility to each". -/
+theorem auctionGame_update_eq_detMatrix (n : Nat) :
+    (auctionGame n).update = detMatrix (auctionUpdateFn n) := by
+  have h_mid : (OpenGamesCat.middleInterchange n n (2 * n) (2 * n) :
+                  StochasticMatrix ((n * n) * ((2 * n) * (2 * n)))
+                                    ((n * (2 * n)) * (n * (2 * n))))
+              = detMatrix (middleInterchangeFn n n (2 * n) (2 * n)) :=
+    middleInterchange_eq_detMatrix n n (2 * n) (2 * n)
+  have h_update : (auctionGame n).update
+                = StochasticMatrix.comp
+                    (detMatrix (middleInterchangeFn n n (2 * n) (2 * n)))
+                    (StochasticMatrix.kron (detMatrix (truthfulUtilityFn n))
+                                            (detMatrix (truthfulUtilityFn n))) := by
+    show StochasticMatrix.comp
+          (OpenGamesCat.middleInterchange n n (2 * n) (2 * n) :
+              StochasticMatrix ((n * n) * ((2 * n) * (2 * n)))
+                                ((n * (2 * n)) * (n * (2 * n))))
+          (StochasticMatrix.kron (detMatrix (truthfulUtilityFn n))
+                                  (detMatrix (truthfulUtilityFn n)))
+        = _
+    rw [h_mid]
+    rfl
+  rw [h_update, kron_detMatrix, detMatrix_comp]
+  congr 1
+  funext x
+  have hnn : 0 < n * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) (Fin.first x).isLt
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2n : 0 < 2 * n := by omega
+  have hn2n : 0 < n * (2 * n) := Nat.mul_pos hn h2n
+  unfold middleInterchangeFn auctionUpdateFn
+  simp only [Fin.first_pair, Fin.second_pair hn2n]
+
+/-- Bidder 1's truthful utility against the spsb outcome matches
+    `vickreyUtility v1 v1 v2`.  Both case-split on `v1.val ≥ v2.val`
+    identically (the spsb allocation is "1 iff b1 ≥ b2"); under
+    truthful bidding `b1 = v1`. -/
+theorem truthfulUtility_spsbFn_bidder1 (n : Nat) (v_joint : Fin (n * n)) :
+    truthfulUtilityFn n
+        (Fin.pair (Fin.first v_joint) (Fin.first (spsbFn n v_joint)))
+    = vickreyUtility n (Fin.first v_joint) (Fin.first v_joint)
+                       (Fin.second v_joint) := by
+  have hnn : 0 < n * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2 : 0 < 2 := by decide
+  by_cases hge : v_joint.val % n ≥ v_joint.val / n
+  · have h_spsb_first :
+        Fin.first (spsbFn n v_joint)
+        = Fin.pair (⟨1, by decide⟩ : Fin 2) (Fin.second v_joint) := by
+      unfold spsbFn
+      simp [hge, Fin.first_pair]
+    rw [h_spsb_first]
+    unfold truthfulUtilityFn vickreyUtility
+    simp [Fin.first_pair, Fin.second_pair hn, hge]
+    omega
+  · have h_spsb_first :
+        Fin.first (spsbFn n v_joint)
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold spsbFn
+      simp [hge, Fin.first_pair]
+    rw [h_spsb_first]
+    unfold truthfulUtilityFn vickreyUtility
+    simp [Fin.first_pair, Fin.second_pair hn, hge]
+
+/-- Bidder 2's truthful utility against the spsb outcome matches
+    `vickreyUtility v2 v2 v1`. -/
+theorem truthfulUtility_spsbFn_bidder2 (n : Nat) (v_joint : Fin (n * n)) :
+    truthfulUtilityFn n
+        (Fin.pair (Fin.second v_joint) (Fin.second (spsbFn n v_joint)))
+    = vickreyUtility n (Fin.second v_joint) (Fin.second v_joint)
+                       (Fin.first v_joint) := by
+  have hnn : 0 < n * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2n : 0 < 2 * n := by omega
+  have h2 : 0 < 2 := by decide
+  by_cases hge : v_joint.val % n ≥ v_joint.val / n
+  · have h_spsb_second :
+        Fin.second (spsbFn n v_joint)
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold spsbFn
+      simp [hge, Fin.second_pair h2n]
+    rw [h_spsb_second]
+    unfold truthfulUtilityFn vickreyUtility
+    by_cases hge2 : v_joint.val / n ≥ v_joint.val % n
+    · have hveq : v_joint.val % n = v_joint.val / n := by omega
+      simp [Fin.first_pair, Fin.second_pair hn, hveq]
+    · simp [Fin.first_pair, Fin.second_pair hn, hge2]
+  · have h_spsb_second :
+        Fin.second (spsbFn n v_joint)
+        = Fin.pair (⟨1, by decide⟩ : Fin 2) (Fin.first v_joint) := by
+      unfold spsbFn
+      simp [hge, Fin.second_pair h2n]
+    rw [h_spsb_second]
+    unfold truthfulUtilityFn vickreyUtility
+    have hge2 : v_joint.val / n ≥ v_joint.val % n := by omega
+    simp [Fin.first_pair, Fin.second_pair hn, hge2]
+    omega
+
+/-- **Open-game-pipeline connection**: the two-bidder Vickrey
+    `spsbAuction n` kernel equals the deterministic kernel of its
+    closed-form outcome function `spsbAuctionFn n`. -/
+theorem spsbAuction_eq_detMatrix (n : Nat) :
+    spsbAuction n = detMatrix (spsbAuctionFn n) := by
+  have h_score : spsbAuction n
+              = StochasticMatrix.comp ((auctionGame n).view)
+                 (StochasticMatrix.comp
+                   (StochasticMatrix.kron (idMatrix (n * n))
+                                           (secondPriceSealedBid n))
+                   ((auctionGame n).update)) := rfl
+  rw [h_score, auctionGame_view_eq_detMatrix n,
+      auctionGame_update_eq_detMatrix n,
+      idMatrix_eq_detMatrix (n * n)]
+  show (detMatrix (auctionViewFn n)).comp
+        ((StochasticMatrix.kron (detMatrix (fun i : Fin (n * n) => i))
+                                 (detMatrix (spsbFn n))).comp
+         (detMatrix (auctionUpdateFn n)))
+      = detMatrix (spsbAuctionFn n)
+  rw [kron_detMatrix, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext v
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold auctionViewFn auctionUpdateFn spsbAuctionFn
+  simp only [Fin.first_pair, Fin.second_pair hnn]
+  rw [truthfulUtility_spsbFn_bidder1, truthfulUtility_spsbFn_bidder2]
+
 end AuctionCat
