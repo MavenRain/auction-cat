@@ -395,4 +395,16 @@ theorem spsbAuction_eq_detMatrix (n : Nat) :
   simp only [Fin.first_pair, Fin.second_pair hnn]
   rw [truthfulUtility_spsbFn_bidder1, truthfulUtility_spsbFn_bidder2]
 
+/-- **Pipeline-level Vickrey truthfulness** (bidder 1, 2 bidders).
+    Bidder 1's expected utility in the OpenGame-pipeline form of
+    `spsbAuction n` weakly dominates the expected utility in any
+    single-deviator deterministic-outcome-function variant. -/
+theorem spsb_bidder1_pipeline_dominance (n : Nat) (bid : Fin n → Fin n)
+    (v_joint : Fin (n * n)) :
+    auctionBidder1Util n (spsbAuction n) v_joint
+    ≥ auctionBidder1Util n (detMatrix (spsbAuctionDeviator1Fn n bid))
+                            v_joint := by
+  rw [spsbAuction_eq_detMatrix]
+  exact spsb_bidder1_kernel_dominance n bid v_joint
+
 end AuctionCat
