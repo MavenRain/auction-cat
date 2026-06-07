@@ -192,4 +192,10 @@ def spsb3AuctionDeviator1 (n : Nat) (bid : Fin n → Fin n) :
     StochasticMatrix ((n * n) * n) ((n * n) * n) :=
   auctionScoreDeviator1_3 n bid (secondPriceSealedBid3 n)
 
+/-- Three-bidder Vickrey-with-reserve auction where bidder 1 uses
+    strategy `bid` and bidders 2, 3 are truthful. -/
+def spsb3ReserveAuctionDeviator1 (n : Nat) (r : Fin n) (bid : Fin n → Fin n) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  auctionScoreDeviator1_3 n bid (spsb3Reserve n r)
+
 end AuctionCat
