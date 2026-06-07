@@ -334,4 +334,103 @@ theorem spsb3Reserve_bidder1_pipeline_dominance (n : Nat) (r : Fin n)
   rw [spsb3ReserveAuction_eq_detMatrix]
   exact spsb3Reserve_bidder1_kernel_dominance n r bid v_joint
 
+/-! ## Three-bidder deviator pipeline ↔ deterministic outcome function -/
+
+/-- Generalised bidder-1 3-bidder reserve identity. -/
+theorem truthfulUtility_spsb3ReserveFn_general_bidder1 (n : Nat)
+    (r v_actual b1 b2 b3 : Fin n) :
+    truthfulUtilityFn n
+        (Fin.pair v_actual
+          (Fin.first (Fin.first
+            (spsb3ReserveFn n r (Fin.pair (Fin.pair b1 b2) b3)))))
+    = vickreyReserveUtility3 n v_actual b1 b2 b3 r := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v_actual.isLt
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  have h2 : 0 < 2 := by decide
+  by_cases hwin1 : b1.val ≥ b2.val ∧ b1.val ≥ b3.val ∧ b1.val ≥ r.val
+  · have h_first :
+        Fin.first (Fin.first
+          (spsb3ReserveFn n r (Fin.pair (Fin.pair b1 b2) b3)))
+        = Fin.pair (⟨1, by decide⟩ : Fin 2)
+            (⟨max r.val (max b2.val b3.val),
+              by have := r.isLt; have := b2.isLt
+                 have := b3.isLt; omega⟩ : Fin n) := by
+      unfold spsb3ReserveFn
+      simp [hwin1, Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+    rw [h_first]
+    unfold truthfulUtilityFn vickreyReserveUtility3
+    simp [Fin.first_pair, Fin.second_pair hn, hwin1]
+    omega
+  · have h_first :
+        Fin.first (Fin.first
+          (spsb3ReserveFn n r (Fin.pair (Fin.pair b1 b2) b3)))
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold spsb3ReserveFn
+      simp [hwin1, Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+    rw [h_first]
+    unfold truthfulUtilityFn vickreyReserveUtility3
+    simp [Fin.first_pair, Fin.second_pair hn, hwin1]
+
+/-- `spsb3ReserveAuctionDeviator1 n r bid
+    = detMatrix (spsb3ReserveAuctionDeviator1Fn n r bid)`. -/
+theorem spsb3ReserveAuctionDeviator1_eq_detMatrix
+    (n : Nat) (r : Fin n) (bid : Fin n → Fin n) :
+    spsb3ReserveAuctionDeviator1 n r bid
+    = detMatrix (spsb3ReserveAuctionDeviator1Fn n r bid) := by
+  have h_score : spsb3ReserveAuctionDeviator1 n r bid
+              = StochasticMatrix.comp ((auctionGame3Deviator1 n bid).view)
+                 (StochasticMatrix.comp
+                   (StochasticMatrix.kron (idMatrix ((n * n) * n))
+                                           (spsb3Reserve n r))
+                   ((auctionGame3Deviator1 n bid).update)) := rfl
+  rw [h_score, auctionGame3Deviator1_view_eq_detMatrix n bid,
+      auctionGame3Deviator1_update_eq_auctionGame3_update n bid,
+      auctionGame3_update_eq_detMatrix n,
+      idMatrix_eq_detMatrix ((n * n) * n)]
+  show (detMatrix (auctionViewDeviator1Fn3 n bid)).comp
+        ((StochasticMatrix.kron
+            (detMatrix (fun i : Fin ((n * n) * n) => i))
+            (detMatrix (spsb3ReserveFn n r))).comp
+         (detMatrix (auctionUpdateFn3 n)))
+      = detMatrix (spsb3ReserveAuctionDeviator1Fn n r bid)
+  rw [kron_detMatrix, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext v
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold auctionViewDeviator1Fn3 auctionUpdateFn3 spsb3ReserveAuctionDeviator1Fn
+  simp only [Fin.first_pair, Fin.second_pair hnnn]
+  unfold auctionUpdateFn
+  simp only [Fin.first_pair, Fin.second_pair hnn]
+  rw [truthfulUtility_spsb3ReserveFn_general_bidder1]
+  have h_b2 := truthfulUtility_spsb3ReserveFn_bidder2 n r
+                (Fin.pair (Fin.pair (bid (Fin.first (Fin.first v)))
+                                    (Fin.second (Fin.first v)))
+                          (Fin.second v))
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+    at h_b2
+  rw [h_b2]
+  have h_b3 := truthfulUtility_spsb3ReserveFn_bidder3 n r
+                (Fin.pair (Fin.pair (bid (Fin.first (Fin.first v)))
+                                    (Fin.second (Fin.first v)))
+                          (Fin.second v))
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+    at h_b3
+  rw [h_b3]
+
+/-- **Pipeline-vs-pipeline three-bidder Vickrey-with-reserve
+    truthfulness**.  Bidder 1's expected utility in
+    `spsb3ReserveAuction n r` weakly dominates bidder 1's expected
+    utility in `spsb3ReserveAuctionDeviator1 n r bid`. -/
+theorem spsb3Reserve_bidder1_pipeline_dominates_pipeline (n : Nat)
+    (r : Fin n) (bid : Fin n → Fin n) (v_joint : Fin ((n * n) * n)) :
+    auctionBidder1Util3 n (spsb3ReserveAuction n r) v_joint
+    ≥ auctionBidder1Util3 n (spsb3ReserveAuctionDeviator1 n r bid)
+                             v_joint := by
+  rw [spsb3ReserveAuction_eq_detMatrix,
+      spsb3ReserveAuctionDeviator1_eq_detMatrix]
+  exact spsb3Reserve_bidder1_kernel_dominance n r bid v_joint
+
 end AuctionCat
