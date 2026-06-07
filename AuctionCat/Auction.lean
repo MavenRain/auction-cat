@@ -4,6 +4,7 @@ import AuctionCat.FirstPrice
 import AuctionCat.FirstPrice3
 import AuctionCat.SecondPrice
 import AuctionCat.SecondPrice3
+import AuctionCat.Reserve
 
 /-!
 # AuctionCat.Auction
@@ -83,6 +84,18 @@ def auctionScoreDeviator1 (n : Nat) (bid : Fin n → Fin n)
 def spsbAuctionDeviator1 (n : Nat) (bid : Fin n → Fin n) :
     StochasticMatrix (tensorObj n n) (tensorObj n n) :=
   auctionScoreDeviator1 n bid (secondPriceSealedBid n)
+
+/-- Second-price-sealed-bid (Vickrey) auction with reserve price `r`
+    and two truthful bidders. -/
+def spsbReserveAuction (n : Nat) (r : Fin n) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  auctionScore n (spsbReserve n r)
+
+/-- Vickrey auction with reserve price `r` where bidder 1 uses
+    strategy `bid` and bidder 2 is truthful. -/
+def spsbReserveAuctionDeviator1 (n : Nat) (r : Fin n) (bid : Fin n → Fin n) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  auctionScoreDeviator1 n bid (spsbReserve n r)
 
 /-! ## Mechanism + paired bidding strategy
 
