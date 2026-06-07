@@ -20,6 +20,7 @@ import AuctionCat.KernelFirstPrice
 import AuctionCat.Vickrey3
 import AuctionCat.KernelFirstPrice3
 import AuctionCat.ReserveTruth
+import AuctionCat.Reserve3Truth
 
 /-!
 # AuctionCat

@@ -167,6 +167,12 @@ def spsb3Auction (n : Nat) :
     StochasticMatrix ((n * n) * n) ((n * n) * n) :=
   auctionScore3 n (secondPriceSealedBid3 n)
 
+/-- Three-bidder Vickrey auction with reserve price `r` and truthful
+    bidders. -/
+def spsb3ReserveAuction (n : Nat) (r : Fin n) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  auctionScore3 n (spsb3Reserve n r)
+
 /-- Three-bidder open game where bidder 1 uses strategy `bid` and
     bidders 2, 3 are truthful. -/
 def auctionGame3Deviator1 (n : Nat) (bid : Fin n → Fin n) :
