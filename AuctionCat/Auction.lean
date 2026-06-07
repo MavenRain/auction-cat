@@ -58,6 +58,32 @@ def spsbAuction (n : Nat) :
     StochasticMatrix (tensorObj n n) (tensorObj n n) :=
   auctionScore n (secondPriceSealedBid n)
 
+/-! ## Single-bidder deviator pipeline
+
+  A variant where bidder 1 uses an arbitrary bidding strategy `bid`
+  and bidder 2 stays truthful.  Used to state and prove that
+  truthful spsb dominates any unilateral deviation at the OpenGame
+  pipeline level. -/
+
+/-- Two-bidder open game where bidder 1 uses strategy `bid` and
+    bidder 2 is truthful. -/
+def auctionGameDeviator1 (n : Nat) (bid : Fin n → Fin n) :
+    OpenGame (tensorObj n n) (tensorObj n n)
+             (tensorObj n n) (tensorObj (2 * n) (2 * n)) :=
+  OpenGame.kron (deviatorBidder n bid) (truthfulBidder n)
+
+/-- Score the deviator open game against a mechanism. -/
+def auctionScoreDeviator1 (n : Nat) (bid : Fin n → Fin n)
+    (mech : StochasticMatrix (n * n) ((2 * n) * (2 * n))) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  OpenGame.score (auctionGameDeviator1 n bid) mech
+
+/-- Vickrey auction where bidder 1 uses strategy `bid` and bidder 2
+    is truthful. -/
+def spsbAuctionDeviator1 (n : Nat) (bid : Fin n → Fin n) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  auctionScoreDeviator1 n bid (secondPriceSealedBid n)
+
 /-! ## Mechanism + paired bidding strategy
 
   Composes a deterministic strategy for each of the two bidders with

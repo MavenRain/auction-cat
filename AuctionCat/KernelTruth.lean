@@ -407,4 +407,130 @@ theorem spsb_bidder1_pipeline_dominance (n : Nat) (bid : Fin n → Fin n)
   rw [spsbAuction_eq_detMatrix]
   exact spsb_bidder1_kernel_dominance n bid v_joint
 
+/-! ## Deviator pipeline ↔ deterministic outcome function
+
+  Mirrors the truthful side: identifies the view side of the
+  deviator pipeline as a deterministic kernel, then chains to give
+  `spsbAuctionDeviator1 n bid = detMatrix (spsbAuctionDeviator1Fn n bid)`.
+  The update side is shared with the truthful pipeline (both bidders'
+  utility computations are `truthfulUtilityFn`). -/
+
+/-- The deterministic underlying function of `(auctionGameDeviator1 n bid).view`.
+    Stores the original joint valuation `v` in memory and submits
+    `Fin.pair (bid v1) v2` as the joint bid. -/
+def auctionViewDeviator1Fn (n : Nat) (bid : Fin n → Fin n)
+    (v : Fin (n * n)) : Fin ((n * n) * (n * n)) :=
+  Fin.pair v (Fin.pair (bid (Fin.first v)) (Fin.second v))
+
+/-- `(auctionGameDeviator1 n bid).view = detMatrix (auctionViewDeviator1Fn n bid)`. -/
+theorem auctionGameDeviator1_view_eq_detMatrix (n : Nat) (bid : Fin n → Fin n) :
+    (auctionGameDeviator1 n bid).view
+    = detMatrix (auctionViewDeviator1Fn n bid) := by
+  have h_mid : (OpenGamesCat.middleInterchange n n n n :
+                  StochasticMatrix ((n * n) * (n * n)) ((n * n) * (n * n)))
+              = detMatrix (middleInterchangeFn n n n n) :=
+    middleInterchange_eq_detMatrix n n n n
+  have h_view : (auctionGameDeviator1 n bid).view
+              = StochasticMatrix.comp
+                  (StochasticMatrix.kron
+                    (detMatrix (fun v : Fin n => Fin.pair v (bid v)))
+                    (detMatrix (@copyFin n)))
+                  (detMatrix (middleInterchangeFn n n n n)) := by
+    show StochasticMatrix.comp
+          (StochasticMatrix.kron
+            (detMatrix (fun v : Fin n => Fin.pair v (bid v)))
+            (copy n))
+          (OpenGamesCat.middleInterchange n n n n :
+              StochasticMatrix ((n * n) * (n * n)) ((n * n) * (n * n)))
+        = _
+    rw [copy_eq_detMatrix, h_mid]
+    rfl
+  rw [h_view, kron_detMatrix, detMatrix_comp]
+  congr 1
+  funext v
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold middleInterchangeFn copyFin auctionViewDeviator1Fn
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+  rw [Fin.pair_first_second v]
+
+/-- `(auctionGameDeviator1 n bid).update = (auctionGame n).update`.  Both
+    bidders' utility computations are `truthfulUtilityFn` regardless of
+    the bid strategy, so the update side is unchanged. -/
+theorem auctionGameDeviator1_update_eq_auctionGame_update
+    (n : Nat) (bid : Fin n → Fin n) :
+    (auctionGameDeviator1 n bid).update = (auctionGame n).update := rfl
+
+/-- Generalised bidder-1 Vickrey identity: for any actual valuation
+    `v_actual` and any submitted bids `b1`, `b2`, the truthful utility
+    against the spsb outcome at `Fin.pair b1 b2` equals
+    `vickreyUtility n v_actual b1 b2`. -/
+theorem truthfulUtility_spsbFn_general_bidder1 (n : Nat)
+    (v_actual b1 b2 : Fin n) :
+    truthfulUtilityFn n
+        (Fin.pair v_actual (Fin.first (spsbFn n (Fin.pair b1 b2))))
+    = vickreyUtility n v_actual b1 b2 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v_actual.isLt
+  have h2 : 0 < 2 := by decide
+  by_cases hge : b1.val ≥ b2.val
+  · have h_first :
+        Fin.first (spsbFn n (Fin.pair b1 b2))
+        = Fin.pair (⟨1, by decide⟩ : Fin 2) b2 := by
+      unfold spsbFn
+      simp [hge, Fin.first_pair, Fin.second_pair hn]
+    rw [h_first]
+    unfold truthfulUtilityFn vickreyUtility
+    simp [Fin.first_pair, Fin.second_pair hn, Fin.second_pair h2, hge]
+  · have h_first :
+        Fin.first (spsbFn n (Fin.pair b1 b2))
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold spsbFn
+      simp [hge, Fin.first_pair, Fin.second_pair hn]
+    rw [h_first]
+    unfold truthfulUtilityFn vickreyUtility
+    simp [Fin.first_pair, Fin.second_pair hn, hge]
+
+/-- `spsbAuctionDeviator1 n bid = detMatrix (spsbAuctionDeviator1Fn n bid)`. -/
+theorem spsbAuctionDeviator1_eq_detMatrix (n : Nat) (bid : Fin n → Fin n) :
+    spsbAuctionDeviator1 n bid = detMatrix (spsbAuctionDeviator1Fn n bid) := by
+  have h_score : spsbAuctionDeviator1 n bid
+              = StochasticMatrix.comp ((auctionGameDeviator1 n bid).view)
+                 (StochasticMatrix.comp
+                   (StochasticMatrix.kron (idMatrix (n * n))
+                                           (secondPriceSealedBid n))
+                   ((auctionGameDeviator1 n bid).update)) := rfl
+  rw [h_score, auctionGameDeviator1_view_eq_detMatrix n bid,
+      auctionGameDeviator1_update_eq_auctionGame_update n bid,
+      auctionGame_update_eq_detMatrix n,
+      idMatrix_eq_detMatrix (n * n)]
+  show (detMatrix (auctionViewDeviator1Fn n bid)).comp
+        ((StochasticMatrix.kron (detMatrix (fun i : Fin (n * n) => i))
+                                 (detMatrix (spsbFn n))).comp
+         (detMatrix (auctionUpdateFn n)))
+      = detMatrix (spsbAuctionDeviator1Fn n bid)
+  rw [kron_detMatrix, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext v
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold auctionViewDeviator1Fn auctionUpdateFn spsbAuctionDeviator1Fn
+  simp only [Fin.first_pair, Fin.second_pair hnn]
+  rw [truthfulUtility_spsbFn_general_bidder1]
+  -- Bidder 2: use the existing truthfulUtility_spsbFn_bidder2 by
+  -- specialising its v_joint argument to `Fin.pair (bid v1) v2`.
+  have h_b2 := truthfulUtility_spsbFn_bidder2 n
+                (Fin.pair (bid (Fin.first v)) (Fin.second v))
+  simp only [Fin.first_pair, Fin.second_pair hn] at h_b2
+  rw [h_b2]
+
+/-- **Pipeline-vs-pipeline Vickrey truthfulness** (bidder 1, 2 bidders).
+    Bidder 1's expected utility in `spsbAuction n` weakly dominates
+    bidder 1's expected utility in `spsbAuctionDeviator1 n bid`. -/
+theorem spsb_bidder1_pipeline_dominates_pipeline (n : Nat)
+    (bid : Fin n → Fin n) (v_joint : Fin (n * n)) :
+    auctionBidder1Util n (spsbAuction n) v_joint
+    ≥ auctionBidder1Util n (spsbAuctionDeviator1 n bid) v_joint := by
+  rw [spsbAuction_eq_detMatrix, spsbAuctionDeviator1_eq_detMatrix]
+  exact spsb_bidder1_kernel_dominance n bid v_joint
+
 end AuctionCat
