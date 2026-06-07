@@ -53,4 +53,18 @@ def firstPriceSealedBid (n : Nat) :
     StochasticMatrix (n * n) ((2 * n) * (2 * n)) :=
   detMatrix (fpsbFn n)
 
+/-! ## Truthful play under fpsb
+
+  Under truthful bidding, every bidder either loses (utility = 0) or
+  wins and pays their own bid = their own valuation, so utility =
+  v - v = 0.  The closed-form outcome is the constant zero-utility
+  pair, regardless of valuations. -/
+
+/-- The deterministic outcome of `fpsbAuction n` at any joint
+    valuation under truthful bidding: both bidders get zero utility. -/
+def fpsbAuctionFn (n : Nat) (v_joint : Fin (n * n)) : Fin (n * n) :=
+  let hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt
+  let hn  : 0 < n     := Nat.pos_of_mul_pos_right hnn
+  Fin.pair (⟨0, hn⟩ : Fin n) (⟨0, hn⟩ : Fin n)
+
 end AuctionCat
