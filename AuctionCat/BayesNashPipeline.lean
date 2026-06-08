@@ -172,4 +172,65 @@ theorem spsbReserveAuction_truthful_best_response_pipeline (n : Nat)
   exact vickreyReserve_truthful_best_response n r bid (fun v => v) prior
     h_nn v1
 
+/-! ## Three-bidder pipeline Bayes-Nash -/
+
+/-- Bidder 1's expected utility from a 3-bidder auction kernel
+    `auction`, averaged over the joint valuation `(v2, v3)` of the
+    other two bidders under prior `prior23`, fixing bidder 1's
+    valuation at `v1`. -/
+def auctionExpectedBidder1Util3 (n : Nat)
+    (auction : StochasticMatrix ((n * n) * n) ((n * n) * n))
+    (prior23 : Fin (n * n) → Rat) (v1 : Fin n) : Rat :=
+  Fin.sumRat (fun v23 : Fin (n * n) =>
+    prior23 v23 * auctionBidder1Util3 n auction
+      (Fin.pair (Fin.pair v1 (Fin.first v23)) (Fin.second v23)))
+
+/-- Under truthful play, the pipeline-level expected utility of
+    `spsb3Auction n` reduces to the kernel-level
+    `vickreyExpectedUtility3` with three truthful strategies. -/
+theorem auctionExpectedBidder1Util3_spsb3Auction_eq (n : Nat)
+    (prior23 : Fin (n * n) → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util3 n (spsb3Auction n) prior23 v1
+    = vickreyExpectedUtility3 n (fun v => v) (fun v => v) (fun v => v)
+                                v1 prior23 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v1.isLt
+  unfold auctionExpectedBidder1Util3 vickreyExpectedUtility3
+  congr 1
+  funext v23
+  rw [spsb3Auction_eq_detMatrix, auctionBidder1Util3_det]
+  unfold spsbAuctionFn3
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+
+/-- Under a single-bidder-1 deviator strategy `bid`, the pipeline-level
+    expected utility of `spsb3AuctionDeviator1 n bid` reduces to the
+    kernel-level `vickreyExpectedUtility3` with `(bid, truthful, truthful)`. -/
+theorem auctionExpectedBidder1Util3_spsb3AuctionDeviator1_eq (n : Nat)
+    (bid : Fin n → Fin n) (prior23 : Fin (n * n) → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util3 n (spsb3AuctionDeviator1 n bid) prior23 v1
+    = vickreyExpectedUtility3 n bid (fun v => v) (fun v => v) v1 prior23 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v1.isLt
+  unfold auctionExpectedBidder1Util3 vickreyExpectedUtility3
+  congr 1
+  funext v23
+  rw [spsb3AuctionDeviator1_eq_detMatrix, auctionBidder1Util3_det]
+  unfold spsbAuctionDeviator1Fn3
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+
+/-- **Three-bidder pipeline-level best response**: truthful bidding
+    gives bidder 1 the highest expected utility against
+    `spsb3Auction n` (truthful bidders 2, 3) under any joint prior
+    with nonnegative weights, beating any deviator strategy. -/
+theorem spsb3Auction_truthful_best_response_pipeline (n : Nat)
+    (prior23 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior23 v)
+    (bid : Fin n → Fin n) (v1 : Fin n) :
+    auctionExpectedBidder1Util3 n (spsb3Auction n) prior23 v1
+    ≥ auctionExpectedBidder1Util3 n (spsb3AuctionDeviator1 n bid)
+                                     prior23 v1 := by
+  rw [auctionExpectedBidder1Util3_spsb3Auction_eq,
+      auctionExpectedBidder1Util3_spsb3AuctionDeviator1_eq]
+  exact vickrey3_truthful_best_response n bid (fun v => v) (fun v => v)
+    prior23 h_nn v1
+
 end AuctionCat

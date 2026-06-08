@@ -1,4 +1,5 @@
 import AuctionCat.SecondPrice
+import AuctionCat.Vickrey3
 
 /-!
 # AuctionCat.BayesNash
@@ -93,5 +94,33 @@ theorem vickrey_truthful_is_bayes_nash (n : Nat) (p : Fin n → Rat)
     IsBayesNashVickrey n (fun v => v) (fun v => v) p :=
   ⟨vickrey_truthful_best_response n (fun v => v) p h_nn,
    vickrey_truthful_best_response n (fun v => v) p h_nn⟩
+
+/-! ## Three-bidder Vickrey Bayes-Nash -/
+
+/-- Bidder 1's expected utility in a 3-bidder Vickrey auction with
+    strategies `(s1, s2, s3)`, valuation `v1`, and joint prior `p23`
+    on bidders 2's and 3's valuations (encoded as `Fin (n * n)`). -/
+def vickreyExpectedUtility3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (v1 : Fin n) (p23 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v23 : Fin (n * n) =>
+    p23 v23 *
+      ((vickreyUtility3 n v1 (s1 v1) (s2 (Fin.first v23))
+                              (s3 (Fin.second v23))).val : Nat).cast)
+
+/-- Truthful bidding is a best response to any opposing strategies
+    `(s2, s3)` in 3-bidder Vickrey, for any joint prior with
+    nonnegative weights. -/
+theorem vickrey3_truthful_best_response (n : Nat)
+    (s1' s2 s3 : Fin n → Fin n) (p23 : Fin (n * n) → Rat)
+    (h_nn : ∀ v23, 0 ≤ p23 v23) (v1 : Fin n) :
+    vickreyExpectedUtility3 n (fun v => v) s2 s3 v1 p23
+    ≥ vickreyExpectedUtility3 n s1' s2 s3 v1 p23 := by
+  unfold vickreyExpectedUtility3
+  apply Fin.sumRat_le
+  intro v23
+  apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v23)
+  have := vickrey3_truthful_dominant n v1 (s1' v1)
+            (s2 (Fin.first v23)) (s3 (Fin.second v23))
+  exact_mod_cast this
 
 end AuctionCat
