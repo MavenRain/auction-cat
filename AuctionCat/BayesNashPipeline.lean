@@ -2,6 +2,7 @@ import AuctionCat.BayesNash
 import AuctionCat.KernelTruth
 import AuctionCat.ReserveTruth
 import AuctionCat.Reserve3Truth
+import AuctionCat.Envelope
 
 /-!
 # AuctionCat.BayesNashPipeline
@@ -316,5 +317,37 @@ theorem spsb3ReserveAuction_truthful_best_response_pipeline (n : Nat)
       auctionExpectedBidder1Util3_spsb3ReserveAuctionDeviator1_eq]
   exact vickreyReserve3_truthful_best_response n r bid (fun v => v)
     (fun v => v) prior23 h_nn v1
+
+/-! ## Pipeline ↔ envelope theorem connection
+
+  The envelope theorem `vickrey_envelope` says
+  `vickreyEqUtility = vickreyEnvelopeIntegral`.  Combined with the
+  pipeline equivalence, this yields:
+
+  bidder 1's expected pipeline utility under truthful `spsbAuction n`
+  = Myerson envelope integral of the Vickrey allocation rule.
+
+  This is the foundation of revenue equivalence: two auctions whose
+  allocation rules agree yield the same expected pipeline utility
+  (and hence the same expected revenue). -/
+
+/-- The pipeline-level expected utility under truthful `spsbAuction n`
+    coincides with the kernel-level `vickreyEqUtility`. -/
+theorem auctionExpectedBidder1Util_spsbAuction_eq_vickreyEqUtility
+    (n : Nat) (prior : Fin n → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util n (spsbAuction n) prior v1
+    = vickreyEqUtility n prior v1 := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq]
+  rfl
+
+/-- **Pipeline ↔ Myerson envelope**: bidder 1's expected pipeline
+    utility under truthful `spsbAuction n` equals the Myerson
+    envelope integral `Σ_{t < v1} vickreyAllocation t`. -/
+theorem auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral
+    (n : Nat) (prior : Fin n → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util n (spsbAuction n) prior v1
+    = vickreyEnvelopeIntegral n prior v1 := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq_vickreyEqUtility]
+  exact vickrey_envelope n prior v1
 
 end AuctionCat
