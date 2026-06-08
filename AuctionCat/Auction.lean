@@ -97,6 +97,12 @@ def spsbReserveAuctionDeviator1 (n : Nat) (r : Fin n) (bid : Fin n → Fin n) :
     StochasticMatrix (tensorObj n n) (tensorObj n n) :=
   auctionScoreDeviator1 n bid (spsbReserve n r)
 
+/-- First-price-sealed-bid auction with reserve price `r` and two
+    truthful bidders. -/
+def fpsbReserveAuction (n : Nat) (r : Fin n) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  auctionScore n (fpsbReserve n r)
+
 /-! ## Mechanism + paired bidding strategy
 
   Composes a deterministic strategy for each of the two bidders with
@@ -197,5 +203,11 @@ def spsb3AuctionDeviator1 (n : Nat) (bid : Fin n → Fin n) :
 def spsb3ReserveAuctionDeviator1 (n : Nat) (r : Fin n) (bid : Fin n → Fin n) :
     StochasticMatrix ((n * n) * n) ((n * n) * n) :=
   auctionScoreDeviator1_3 n bid (spsb3Reserve n r)
+
+/-- Three-bidder first-price sealed-bid auction with reserve price
+    `r` and truthful bidders. -/
+def fpsb3ReserveAuction (n : Nat) (r : Fin n) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  auctionScore3 n (fpsb3Reserve n r)
 
 end AuctionCat

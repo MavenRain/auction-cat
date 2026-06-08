@@ -199,4 +199,180 @@ theorem fpsb3Auction_eq_detMatrix (n : Nat) :
       truthfulUtility_fpsb3Fn_bidder2,
       truthfulUtility_fpsb3Fn_bidder3]
 
+/-! ## fpsb3Reserve truthful pipeline (also degenerate) -/
+
+/-- Bidder 1's truthful utility against the fpsb3Reserve outcome is `0`. -/
+theorem truthfulUtility_fpsb3ReserveFn_bidder1 (n : Nat) (r : Fin n)
+    (v_joint : Fin ((n * n) * n)) :
+    truthfulUtilityFn n
+        (Fin.pair (Fin.first (Fin.first v_joint))
+                  (Fin.first (Fin.first (fpsb3ReserveFn n r v_joint))))
+    = (⟨0, Nat.pos_of_mul_pos_right (Nat.pos_of_mul_pos_right
+              (Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt))⟩
+        : Fin n) := by
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2 : 0 < 2 := by decide
+  by_cases hwin1 : v_joint.val % n ≥ v_joint.val % (n * n) / n
+                 ∧ v_joint.val % n ≥ v_joint.val / (n * n)
+                 ∧ v_joint.val % n ≥ r.val
+  · have h_first :
+        Fin.first (Fin.first (fpsb3ReserveFn n r v_joint))
+        = Fin.pair (⟨1, by decide⟩ : Fin 2) (Fin.first (Fin.first v_joint)) := by
+      unfold fpsb3ReserveFn
+      simp [hwin1, Fin.first_pair]
+    rw [h_first]
+    unfold truthfulUtilityFn
+    simp [Fin.first_pair, Fin.second_pair hn]
+    omega
+  · have h_first :
+        Fin.first (Fin.first (fpsb3ReserveFn n r v_joint))
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold fpsb3ReserveFn
+      simp [hwin1, Fin.first_pair]
+    rw [h_first]
+    unfold truthfulUtilityFn
+    simp [Fin.first_pair, Fin.second_pair hn]
+
+/-- Bidder 2's truthful utility against the fpsb3Reserve outcome is `0`. -/
+theorem truthfulUtility_fpsb3ReserveFn_bidder2 (n : Nat) (r : Fin n)
+    (v_joint : Fin ((n * n) * n)) :
+    truthfulUtilityFn n
+        (Fin.pair (Fin.second (Fin.first v_joint))
+                  (Fin.second (Fin.first (fpsb3ReserveFn n r v_joint))))
+    = (⟨0, Nat.pos_of_mul_pos_right (Nat.pos_of_mul_pos_right
+              (Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt))⟩
+        : Fin n) := by
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2 : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  by_cases hwin1 : v_joint.val % n ≥ v_joint.val % (n * n) / n
+                 ∧ v_joint.val % n ≥ v_joint.val / (n * n)
+                 ∧ v_joint.val % n ≥ r.val
+  · have h_second :
+        Fin.second (Fin.first (fpsb3ReserveFn n r v_joint))
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold fpsb3ReserveFn
+      simp [hwin1, Fin.first_pair, Fin.second_pair h2n]
+    rw [h_second]
+    unfold truthfulUtilityFn
+    simp [Fin.first_pair, Fin.second_pair hn]
+  · by_cases hwin2 : v_joint.val % (n * n) / n ≥ v_joint.val / (n * n)
+                   ∧ v_joint.val % (n * n) / n ≥ r.val
+    · have h_second :
+          Fin.second (Fin.first (fpsb3ReserveFn n r v_joint))
+          = Fin.pair (⟨1, by decide⟩ : Fin 2)
+              (Fin.second (Fin.first v_joint)) := by
+        unfold fpsb3ReserveFn
+        simp [hwin1, hwin2, Fin.first_pair, Fin.second_pair h2n]
+      rw [h_second]
+      unfold truthfulUtilityFn
+      simp [Fin.first_pair, Fin.second_pair hn]
+      omega
+    · have h_second :
+          Fin.second (Fin.first (fpsb3ReserveFn n r v_joint))
+          = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+        unfold fpsb3ReserveFn
+        simp [hwin1, hwin2, Fin.first_pair, Fin.second_pair h2n]
+      rw [h_second]
+      unfold truthfulUtilityFn
+      simp [Fin.first_pair, Fin.second_pair hn]
+
+/-- Bidder 3's truthful utility against the fpsb3Reserve outcome is `0`. -/
+theorem truthfulUtility_fpsb3ReserveFn_bidder3 (n : Nat) (r : Fin n)
+    (v_joint : Fin ((n * n) * n)) :
+    truthfulUtilityFn n
+        (Fin.pair (Fin.second v_joint)
+                  (Fin.second (fpsb3ReserveFn n r v_joint)))
+    = (⟨0, Nat.pos_of_mul_pos_right (Nat.pos_of_mul_pos_right
+              (Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt))⟩
+        : Fin n) := by
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2 : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  have h2n2n : 0 < (2 * n) * (2 * n) := Nat.mul_pos h2n h2n
+  by_cases hwin1 : v_joint.val % n ≥ v_joint.val % (n * n) / n
+                 ∧ v_joint.val % n ≥ v_joint.val / (n * n)
+                 ∧ v_joint.val % n ≥ r.val
+  · have h_second :
+        Fin.second (fpsb3ReserveFn n r v_joint)
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold fpsb3ReserveFn
+      simp [hwin1, Fin.second_pair h2n2n]
+    rw [h_second]
+    unfold truthfulUtilityFn
+    simp [Fin.first_pair, Fin.second_pair hn]
+  · by_cases hwin2 : v_joint.val % (n * n) / n ≥ v_joint.val / (n * n)
+                   ∧ v_joint.val % (n * n) / n ≥ r.val
+    · have h_second :
+          Fin.second (fpsb3ReserveFn n r v_joint)
+          = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+        unfold fpsb3ReserveFn
+        simp [hwin1, hwin2, Fin.second_pair h2n2n]
+      rw [h_second]
+      unfold truthfulUtilityFn
+      simp [Fin.first_pair, Fin.second_pair hn]
+    · by_cases hwin3 : v_joint.val / (n * n) ≥ r.val
+      · have h_second :
+            Fin.second (fpsb3ReserveFn n r v_joint)
+            = Fin.pair (⟨1, by decide⟩ : Fin 2) (Fin.second v_joint) := by
+          unfold fpsb3ReserveFn
+          simp [hwin1, hwin2, hwin3, Fin.second_pair h2n2n]
+        rw [h_second]
+        unfold truthfulUtilityFn
+        simp [Fin.first_pair, Fin.second_pair hn]
+        omega
+      · have h_second :
+            Fin.second (fpsb3ReserveFn n r v_joint)
+            = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+          unfold fpsb3ReserveFn
+          simp [hwin1, hwin2, hwin3, Fin.second_pair h2n2n]
+        rw [h_second]
+        unfold truthfulUtilityFn
+        simp [Fin.first_pair, Fin.second_pair hn]
+
+/-- **Open-game-pipeline connection for fpsb3Reserve truthful**: the
+    three-bidder fpsb-with-reserve kernel under truthful play
+    reduces to the same constant zero-utility triple as fpsb3
+    without reserve. -/
+theorem fpsb3ReserveAuction_eq_detMatrix (n : Nat) (r : Fin n) :
+    fpsb3ReserveAuction n r = detMatrix (fpsbAuctionFn3 n) := by
+  have h_score : fpsb3ReserveAuction n r
+              = StochasticMatrix.comp ((auctionGame3 n).view)
+                 (StochasticMatrix.comp
+                   (StochasticMatrix.kron (idMatrix ((n * n) * n))
+                                           (fpsb3Reserve n r))
+                   ((auctionGame3 n).update)) := rfl
+  rw [h_score, auctionGame3_view_eq_detMatrix n,
+      auctionGame3_update_eq_detMatrix n,
+      idMatrix_eq_detMatrix ((n * n) * n)]
+  show (detMatrix (auctionViewFn3 n)).comp
+        ((StochasticMatrix.kron
+            (detMatrix (fun i : Fin ((n * n) * n) => i))
+            (detMatrix (fpsb3ReserveFn n r))).comp
+         (detMatrix (auctionUpdateFn3 n)))
+      = detMatrix (fpsbAuctionFn3 n)
+  rw [kron_detMatrix, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext v
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold auctionViewFn3 auctionUpdateFn3 fpsbAuctionFn3
+  simp only [Fin.first_pair, Fin.second_pair hnnn]
+  unfold auctionUpdateFn
+  simp only [Fin.first_pair, Fin.second_pair hnn]
+  rw [truthfulUtility_fpsb3ReserveFn_bidder1,
+      truthfulUtility_fpsb3ReserveFn_bidder2,
+      truthfulUtility_fpsb3ReserveFn_bidder3]
+
 end AuctionCat
