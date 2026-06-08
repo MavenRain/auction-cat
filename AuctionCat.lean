@@ -21,6 +21,7 @@ import AuctionCat.Vickrey3
 import AuctionCat.KernelFirstPrice3
 import AuctionCat.ReserveTruth
 import AuctionCat.Reserve3Truth
+import AuctionCat.BayesNashPipeline
 
 /-!
 # AuctionCat
