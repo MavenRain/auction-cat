@@ -60,6 +60,27 @@ def secondPriceSealedBid (n : Nat) :
   bid `b2`; the theorem shows that, for any deviation bid `b1`,
   truthful bidding gives utility at least as high as the deviation. -/
 
+/-- Bidder 2's truncated utility in a 2-bidder Vickrey auction given
+    valuation `v`, opponent's bid `opp_bid`, and own bid `my_bid`.
+    Bidder 2 wins iff `opp_bid < my_bid` (STRICT; ties go to bidder 1
+    by the `b1 ≥ b2` rule in `spsbFn`); winner pays `opp_bid`. -/
+def vickreyBidder2Util (n : Nat) (v opp_bid my_bid : Fin n) : Fin n :=
+  if opp_bid.val < my_bid.val then
+    ⟨v.val - opp_bid.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Dominant-strategy truthfulness from bidder 2's perspective:
+    truthful bidding (`my_bid = v`) weakly dominates any deviation. -/
+theorem vickrey_bidder2_truthful_dominant (n : Nat) (v opp_bid bid_val : Fin n) :
+    (vickreyBidder2Util n v opp_bid v).val
+    ≥ (vickreyBidder2Util n v opp_bid bid_val).val := by
+  unfold vickreyBidder2Util
+  by_cases h1 : opp_bid.val < v.val <;>
+  by_cases h2 : opp_bid.val < bid_val.val <;>
+  simp [h1, h2] <;>
+  omega
+
 /-- Bidder 1's truncated utility in a Vickrey auction, given
     valuation `v`, own bid `b1`, and bidder 2's bid `b2`. -/
 def vickreyUtility (n : Nat) (v b1 b2 : Fin n) : Fin n :=
