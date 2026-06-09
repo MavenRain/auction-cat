@@ -487,4 +487,138 @@ theorem spsbAuction_truthful_is_pipeline_bayes_nash (n : Nat)
   ⟨spsbAuction_truthful_best_response_pipeline n prior h_nn,
    spsbAuction_bidder2_truthful_best_response_pipeline n prior h_nn⟩
 
+/-! ## Bidder-2 symmetric pipeline Bayes-Nash for spsbReserve -/
+
+/-- Bidder 2's expected utility in a 2-bidder Vickrey-with-reserve
+    auction under strategy profile `(s1, s2)`, reserve `r`, valuation
+    `v2`, and prior on bidder 1's valuation. -/
+def vickreyReserveBidder2ExpectedUtility (n : Nat) (r : Fin n)
+    (s1 s2 : Fin n → Fin n) (v2 : Fin n) (p : Fin n → Rat) : Rat :=
+  Fin.sumRat (fun v1 : Fin n =>
+    p v1 * ((vickreyReserveBidder2Util n v2 (s1 v1) (s2 v2) r).val
+              : Nat).cast)
+
+/-- Truthful bidding (`s2 = id`) is bidder 2's best response in
+    reserve-spsb against any opponent strategy `s1`. -/
+theorem vickreyReserve_bidder2_truthful_best_response (n : Nat) (r : Fin n)
+    (s1 s2' : Fin n → Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) (v2 : Fin n) :
+    vickreyReserveBidder2ExpectedUtility n r s1 (fun v => v) v2 p
+    ≥ vickreyReserveBidder2ExpectedUtility n r s1 s2' v2 p := by
+  unfold vickreyReserveBidder2ExpectedUtility
+  apply Fin.sumRat_le_local
+  intro v1
+  apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v1)
+  have := vickreyReserve_bidder2_truthful_dominant n v2 (s1 v1) (s2' v2) r
+  exact_mod_cast this
+
+/-- Bridge: `vickreyReserveUtility v v opp r = vickreyReserveBidder2Util v opp v r`
+    pointwise as `Fin n` vals (both encode bidder 2's utility under
+    truthful reserve-spsb with different tie-breaking conventions). -/
+theorem vickreyReserveUtility_val_eq_vickreyReserveBidder2Util_val_truthful
+    (n : Nat) (v opp r : Fin n) :
+    (vickreyReserveUtility n v v opp r).val
+    = (vickreyReserveBidder2Util n v opp v r).val := by
+  unfold vickreyReserveUtility vickreyReserveBidder2Util
+  by_cases hopp : opp.val < v.val
+  · by_cases hr : v.val ≥ r.val
+    · have hge_opp : v.val ≥ opp.val := by omega
+      simp [hge_opp, hr, hopp]
+    · have hnotge : ¬ (v.val ≥ opp.val ∧ v.val ≥ r.val) := fun ⟨_, h⟩ => hr h
+      have hnotcond : ¬ (opp.val < v.val ∧ v.val ≥ r.val) :=
+        fun ⟨_, h⟩ => hr h
+      simp [hnotge, hnotcond]
+  · by_cases hge : v.val ≥ opp.val
+    · have hveq : v.val = opp.val := by omega
+      by_cases hr : v.val ≥ r.val
+      · have hmax : max r.val opp.val = v.val := by omega
+        simp [hge, hr, hopp]
+        omega
+      · have hnotge : ¬ (v.val ≥ opp.val ∧ v.val ≥ r.val) := fun ⟨_, h⟩ => hr h
+        have hnotcond : ¬ (opp.val < v.val ∧ v.val ≥ r.val) :=
+          fun ⟨_, h⟩ => hr h
+        simp [hnotge, hnotcond]
+    · have hnotge : ¬ (v.val ≥ opp.val ∧ v.val ≥ r.val) := fun ⟨h, _⟩ => hge h
+      have hnotcond : ¬ (opp.val < v.val ∧ v.val ≥ r.val) :=
+        fun ⟨h, _⟩ => hopp h
+      simp [hnotge, hnotcond]
+
+/-- Under truthful play, the pipeline-level bidder-2 expected utility
+    of `spsbReserveAuction n r` reduces to
+    `vickreyReserveBidder2ExpectedUtility` with `(truthful, truthful)`. -/
+theorem auctionExpectedBidder2Util_spsbReserveAuction_eq (n : Nat)
+    (r : Fin n) (prior : Fin n → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbReserveAuction n r) prior v2
+    = vickreyReserveBidder2ExpectedUtility n r (fun v => v) (fun v => v)
+                                            v2 prior := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  unfold auctionExpectedBidder2Util vickreyReserveBidder2ExpectedUtility
+  congr 1
+  funext v1
+  rw [spsbReserveAuction_eq_detMatrix, auctionBidder2Util_det]
+  unfold spsbReserveAuctionFn
+  simp only [Fin.first_pair, Fin.second_pair hn]
+  have hbridge :
+      (vickreyReserveUtility n v2 v2 v1 r).val
+      = (vickreyReserveBidder2Util n v2 v1 v2 r).val :=
+    vickreyReserveUtility_val_eq_vickreyReserveBidder2Util_val_truthful n
+      v2 v1 r
+  rw [show (((vickreyReserveUtility n v2 v2 v1 r).val : Nat) : Rat)
+        = (((vickreyReserveBidder2Util n v2 v1 v2 r).val : Nat) : Rat) from by
+        exact_mod_cast hbridge]
+
+/-- Under bidder-2 deviator strategy `bid`, the pipeline-level bidder-2
+    expected utility of `spsbReserveAuctionDeviator2 n r bid` reduces
+    to `vickreyReserveBidder2ExpectedUtility` with `(truthful, bid)`. -/
+theorem auctionExpectedBidder2Util_spsbReserveAuctionDeviator2_eq (n : Nat)
+    (r : Fin n) (bid : Fin n → Fin n) (prior : Fin n → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbReserveAuctionDeviator2 n r bid)
+                                  prior v2
+    = vickreyReserveBidder2ExpectedUtility n r (fun v => v) bid v2 prior := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  unfold auctionExpectedBidder2Util vickreyReserveBidder2ExpectedUtility
+  congr 1
+  funext v1
+  rw [spsbReserveAuctionDeviator2_eq_detMatrix, auctionBidder2Util_det]
+  unfold spsbReserveAuctionDeviator2Fn
+  simp only [Fin.first_pair, Fin.second_pair hn]
+
+/-- **Pipeline-level bidder-2 best response for spsbReserve**.
+    Truthful bidding gives bidder 2 the highest expected utility
+    against `spsbReserveAuction n r` under any prior with nonnegative
+    weights, beating any deviator strategy `bid`. -/
+theorem spsbReserveAuction_bidder2_truthful_best_response_pipeline
+    (n : Nat) (r : Fin n) (prior : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ prior v) (bid : Fin n → Fin n) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbReserveAuction n r) prior v2
+    ≥ auctionExpectedBidder2Util n
+        (spsbReserveAuctionDeviator2 n r bid) prior v2 := by
+  rw [auctionExpectedBidder2Util_spsbReserveAuction_eq,
+      auctionExpectedBidder2Util_spsbReserveAuctionDeviator2_eq]
+  exact vickreyReserve_bidder2_truthful_best_response n r (fun v => v) bid
+    prior h_nn v2
+
+/-- A strategy profile is a *pipeline Bayes-Nash equilibrium of
+    spsbReserveAuction* under prior `p`. -/
+def IsTruthfulPipelineBayesNashSpsbReserveAuction (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) : Prop :=
+  (∀ (bid : Fin n → Fin n) (v1 : Fin n),
+    auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v1
+    ≥ auctionExpectedBidder1Util n (spsbReserveAuctionDeviator1 n r bid)
+                                    prior v1)
+  ∧
+  (∀ (bid : Fin n → Fin n) (v2 : Fin n),
+    auctionExpectedBidder2Util n (spsbReserveAuction n r) prior v2
+    ≥ auctionExpectedBidder2Util n (spsbReserveAuctionDeviator2 n r bid)
+                                    prior v2)
+
+/-- **Pipeline-level Bayes-Nash truthfulness for spsbReserveAuction**.
+    Truthful-truthful is a Bayes-Nash equilibrium at the OpenGame
+    pipeline level under any prior with nonnegative weights. -/
+theorem spsbReserveAuction_truthful_is_pipeline_bayes_nash (n : Nat)
+    (r : Fin n) (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    IsTruthfulPipelineBayesNashSpsbReserveAuction n r prior :=
+  ⟨spsbReserveAuction_truthful_best_response_pipeline n r prior h_nn,
+   spsbReserveAuction_bidder2_truthful_best_response_pipeline n r prior h_nn⟩
+
 end AuctionCat
