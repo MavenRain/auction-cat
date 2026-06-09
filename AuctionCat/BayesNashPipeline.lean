@@ -464,4 +464,27 @@ theorem spsbAuction_bidder2_truthful_best_response_pipeline (n : Nat)
   exact vickrey_bidder2_truthful_best_response n (fun v => v) bid prior
     h_nn v2
 
+/-- A strategy profile is a *pipeline Bayes-Nash equilibrium of
+    spsbAuction* under prior `p` iff neither bidder can improve their
+    expected pipeline utility by unilateral deviation.  The
+    `IsTruthful*` variant fixes both strategies at truthful. -/
+def IsTruthfulPipelineBayesNashSpsbAuction (n : Nat)
+    (prior : Fin n → Rat) : Prop :=
+  (∀ (bid : Fin n → Fin n) (v1 : Fin n),
+    auctionExpectedBidder1Util n (spsbAuction n) prior v1
+    ≥ auctionExpectedBidder1Util n (spsbAuctionDeviator1 n bid) prior v1)
+  ∧
+  (∀ (bid : Fin n → Fin n) (v2 : Fin n),
+    auctionExpectedBidder2Util n (spsbAuction n) prior v2
+    ≥ auctionExpectedBidder2Util n (spsbAuctionDeviator2 n bid) prior v2)
+
+/-- **Pipeline-level Bayes-Nash truthfulness for spsbAuction**.
+    Truthful-truthful is a Bayes-Nash equilibrium at the OpenGame
+    pipeline level under any prior with nonnegative weights. -/
+theorem spsbAuction_truthful_is_pipeline_bayes_nash (n : Nat)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    IsTruthfulPipelineBayesNashSpsbAuction n prior :=
+  ⟨spsbAuction_truthful_best_response_pipeline n prior h_nn,
+   spsbAuction_bidder2_truthful_best_response_pipeline n prior h_nn⟩
+
 end AuctionCat
