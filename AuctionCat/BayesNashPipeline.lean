@@ -350,4 +350,21 @@ theorem auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral
   rw [auctionExpectedBidder1Util_spsbAuction_eq_vickreyEqUtility]
   exact vickrey_envelope n prior v1
 
+/-- Bidder 1's equilibrium expected utility at type `v1` under
+    Vickrey-with-reserve with both bidders truthful and prior `p` on
+    bidder 2's valuation.  Reserve-side analog of `vickreyEqUtility`. -/
+def vickreyReserveEqUtility (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) (v1 : Fin n) : Rat :=
+  Fin.sumRat (fun v2 : Fin n =>
+    prior v2 * ((vickreyReserveUtility n v1 v1 v2 r).val : Nat).cast)
+
+/-- The pipeline-level expected utility under truthful
+    `spsbReserveAuction n r` coincides with `vickreyReserveEqUtility`. -/
+theorem auctionExpectedBidder1Util_spsbReserveAuction_eq_vickreyReserveEqUtility
+    (n : Nat) (r : Fin n) (prior : Fin n → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v1
+    = vickreyReserveEqUtility n r prior v1 := by
+  rw [auctionExpectedBidder1Util_spsbReserveAuction_eq]
+  rfl
+
 end AuctionCat

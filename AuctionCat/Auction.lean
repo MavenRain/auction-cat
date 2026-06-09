@@ -85,6 +85,25 @@ def spsbAuctionDeviator1 (n : Nat) (bid : Fin n → Fin n) :
     StochasticMatrix (tensorObj n n) (tensorObj n n) :=
   auctionScoreDeviator1 n bid (secondPriceSealedBid n)
 
+/-- Two-bidder open game where bidder 1 is truthful and bidder 2 uses
+    strategy `bid`. -/
+def auctionGameDeviator2 (n : Nat) (bid : Fin n → Fin n) :
+    OpenGame (tensorObj n n) (tensorObj n n)
+             (tensorObj n n) (tensorObj (2 * n) (2 * n)) :=
+  OpenGame.kron (truthfulBidder n) (deviatorBidder n bid)
+
+/-- Score the bidder-2 deviator open game against a mechanism. -/
+def auctionScoreDeviator2 (n : Nat) (bid : Fin n → Fin n)
+    (mech : StochasticMatrix (n * n) ((2 * n) * (2 * n))) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  OpenGame.score (auctionGameDeviator2 n bid) mech
+
+/-- Vickrey auction where bidder 1 is truthful and bidder 2 uses
+    strategy `bid`. -/
+def spsbAuctionDeviator2 (n : Nat) (bid : Fin n → Fin n) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  auctionScoreDeviator2 n bid (secondPriceSealedBid n)
+
 /-- Second-price-sealed-bid (Vickrey) auction with reserve price `r`
     and two truthful bidders. -/
 def spsbReserveAuction (n : Nat) (r : Fin n) :
