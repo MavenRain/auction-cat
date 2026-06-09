@@ -621,4 +621,289 @@ theorem spsbReserveAuction_truthful_is_pipeline_bayes_nash (n : Nat)
   ⟨spsbReserveAuction_truthful_best_response_pipeline n r prior h_nn,
    spsbReserveAuction_bidder2_truthful_best_response_pipeline n r prior h_nn⟩
 
+/-! ## 3-bidder pipeline Bayes-Nash (all three bidders) -/
+
+/-- Bidder 2's expected utility in a 3-bidder Vickrey auction with
+    strategies `(s1, s2, s3)` and joint prior on (v1, v3) (the other
+    two bidders' valuations).  Fix bidder 2's valuation at `v2`. -/
+def vickreyBidder2ExpectedUtility3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (v2 : Fin n) (p13 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v13 : Fin (n * n) =>
+    p13 v13 *
+      ((vickreyBidder2Util3 n v2 (s1 (Fin.first v13)) (s2 v2)
+                                  (s3 (Fin.second v13))).val
+              : Nat).cast)
+
+/-- Bidder 3's expected utility in a 3-bidder Vickrey auction with
+    strategies `(s1, s2, s3)` and joint prior on (v1, v2). -/
+def vickreyBidder3ExpectedUtility3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (v3 : Fin n) (p12 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v12 : Fin (n * n) =>
+    p12 v12 *
+      ((vickreyBidder3Util3 n v3 (s1 (Fin.first v12)) (s2 (Fin.second v12))
+                                  (s3 v3)).val
+              : Nat).cast)
+
+/-- Truthful bidding (`s2 = id`) is bidder 2's best response in 3-bidder
+    Vickrey, against any opponent strategies. -/
+theorem vickrey3_bidder2_truthful_best_response (n : Nat)
+    (s1 s2' s3 : Fin n → Fin n) (p13 : Fin (n * n) → Rat)
+    (h_nn : ∀ v13, 0 ≤ p13 v13) (v2 : Fin n) :
+    vickreyBidder2ExpectedUtility3 n s1 (fun v => v) s3 v2 p13
+    ≥ vickreyBidder2ExpectedUtility3 n s1 s2' s3 v2 p13 := by
+  unfold vickreyBidder2ExpectedUtility3
+  apply Fin.sumRat_le_local
+  intro v13
+  apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v13)
+  have := vickrey3_bidder2_truthful_dominant n v2
+            (s1 (Fin.first v13)) (s2' v2) (s3 (Fin.second v13))
+  exact_mod_cast this
+
+/-- Truthful bidding (`s3 = id`) is bidder 3's best response in 3-bidder
+    Vickrey, against any opponent strategies. -/
+theorem vickrey3_bidder3_truthful_best_response (n : Nat)
+    (s1 s2 s3' : Fin n → Fin n) (p12 : Fin (n * n) → Rat)
+    (h_nn : ∀ v12, 0 ≤ p12 v12) (v3 : Fin n) :
+    vickreyBidder3ExpectedUtility3 n s1 s2 (fun v => v) v3 p12
+    ≥ vickreyBidder3ExpectedUtility3 n s1 s2 s3' v3 p12 := by
+  unfold vickreyBidder3ExpectedUtility3
+  apply Fin.sumRat_le_local
+  intro v12
+  apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v12)
+  have := vickrey3_bidder3_truthful_dominant n v3
+            (s1 (Fin.first v12)) (s2 (Fin.second v12)) (s3' v3)
+  exact_mod_cast this
+
+/-- Bidder 2's expected utility from a 3-bidder auction kernel,
+    averaged over (v1, v3) under prior `prior13`, fixing v2. -/
+def auctionExpectedBidder2Util3 (n : Nat)
+    (auction : StochasticMatrix ((n * n) * n) ((n * n) * n))
+    (prior13 : Fin (n * n) → Rat) (v2 : Fin n) : Rat :=
+  Fin.sumRat (fun v13 : Fin (n * n) =>
+    prior13 v13 * auctionBidder2Util3 n auction
+      (Fin.pair (Fin.pair (Fin.first v13) v2) (Fin.second v13)))
+
+/-- Bidder 3's expected utility from a 3-bidder auction kernel,
+    averaged over (v1, v2) under prior `prior12`, fixing v3. -/
+def auctionExpectedBidder3Util3 (n : Nat)
+    (auction : StochasticMatrix ((n * n) * n) ((n * n) * n))
+    (prior12 : Fin (n * n) → Rat) (v3 : Fin n) : Rat :=
+  Fin.sumRat (fun v12 : Fin (n * n) =>
+    prior12 v12 * auctionBidder3Util3 n auction
+      (Fin.pair v12 v3))
+
+/-- Bridge between vickreyUtility3 and vickreyBidder2Util3 under truthful. -/
+theorem vickreyUtility3_val_eq_vickreyBidder2Util3_val_truthful
+    (n : Nat) (v opp_b1 opp_b3 : Fin n) :
+    (vickreyUtility3 n v v opp_b1 opp_b3).val
+    = (vickreyBidder2Util3 n v opp_b1 v opp_b3).val := by
+  unfold vickreyUtility3 vickreyBidder2Util3
+  by_cases hopp : opp_b1.val < v.val
+  · by_cases hb3 : v.val ≥ opp_b3.val
+    · have hge_opp : v.val ≥ opp_b1.val := by omega
+      simp [hge_opp, hb3, hopp]
+    · have hnotge : ¬ (v.val ≥ opp_b1.val ∧ v.val ≥ opp_b3.val) :=
+        fun ⟨_, h⟩ => hb3 h
+      have hnotcond : ¬ (opp_b1.val < v.val ∧ v.val ≥ opp_b3.val) :=
+        fun ⟨_, h⟩ => hb3 h
+      simp [hnotge, hnotcond]
+  · by_cases hge : v.val ≥ opp_b1.val
+    · have hveq : v.val = opp_b1.val := by omega
+      by_cases hb3 : v.val ≥ opp_b3.val
+      · simp [hge, hb3, hopp]
+        omega
+      · have hnotge : ¬ (v.val ≥ opp_b1.val ∧ v.val ≥ opp_b3.val) :=
+          fun ⟨_, h⟩ => hb3 h
+        have hnotcond : ¬ (opp_b1.val < v.val ∧ v.val ≥ opp_b3.val) :=
+          fun ⟨_, h⟩ => hb3 h
+        simp [hnotge, hnotcond]
+    · have hnotge : ¬ (v.val ≥ opp_b1.val ∧ v.val ≥ opp_b3.val) :=
+        fun ⟨h, _⟩ => hge h
+      have hnotcond : ¬ (opp_b1.val < v.val ∧ v.val ≥ opp_b3.val) :=
+        fun ⟨h, _⟩ => hopp h
+      simp [hnotge, hnotcond]
+
+/-- Bridge between vickreyUtility3 and vickreyBidder3Util3 under truthful. -/
+theorem vickreyUtility3_val_eq_vickreyBidder3Util3_val_truthful
+    (n : Nat) (v opp_b1 opp_b2 : Fin n) :
+    (vickreyUtility3 n v v opp_b1 opp_b2).val
+    = (vickreyBidder3Util3 n v opp_b1 opp_b2 v).val := by
+  unfold vickreyUtility3 vickreyBidder3Util3
+  by_cases hopp1 : opp_b1.val < v.val
+  · by_cases hopp2 : opp_b2.val < v.val
+    · have hge1 : v.val ≥ opp_b1.val := by omega
+      have hge2 : v.val ≥ opp_b2.val := by omega
+      simp [hge1, hge2, hopp1, hopp2]
+    · -- opp_b2 ≥ v.  If v ≥ opp_b2 also, then opp_b2 = v.  Else ¬h_vickrey.
+      by_cases hge2 : v.val ≥ opp_b2.val
+      · have hveq : v.val = opp_b2.val := by omega
+        have hge1 : v.val ≥ opp_b1.val := by omega
+        simp [hge1, hge2, hopp1, hopp2]
+        omega
+      · have hnotge : ¬ (v.val ≥ opp_b1.val ∧ v.val ≥ opp_b2.val) :=
+          fun ⟨_, h⟩ => hge2 h
+        have hnotcond : ¬ (opp_b1.val < v.val ∧ opp_b2.val < v.val) :=
+          fun ⟨_, h⟩ => hopp2 h
+        simp [hnotge, hnotcond]
+  · by_cases hge1 : v.val ≥ opp_b1.val
+    · -- opp_b1 = v
+      have hveq1 : v.val = opp_b1.val := by omega
+      by_cases hge2 : v.val ≥ opp_b2.val
+      · -- vickrey condition holds: v - max(opp_b1, opp_b2) = v - max(v, opp_b2).
+        simp [hge1, hge2, hopp1]
+        omega
+      · have hnotge : ¬ (v.val ≥ opp_b1.val ∧ v.val ≥ opp_b2.val) :=
+          fun ⟨_, h⟩ => hge2 h
+        have hnotcond : ¬ (opp_b1.val < v.val ∧ opp_b2.val < v.val) :=
+          fun ⟨h, _⟩ => hopp1 h
+        simp [hnotge, hnotcond]
+    · have hnotge : ¬ (v.val ≥ opp_b1.val ∧ v.val ≥ opp_b2.val) :=
+        fun ⟨h, _⟩ => hge1 h
+      have hnotcond : ¬ (opp_b1.val < v.val ∧ opp_b2.val < v.val) :=
+        fun ⟨h, _⟩ => hopp1 h
+      simp [hnotge, hnotcond]
+
+/-- Under truthful play, the pipeline-level expected utility for
+    bidder 2 reduces to the kernel-level
+    `vickreyBidder2ExpectedUtility3` with three truthful strategies. -/
+theorem auctionExpectedBidder2Util3_spsb3Auction_eq (n : Nat)
+    (prior13 : Fin (n * n) → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util3 n (spsb3Auction n) prior13 v2
+    = vickreyBidder2ExpectedUtility3 n (fun v => v) (fun v => v)
+                                       (fun v => v) v2 prior13 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  unfold auctionExpectedBidder2Util3 vickreyBidder2ExpectedUtility3
+  congr 1
+  funext v13
+  rw [spsb3Auction_eq_detMatrix, auctionBidder2Util3_det]
+  unfold spsbAuctionFn3
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+  have hbridge :
+      (vickreyUtility3 n v2 v2 (Fin.first v13) (Fin.second v13)).val
+      = (vickreyBidder2Util3 n v2 (Fin.first v13) v2 (Fin.second v13)).val :=
+    vickreyUtility3_val_eq_vickreyBidder2Util3_val_truthful n v2
+      (Fin.first v13) (Fin.second v13)
+  rw [show (((vickreyUtility3 n v2 v2 (Fin.first v13)
+                                       (Fin.second v13)).val : Nat) : Rat)
+        = (((vickreyBidder2Util3 n v2 (Fin.first v13) v2
+                                       (Fin.second v13)).val : Nat) : Rat)
+        from by exact_mod_cast hbridge]
+
+/-- Under bidder-2 deviator strategy `bid`, the pipeline-level expected
+    utility for bidder 2 reduces to
+    `vickreyBidder2ExpectedUtility3` with `(truthful, bid, truthful)`. -/
+theorem auctionExpectedBidder2Util3_spsb3AuctionDeviator2_eq (n : Nat)
+    (bid : Fin n → Fin n) (prior13 : Fin (n * n) → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util3 n (spsb3AuctionDeviator2 n bid) prior13 v2
+    = vickreyBidder2ExpectedUtility3 n (fun v => v) bid (fun v => v) v2
+                                       prior13 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  unfold auctionExpectedBidder2Util3 vickreyBidder2ExpectedUtility3
+  congr 1
+  funext v13
+  rw [spsb3AuctionDeviator2_eq_detMatrix, auctionBidder2Util3_det]
+  unfold spsb3AuctionDeviator2Fn
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+
+/-- **Pipeline-level bidder-2 best response in 3-bidder spsb**. -/
+theorem spsb3Auction_bidder2_truthful_best_response_pipeline (n : Nat)
+    (prior13 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior13 v)
+    (bid : Fin n → Fin n) (v2 : Fin n) :
+    auctionExpectedBidder2Util3 n (spsb3Auction n) prior13 v2
+    ≥ auctionExpectedBidder2Util3 n (spsb3AuctionDeviator2 n bid)
+                                     prior13 v2 := by
+  rw [auctionExpectedBidder2Util3_spsb3Auction_eq,
+      auctionExpectedBidder2Util3_spsb3AuctionDeviator2_eq]
+  exact vickrey3_bidder2_truthful_best_response n (fun v => v) bid
+    (fun v => v) prior13 h_nn v2
+
+/-- Under truthful play, the pipeline-level expected utility for
+    bidder 3 reduces to the kernel-level
+    `vickreyBidder3ExpectedUtility3` with three truthful strategies. -/
+theorem auctionExpectedBidder3Util3_spsb3Auction_eq (n : Nat)
+    (prior12 : Fin (n * n) → Rat) (v3 : Fin n) :
+    auctionExpectedBidder3Util3 n (spsb3Auction n) prior12 v3
+    = vickreyBidder3ExpectedUtility3 n (fun v => v) (fun v => v)
+                                       (fun v => v) v3 prior12 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v3.isLt
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  unfold auctionExpectedBidder3Util3 vickreyBidder3ExpectedUtility3
+  congr 1
+  funext v12
+  rw [spsb3Auction_eq_detMatrix, auctionBidder3Util3_det]
+  unfold spsbAuctionFn3
+  simp only [Fin.first_pair, Fin.second_pair hnn]
+  have hbridge :
+      (vickreyUtility3 n v3 v3 (Fin.first v12) (Fin.second v12)).val
+      = (vickreyBidder3Util3 n v3 (Fin.first v12) (Fin.second v12) v3).val :=
+    vickreyUtility3_val_eq_vickreyBidder3Util3_val_truthful n v3
+      (Fin.first v12) (Fin.second v12)
+  rw [show (((vickreyUtility3 n v3 v3 (Fin.first v12)
+                                       (Fin.second v12)).val : Nat) : Rat)
+        = (((vickreyBidder3Util3 n v3 (Fin.first v12)
+                                       (Fin.second v12) v3).val : Nat) : Rat)
+        from by exact_mod_cast hbridge]
+
+/-- Under bidder-3 deviator strategy `bid`, the pipeline-level expected
+    utility for bidder 3 reduces to
+    `vickreyBidder3ExpectedUtility3` with `(truthful, truthful, bid)`. -/
+theorem auctionExpectedBidder3Util3_spsb3AuctionDeviator3_eq (n : Nat)
+    (bid : Fin n → Fin n) (prior12 : Fin (n * n) → Rat) (v3 : Fin n) :
+    auctionExpectedBidder3Util3 n (spsb3AuctionDeviator3 n bid) prior12 v3
+    = vickreyBidder3ExpectedUtility3 n (fun v => v) (fun v => v) bid v3
+                                       prior12 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v3.isLt
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  unfold auctionExpectedBidder3Util3 vickreyBidder3ExpectedUtility3
+  congr 1
+  funext v12
+  rw [spsb3AuctionDeviator3_eq_detMatrix, auctionBidder3Util3_det]
+  unfold spsb3AuctionDeviator3Fn
+  simp only [Fin.first_pair, Fin.second_pair hnn]
+
+/-- **Pipeline-level bidder-3 best response in 3-bidder spsb**. -/
+theorem spsb3Auction_bidder3_truthful_best_response_pipeline (n : Nat)
+    (prior12 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior12 v)
+    (bid : Fin n → Fin n) (v3 : Fin n) :
+    auctionExpectedBidder3Util3 n (spsb3Auction n) prior12 v3
+    ≥ auctionExpectedBidder3Util3 n (spsb3AuctionDeviator3 n bid)
+                                     prior12 v3 := by
+  rw [auctionExpectedBidder3Util3_spsb3Auction_eq,
+      auctionExpectedBidder3Util3_spsb3AuctionDeviator3_eq]
+  exact vickrey3_bidder3_truthful_best_response n (fun v => v) (fun v => v)
+    bid prior12 h_nn v3
+
+/-- A strategy profile is a *pipeline Bayes-Nash equilibrium of
+    spsb3Auction* under priors iff none of the three bidders can
+    improve their expected utility by unilateral deviation. -/
+def IsTruthfulPipelineBayesNashSpsb3Auction (n : Nat)
+    (prior23 : Fin (n * n) → Rat) (prior13 : Fin (n * n) → Rat)
+    (prior12 : Fin (n * n) → Rat) : Prop :=
+  (∀ (bid : Fin n → Fin n) (v1 : Fin n),
+    auctionExpectedBidder1Util3 n (spsb3Auction n) prior23 v1
+    ≥ auctionExpectedBidder1Util3 n (spsb3AuctionDeviator1 n bid) prior23 v1)
+  ∧
+  (∀ (bid : Fin n → Fin n) (v2 : Fin n),
+    auctionExpectedBidder2Util3 n (spsb3Auction n) prior13 v2
+    ≥ auctionExpectedBidder2Util3 n (spsb3AuctionDeviator2 n bid) prior13 v2)
+  ∧
+  (∀ (bid : Fin n → Fin n) (v3 : Fin n),
+    auctionExpectedBidder3Util3 n (spsb3Auction n) prior12 v3
+    ≥ auctionExpectedBidder3Util3 n (spsb3AuctionDeviator3 n bid) prior12 v3)
+
+/-- **Pipeline-level Bayes-Nash truthfulness for 3-bidder spsb**.
+    Truthful-truthful-truthful is a Bayes-Nash equilibrium of
+    `spsb3Auction n` at the OpenGame pipeline level under any priors
+    with nonnegative weights. -/
+theorem spsb3Auction_truthful_is_pipeline_bayes_nash (n : Nat)
+    (prior23 prior13 prior12 : Fin (n * n) → Rat)
+    (h_nn23 : ∀ v, 0 ≤ prior23 v) (h_nn13 : ∀ v, 0 ≤ prior13 v)
+    (h_nn12 : ∀ v, 0 ≤ prior12 v) :
+    IsTruthfulPipelineBayesNashSpsb3Auction n prior23 prior13 prior12 :=
+  ⟨spsb3Auction_truthful_best_response_pipeline n prior23 h_nn23,
+   spsb3Auction_bidder2_truthful_best_response_pipeline n prior13 h_nn13,
+   spsb3Auction_bidder3_truthful_best_response_pipeline n prior12 h_nn12⟩
+
 end AuctionCat
