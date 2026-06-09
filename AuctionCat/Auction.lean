@@ -229,6 +229,26 @@ def spsb3ReserveAuctionDeviator1 (n : Nat) (r : Fin n) (bid : Fin n → Fin n) :
     StochasticMatrix ((n * n) * n) ((n * n) * n) :=
   auctionScoreDeviator1_3 n bid (spsb3Reserve n r)
 
+/-- Three-bidder open game where bidder 2 uses strategy `bid` and
+    bidders 1, 3 are truthful. -/
+def auctionGame3Deviator2 (n : Nat) (bid : Fin n → Fin n) :
+    OpenGame ((n * n) * n) ((n * n) * n) ((n * n) * n)
+             (((2 * n) * (2 * n)) * (2 * n)) :=
+  OpenGame.kron (auctionGameDeviator2 n bid) (truthfulBidder n)
+
+/-- Score the three-bidder bidder-2-deviator open game against a
+    mechanism. -/
+def auctionScoreDeviator2_3 (n : Nat) (bid : Fin n → Fin n)
+    (mech : StochasticMatrix (n * n * n) ((2 * n) * (2 * n) * (2 * n))) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  OpenGame.score (auctionGame3Deviator2 n bid) mech
+
+/-- Three-bidder Vickrey auction where bidder 2 uses strategy `bid`
+    and bidders 1, 3 are truthful. -/
+def spsb3AuctionDeviator2 (n : Nat) (bid : Fin n → Fin n) :
+    StochasticMatrix ((n * n) * n) ((n * n) * n) :=
+  auctionScoreDeviator2_3 n bid (secondPriceSealedBid3 n)
+
 /-- Three-bidder first-price sealed-bid auction with reserve price
     `r` and truthful bidders. -/
 def fpsb3ReserveAuction (n : Nat) (r : Fin n) :

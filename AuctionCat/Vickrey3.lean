@@ -44,6 +44,31 @@ def vickreyUtility3 (n : Nat) (v b1 b2 b3 : Fin n) : Fin n :=
   else
     ⟨0, by have := v.isLt; omega⟩
 
+/-- Bidder 2's truncated utility in a three-bidder Vickrey auction
+    given valuation `v`, bidder 1's bid `opp_b1`, own bid `my_b2`,
+    and bidder 3's bid `opp_b3`.
+
+    Wins iff `opp_b1 < my_b2` (STRICT — ties go to bidder 1) and
+    `my_b2 ≥ opp_b3`; pays `max opp_b1 opp_b3` on win. -/
+def vickreyBidder2Util3 (n : Nat) (v opp_b1 my_b2 opp_b3 : Fin n) : Fin n :=
+  if opp_b1.val < my_b2.val ∧ my_b2.val ≥ opp_b3.val then
+    ⟨v.val - max opp_b1.val opp_b3.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Dominant-strategy truthfulness from bidder 2's perspective: for any
+    valuation, any deviation bid, and any opposing bids, truthful
+    bidding yields utility at least as high as the deviation. -/
+theorem vickrey3_bidder2_truthful_dominant (n : Nat)
+    (v opp_b1 bid_val opp_b3 : Fin n) :
+    (vickreyBidder2Util3 n v opp_b1 v opp_b3).val
+    ≥ (vickreyBidder2Util3 n v opp_b1 bid_val opp_b3).val := by
+  unfold vickreyBidder2Util3
+  by_cases h1 : opp_b1.val < v.val ∧ v.val ≥ opp_b3.val <;>
+  by_cases h2 : opp_b1.val < bid_val.val ∧ bid_val.val ≥ opp_b3.val <;>
+  simp [h1, h2] <;>
+  omega
+
 /-- Dominant-strategy truthfulness for three-bidder Vickrey: for any
     valuation, any deviation bid, and any opposing bids, truthful
     bidding yields utility at least as high as the deviation. -/
@@ -616,5 +641,258 @@ theorem spsb3_bidder1_pipeline_dominates_pipeline (n : Nat)
     ≥ auctionBidder1Util3 n (spsb3AuctionDeviator1 n bid) v_joint := by
   rw [spsb3Auction_eq_detMatrix, spsb3AuctionDeviator1_eq_detMatrix]
   exact spsb3_bidder1_kernel_dominance n bid v_joint
+
+/-! ## Bidder-2 symmetric pipeline dominance for 3-bidder spsb -/
+
+/-- The deterministic underlying function of `(auctionGame3Deviator2 n bid).view`.
+    Stores `v` and submits `((v1, bid v2), v3)`. -/
+def auctionViewDeviator2Fn3 (n : Nat) (bid : Fin n → Fin n)
+    (v : Fin ((n * n) * n)) :
+    Fin (((n * n) * n) * ((n * n) * n)) :=
+  Fin.pair v
+    (Fin.pair
+      (Fin.pair (Fin.first (Fin.first v)) (bid (Fin.second (Fin.first v))))
+      (Fin.second v))
+
+/-- `(auctionGame3Deviator2 n bid).view = detMatrix (auctionViewDeviator2Fn3 n bid)`. -/
+theorem auctionGame3Deviator2_view_eq_detMatrix
+    (n : Nat) (bid : Fin n → Fin n) :
+    (auctionGame3Deviator2 n bid).view
+    = detMatrix (auctionViewDeviator2Fn3 n bid) := by
+  have h_mid : (OpenGamesCat.middleInterchange (n * n) (n * n) n n :
+                  StochasticMatrix (((n * n) * (n * n)) * (n * n))
+                                   (((n * n) * n) * ((n * n) * n)))
+              = detMatrix (middleInterchangeFn (n * n) (n * n) n n) :=
+    middleInterchange_eq_detMatrix (n * n) (n * n) n n
+  have h_view : (auctionGame3Deviator2 n bid).view
+              = StochasticMatrix.comp
+                  (StochasticMatrix.kron
+                    (detMatrix (auctionViewDeviator2Fn n bid))
+                    (detMatrix (@copyFin n)))
+                  (detMatrix (middleInterchangeFn (n * n) (n * n) n n)) := by
+    show StochasticMatrix.comp
+          (StochasticMatrix.kron
+            (auctionGameDeviator2 n bid).view (copy n))
+          (OpenGamesCat.middleInterchange (n * n) (n * n) n n :
+              StochasticMatrix (((n * n) * (n * n)) * (n * n))
+                               (((n * n) * n) * ((n * n) * n)))
+        = _
+    rw [auctionGameDeviator2_view_eq_detMatrix, copy_eq_detMatrix, h_mid]
+    rfl
+  rw [h_view, kron_detMatrix, detMatrix_comp]
+  congr 1
+  funext v
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have hnn_nn : 0 < (n * n) * (n * n) := Nat.mul_pos hnn hnn
+  unfold middleInterchangeFn auctionViewDeviator2Fn copyFin
+         auctionViewDeviator2Fn3
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn,
+             Fin.second_pair hnn_nn]
+  rw [Fin.pair_first_second v]
+
+/-- `(auctionGame3Deviator2 n bid).update = (auctionGame3 n).update`. -/
+theorem auctionGame3Deviator2_update_eq_auctionGame3_update
+    (n : Nat) (bid : Fin n → Fin n) :
+    (auctionGame3Deviator2 n bid).update = (auctionGame3 n).update := rfl
+
+/-- Generalised bidder-2 3-bidder Vickrey identity: pipeline bidder-2
+    utility against `spsb3Fn` at joint bid `((b1, b2), b3)` equals
+    `vickreyBidder2Util3 v_actual b1 b2 b3`. -/
+theorem truthfulUtility_spsb3Fn_general_bidder2 (n : Nat)
+    (v_actual b1 b2 b3 : Fin n) :
+    truthfulUtilityFn n
+        (Fin.pair v_actual
+          (Fin.second (Fin.first
+            (spsb3Fn n (Fin.pair (Fin.pair b1 b2) b3)))))
+    = vickreyBidder2Util3 n v_actual b1 b2 b3 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v_actual.isLt
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  have h2 : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  by_cases hwin1 : b1.val ≥ b2.val ∧ b1.val ≥ b3.val
+  · have h_second :
+        Fin.second (Fin.first (spsb3Fn n (Fin.pair (Fin.pair b1 b2) b3)))
+        = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+      unfold spsb3Fn
+      simp [hwin1, Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn,
+            Fin.second_pair h2n]
+    rw [h_second]
+    unfold truthfulUtilityFn vickreyBidder2Util3
+    have hnotcond : ¬ (b1.val < b2.val ∧ b2.val ≥ b3.val) := by
+      intro ⟨hb12, hb23⟩
+      have : b1.val ≥ b2.val := hwin1.1
+      omega
+    simp [Fin.first_pair, Fin.second_pair hn, hnotcond]
+  · by_cases hwin2 : b2.val ≥ b3.val
+    · -- bidder 2 wins
+      have h_second :
+          Fin.second (Fin.first (spsb3Fn n (Fin.pair (Fin.pair b1 b2) b3)))
+          = Fin.pair (⟨1, by decide⟩ : Fin 2)
+              (⟨max b1.val b3.val,
+                by have := b1.isLt; have := b3.isLt; omega⟩ : Fin n) := by
+        unfold spsb3Fn
+        simp [hwin1, hwin2, Fin.first_pair, Fin.second_pair hn,
+              Fin.second_pair hnn, Fin.second_pair h2n]
+      rw [h_second]
+      unfold truthfulUtilityFn vickreyBidder2Util3
+      have hlt : b1.val < b2.val := by
+        rcases Nat.lt_or_ge b1.val b2.val with h | hge
+        · exact h
+        · exfalso; exact hwin1 ⟨hge, by omega⟩
+      have hcond : b1.val < b2.val ∧ b2.val ≥ b3.val := ⟨hlt, hwin2⟩
+      simp [Fin.first_pair, Fin.second_pair hn, hcond]
+      omega
+    · -- bidder 3 wins (or no one if conditions fail later)
+      have h_second :
+          Fin.second (Fin.first (spsb3Fn n (Fin.pair (Fin.pair b1 b2) b3)))
+          = Fin.pair (⟨0, by decide⟩ : Fin 2) (⟨0, hn⟩ : Fin n) := by
+        unfold spsb3Fn
+        simp [hwin1, hwin2, Fin.first_pair, Fin.second_pair hn,
+              Fin.second_pair hnn, Fin.second_pair h2n]
+      rw [h_second]
+      unfold truthfulUtilityFn vickreyBidder2Util3
+      have hnotcond : ¬ (b1.val < b2.val ∧ b2.val ≥ b3.val) := by
+        intro ⟨_, h⟩; exact hwin2 h
+      simp [Fin.first_pair, Fin.second_pair hn, hnotcond]
+
+/-- The deterministic outcome of `spsb3AuctionDeviator2 n bid` at joint
+    valuation `((v1, v2), v3)`: bidder 1 truthful, bidder 2 plays `bid`,
+    bidder 3 truthful. -/
+def spsb3AuctionDeviator2Fn (n : Nat) (bid : Fin n → Fin n)
+    (v_joint : Fin ((n * n) * n)) : Fin ((n * n) * n) :=
+  let v1 := Fin.first (Fin.first v_joint)
+  let v2 := Fin.second (Fin.first v_joint)
+  let v3 := Fin.second v_joint
+  Fin.pair
+    (Fin.pair
+      (vickreyUtility3 n v1 v1 (bid v2) v3)
+      (vickreyBidder2Util3 n v2 v1 (bid v2) v3))
+    (vickreyUtility3 n v3 v3 v1 (bid v2))
+
+/-- `spsb3AuctionDeviator2 n bid = detMatrix (spsb3AuctionDeviator2Fn n bid)`. -/
+theorem spsb3AuctionDeviator2_eq_detMatrix (n : Nat) (bid : Fin n → Fin n) :
+    spsb3AuctionDeviator2 n bid
+    = detMatrix (spsb3AuctionDeviator2Fn n bid) := by
+  have h_score : spsb3AuctionDeviator2 n bid
+              = StochasticMatrix.comp ((auctionGame3Deviator2 n bid).view)
+                 (StochasticMatrix.comp
+                   (StochasticMatrix.kron (idMatrix ((n * n) * n))
+                                           (secondPriceSealedBid3 n))
+                   ((auctionGame3Deviator2 n bid).update)) := rfl
+  rw [h_score, auctionGame3Deviator2_view_eq_detMatrix n bid,
+      auctionGame3Deviator2_update_eq_auctionGame3_update n bid,
+      auctionGame3_update_eq_detMatrix n,
+      idMatrix_eq_detMatrix ((n * n) * n)]
+  show (detMatrix (auctionViewDeviator2Fn3 n bid)).comp
+        ((StochasticMatrix.kron
+            (detMatrix (fun i : Fin ((n * n) * n) => i))
+            (detMatrix (spsb3Fn n))).comp
+         (detMatrix (auctionUpdateFn3 n)))
+      = detMatrix (spsb3AuctionDeviator2Fn n bid)
+  rw [kron_detMatrix, detMatrix_comp, detMatrix_comp]
+  congr 1
+  funext v
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold auctionViewDeviator2Fn3 auctionUpdateFn3 spsb3AuctionDeviator2Fn
+  simp only [Fin.first_pair, Fin.second_pair hnnn]
+  unfold auctionUpdateFn
+  simp only [Fin.first_pair, Fin.second_pair hnn]
+  rw [truthfulUtility_spsb3Fn_general_bidder1,
+      truthfulUtility_spsb3Fn_general_bidder2]
+  -- Bidder 3: existing lemma with v_joint = pair (pair v1 (bid v2)) v3
+  have h_b3 := truthfulUtility_spsb3Fn_bidder3 n
+                (Fin.pair (Fin.pair (Fin.first (Fin.first v))
+                                    (bid (Fin.second (Fin.first v))))
+                          (Fin.second v))
+  simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+    at h_b3
+  rw [h_b3]
+
+/-- Bidder 2's expected utility under an auction kernel (3-bidder
+    version).  Mirror of `auctionBidder1Util3`. -/
+def auctionBidder2Util3 (n : Nat)
+    (auction : StochasticMatrix ((n * n) * n) ((n * n) * n))
+    (v_joint : Fin ((n * n) * n)) : Rat :=
+  Fin.sumRat (fun u_joint : Fin ((n * n) * n) =>
+    auction.entry v_joint u_joint
+    * ((Fin.second (Fin.first u_joint)).val : Nat).cast)
+
+/-- For deterministic kernels, bidder 2's expected utility collapses
+    to the cast of the second-of-first projection. -/
+theorem auctionBidder2Util3_det (n : Nat)
+    (f : Fin ((n * n) * n) → Fin ((n * n) * n))
+    (v_joint : Fin ((n * n) * n)) :
+    auctionBidder2Util3 n (detMatrix f) v_joint
+    = ((Fin.second (Fin.first (f v_joint))).val : Nat).cast := by
+  unfold auctionBidder2Util3
+  show Fin.sumRat (fun u_joint : Fin ((n * n) * n) =>
+        kron (f v_joint) u_joint
+        * ((Fin.second (Fin.first u_joint)).val : Nat).cast)
+      = ((Fin.second (Fin.first (f v_joint))).val : Nat).cast
+  exact sumRat_kron_mul (f v_joint)
+    (fun u : Fin ((n * n) * n) =>
+      ((Fin.second (Fin.first u)).val : Nat).cast)
+
+/-- **Kernel-level bidder-2 Vickrey truthfulness for 3-bidder spsb**. -/
+theorem spsb3_bidder2_kernel_dominance (n : Nat) (bid : Fin n → Fin n)
+    (v_joint : Fin ((n * n) * n)) :
+    auctionBidder2Util3 n (detMatrix (spsbAuctionFn3 n)) v_joint
+    ≥ auctionBidder2Util3 n
+        (detMatrix (spsb3AuctionDeviator2Fn n bid)) v_joint := by
+  rw [auctionBidder2Util3_det, auctionBidder2Util3_det]
+  have hnnn : 0 < (n * n) * n :=
+    Nat.lt_of_le_of_lt (Nat.zero_le _) v_joint.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn : 0 < n := Nat.pos_of_mul_pos_right hnn
+  unfold spsbAuctionFn3 spsb3AuctionDeviator2Fn
+  rw [Fin.first_pair, Fin.first_pair, Fin.second_pair hn, Fin.second_pair hn]
+  -- truthful: vickreyUtility3 n v2 v2 v1 v3
+  -- deviator: vickreyBidder2Util3 n v2 v1 (bid v2) v3
+  -- Pointwise dominance via case analysis.
+  have hpoint :
+      (vickreyUtility3 n (Fin.second (Fin.first v_joint))
+                         (Fin.second (Fin.first v_joint))
+                         (Fin.first (Fin.first v_joint))
+                         (Fin.second v_joint)).val
+      ≥ (vickreyBidder2Util3 n (Fin.second (Fin.first v_joint))
+                              (Fin.first (Fin.first v_joint))
+                              (bid (Fin.second (Fin.first v_joint)))
+                              (Fin.second v_joint)).val := by
+    unfold vickreyUtility3 vickreyBidder2Util3
+    by_cases h1 : v_joint.val % (n * n) / n ≥ v_joint.val % n
+                ∧ v_joint.val % (n * n) / n ≥ v_joint.val / (n * n)
+    · by_cases h2 : v_joint.val % n < (bid (Fin.second (Fin.first v_joint))).val
+                  ∧ (bid (Fin.second (Fin.first v_joint))).val
+                    ≥ v_joint.val / (n * n)
+      · simp [h1, h2]
+      · simp [h1, h2]
+    · by_cases h2 : v_joint.val % n < (bid (Fin.second (Fin.first v_joint))).val
+                  ∧ (bid (Fin.second (Fin.first v_joint))).val
+                    ≥ v_joint.val / (n * n)
+      · rcases Nat.lt_or_ge (v_joint.val % (n * n) / n) (v_joint.val % n)
+            with hlt1 | hge1
+        · simp [h1, h2]; omega
+        · have hlt3 : v_joint.val % (n * n) / n < v_joint.val / (n * n) := by
+            rcases Nat.lt_or_ge (v_joint.val % (n * n) / n)
+                                (v_joint.val / (n * n)) with h | hge
+            · exact h
+            · exfalso; exact h1 ⟨hge1, hge⟩
+          simp [h1, h2]; omega
+      · simp [h1, h2]
+  exact_mod_cast hpoint
+
+/-- **Pipeline-vs-pipeline bidder-2 Vickrey truthfulness for 3-bidder spsb**. -/
+theorem spsb3_bidder2_pipeline_dominates_pipeline (n : Nat)
+    (bid : Fin n → Fin n) (v_joint : Fin ((n * n) * n)) :
+    auctionBidder2Util3 n (spsb3Auction n) v_joint
+    ≥ auctionBidder2Util3 n (spsb3AuctionDeviator2 n bid) v_joint := by
+  rw [spsb3Auction_eq_detMatrix, spsb3AuctionDeviator2_eq_detMatrix]
+  exact spsb3_bidder2_kernel_dominance n bid v_joint
 
 end AuctionCat
