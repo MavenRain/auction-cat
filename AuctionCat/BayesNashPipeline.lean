@@ -367,4 +367,101 @@ theorem auctionExpectedBidder1Util_spsbReserveAuction_eq_vickreyReserveEqUtility
   rw [auctionExpectedBidder1Util_spsbReserveAuction_eq]
   rfl
 
+/-! ## Bidder-2 symmetric pipeline Bayes-Nash -/
+
+/-- Bidder 2's expected utility in a 2-bidder Vickrey auction with
+    strategies `(s1, s2)`, valuation `v2`, and prior `p` on bidder 1's
+    valuation. -/
+def vickreyBidder2ExpectedUtility (n : Nat) (s1 s2 : Fin n → Fin n)
+    (v2 : Fin n) (p : Fin n → Rat) : Rat :=
+  Fin.sumRat (fun v1 : Fin n =>
+    p v1 * ((vickreyBidder2Util n v2 (s1 v1) (s2 v2)).val : Nat).cast)
+
+/-- Truthful bidding (`s2 = id`) is bidder 2's best response in
+    Vickrey, against any opponent strategy `s1`. -/
+theorem vickrey_bidder2_truthful_best_response (n : Nat)
+    (s1 s2' : Fin n → Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) (v2 : Fin n) :
+    vickreyBidder2ExpectedUtility n s1 (fun v => v) v2 p
+    ≥ vickreyBidder2ExpectedUtility n s1 s2' v2 p := by
+  unfold vickreyBidder2ExpectedUtility
+  apply Fin.sumRat_le_local
+  intro v1
+  apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v1)
+  have := vickrey_bidder2_truthful_dominant n v2 (s1 v1) (s2' v2)
+  exact_mod_cast this
+
+/-- Bidder 2's expected utility from an auction kernel, averaged over
+    bidder 1's valuation under prior `prior`, fixing bidder 2's
+    valuation at `v2`. -/
+def auctionExpectedBidder2Util (n : Nat)
+    (auction : StochasticMatrix (n * n) (n * n))
+    (prior : Fin n → Rat) (v2 : Fin n) : Rat :=
+  Fin.sumRat (fun v1 : Fin n =>
+    prior v1 * auctionBidder2Util n auction (Fin.pair v1 v2))
+
+/-- Bridge: `vickreyUtility n v2 v2 v1 = vickreyBidder2Util n v2 v1 v2`
+    pointwise as `Fin n` vals.  Both encode bidder 2's utility under
+    truthful Vickrey but with weak vs strict tie-breaking conventions;
+    the values agree because the tie-case gives `0` either way. -/
+theorem vickreyUtility_val_eq_vickreyBidder2Util_val_truthful
+    (n : Nat) (v opp : Fin n) :
+    (vickreyUtility n v v opp).val = (vickreyBidder2Util n v opp v).val := by
+  unfold vickreyUtility vickreyBidder2Util
+  by_cases h : v.val ≥ opp.val <;>
+  by_cases h2 : opp.val < v.val <;>
+  simp [h, h2] <;>
+  omega
+
+/-- Under truthful play, the pipeline-level expected utility of
+    `spsbAuction n` for bidder 2 reduces to the kernel-level
+    `vickreyBidder2ExpectedUtility` with `(truthful, truthful)`. -/
+theorem auctionExpectedBidder2Util_spsbAuction_eq (n : Nat)
+    (prior : Fin n → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbAuction n) prior v2
+    = vickreyBidder2ExpectedUtility n (fun v => v) (fun v => v) v2 prior := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  unfold auctionExpectedBidder2Util vickreyBidder2ExpectedUtility
+  congr 1
+  funext v1
+  rw [spsbAuction_eq_detMatrix, auctionBidder2Util_det]
+  unfold spsbAuctionFn
+  simp only [Fin.first_pair, Fin.second_pair hn]
+  have hbridge :
+      (vickreyUtility n v2 v2 v1).val
+      = (vickreyBidder2Util n v2 v1 v2).val :=
+    vickreyUtility_val_eq_vickreyBidder2Util_val_truthful n v2 v1
+  rw [show (((vickreyUtility n v2 v2 v1).val : Nat) : Rat)
+        = (((vickreyBidder2Util n v2 v1 v2).val : Nat) : Rat) from by
+        exact_mod_cast hbridge]
+
+/-- Under a single-bidder-2 deviator strategy `bid`, the pipeline-level
+    expected utility for bidder 2 reduces to the kernel-level
+    `vickreyBidder2ExpectedUtility` with `(truthful, bid)`. -/
+theorem auctionExpectedBidder2Util_spsbAuctionDeviator2_eq (n : Nat)
+    (bid : Fin n → Fin n) (prior : Fin n → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbAuctionDeviator2 n bid) prior v2
+    = vickreyBidder2ExpectedUtility n (fun v => v) bid v2 prior := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  unfold auctionExpectedBidder2Util vickreyBidder2ExpectedUtility
+  congr 1
+  funext v1
+  rw [spsbAuctionDeviator2_eq_detMatrix, auctionBidder2Util_det]
+  unfold spsbAuctionDeviator2Fn
+  simp only [Fin.first_pair, Fin.second_pair hn]
+
+/-- **Pipeline-level bidder-2 best response**: truthful bidding gives
+    bidder 2 the highest expected utility against `spsbAuction n`
+    (truthful bidder 1) under any prior with nonnegative weights,
+    beating any deviator strategy `bid`. -/
+theorem spsbAuction_bidder2_truthful_best_response_pipeline (n : Nat)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v)
+    (bid : Fin n → Fin n) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbAuction n) prior v2
+    ≥ auctionExpectedBidder2Util n (spsbAuctionDeviator2 n bid) prior v2 := by
+  rw [auctionExpectedBidder2Util_spsbAuction_eq,
+      auctionExpectedBidder2Util_spsbAuctionDeviator2_eq]
+  exact vickrey_bidder2_truthful_best_response n (fun v => v) bid prior
+    h_nn v2
+
 end AuctionCat
