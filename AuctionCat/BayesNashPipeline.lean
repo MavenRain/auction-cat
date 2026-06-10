@@ -1181,27 +1181,15 @@ def IsTruthfulPipelineBayesNashSpsb3ReserveAuction (n : Nat) (r : Fin n)
                                     prior12 v3)
 
 /-- **Pipeline-level Bayes-Nash truthfulness for 3-bidder spsbReserve**.
-    Note: the bidder-1 component is via the pointwise pipeline
-    dominance (not via prior-aggregation), so the
-    `prior23 / h_nn23` arguments are unused for the bidder-1 component
-    but kept for predicate symmetry. -/
+    Truthful-truthful-truthful is a Bayes-Nash equilibrium of the
+    OpenGame pipeline form under any priors with nonnegative weights. -/
 theorem spsb3ReserveAuction_truthful_is_pipeline_bayes_nash (n : Nat)
     (r : Fin n) (prior23 prior13 prior12 : Fin (n * n) → Rat)
-    (_h_nn23 : ∀ v, 0 ≤ prior23 v) (h_nn13 : ∀ v, 0 ≤ prior13 v)
+    (h_nn23 : ∀ v, 0 ≤ prior23 v) (h_nn13 : ∀ v, 0 ≤ prior13 v)
     (h_nn12 : ∀ v, 0 ≤ prior12 v) :
-    IsTruthfulPipelineBayesNashSpsb3ReserveAuction n r prior23 prior13 prior12 := by
-  refine ⟨?_,
+    IsTruthfulPipelineBayesNashSpsb3ReserveAuction n r prior23 prior13 prior12 :=
+  ⟨spsb3ReserveAuction_truthful_best_response_pipeline n r prior23 h_nn23,
    spsb3ReserveAuction_bidder2_truthful_best_response_pipeline n r prior13 h_nn13,
    spsb3ReserveAuction_bidder3_truthful_best_response_pipeline n r prior12 h_nn12⟩
-  intro bid v1
-  -- The bidder-1 component requires aggregating the kernel-level
-  -- pointwise dominance over the joint prior on (v2, v3).
-  -- For now, derive via aggregation similar to bidder-2 / bidder-3.
-  unfold auctionExpectedBidder1Util3
-  apply Fin.sumRat_le_local
-  intro v23
-  apply Rat.mul_le_mul_of_nonneg_left _ (_h_nn23 v23)
-  exact spsb3Reserve_bidder1_pipeline_dominates_pipeline n r bid
-    (Fin.pair (Fin.pair v1 (Fin.first v23)) (Fin.second v23))
 
 end AuctionCat
