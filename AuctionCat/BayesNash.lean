@@ -123,4 +123,38 @@ theorem vickrey3_truthful_best_response (n : Nat)
             (s2 (Fin.first v23)) (s3 (Fin.second v23))
   exact_mod_cast this
 
+/-- Strategy `s1` is a best response (from bidder 1's perspective) to
+    `(s2, s3)` at every type, given joint prior `p23`, in 3-bidder
+    Vickrey. -/
+def IsBestResponseVickrey3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (p23 : Fin (n * n) → Rat) : Prop :=
+  ∀ (s1' : Fin n → Fin n) (v1 : Fin n),
+    vickreyExpectedUtility3 n s1 s2 s3 v1 p23
+    ≥ vickreyExpectedUtility3 n s1' s2 s3 v1 p23
+
+/-- A profile `(s1, s2, s3)` is a *symmetric Bayes-Nash equilibrium*
+    of the 3-bidder Vickrey auction under priors `(p23, p13, p12)`
+    iff each bidder's strategy is a best response to the other two,
+    measured by their own prior over the others' valuations. -/
+def IsBayesNashVickrey3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (p23 p13 p12 : Fin (n * n) → Rat) : Prop :=
+  IsBestResponseVickrey3 n s1 s2 s3 p23
+  ∧ IsBestResponseVickrey3 n s2 s1 s3 p13
+  ∧ IsBestResponseVickrey3 n s3 s1 s2 p12
+
+/-- Truthful-truthful-truthful is a Bayes-Nash equilibrium in
+    3-bidder Vickrey, for any joint priors with nonnegative weights. -/
+theorem vickrey3_truthful_is_bayes_nash (n : Nat)
+    (p23 p13 p12 : Fin (n * n) → Rat)
+    (h_nn23 : ∀ v, 0 ≤ p23 v) (h_nn13 : ∀ v, 0 ≤ p13 v)
+    (h_nn12 : ∀ v, 0 ≤ p12 v) :
+    IsBayesNashVickrey3 n (fun v => v) (fun v => v) (fun v => v)
+                          p23 p13 p12 :=
+  ⟨fun s1' v1 => vickrey3_truthful_best_response n s1' (fun v => v)
+                  (fun v => v) p23 h_nn23 v1,
+   fun s2' v2 => vickrey3_truthful_best_response n s2' (fun v => v)
+                  (fun v => v) p13 h_nn13 v2,
+   fun s3' v3 => vickrey3_truthful_best_response n s3' (fun v => v)
+                  (fun v => v) p12 h_nn12 v3⟩
+
 end AuctionCat
