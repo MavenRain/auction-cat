@@ -636,6 +636,38 @@ theorem spsbReserveAuction_truthful_is_pipeline_bayes_nash (n : Nat)
   ⟨spsbReserveAuction_truthful_best_response_pipeline n r prior h_nn,
    spsbReserveAuction_bidder2_truthful_best_response_pipeline n r prior h_nn⟩
 
+/-- Kernel-level best response under reserve-spsb (bidder 1's POV). -/
+def IsBestResponseVickreyReserve (n : Nat) (r : Fin n)
+    (s1 s2 : Fin n → Fin n) (p : Fin n → Rat) : Prop :=
+  ∀ (s1' : Fin n → Fin n) (v1 : Fin n),
+    vickreyReserveExpectedUtility n r s1 s2 v1 p
+    ≥ vickreyReserveExpectedUtility n r s1' s2 v1 p
+
+/-- Kernel-level Bayes-Nash equilibrium predicate under reserve-spsb. -/
+def IsBayesNashVickreyReserve (n : Nat) (r : Fin n)
+    (s1 s2 : Fin n → Fin n) (p : Fin n → Rat) : Prop :=
+  IsBestResponseVickreyReserve n r s1 s2 p
+  ∧ IsBestResponseVickreyReserve n r s2 s1 p
+
+/-- Truthful-truthful is a kernel-level Bayes-Nash equilibrium of
+    reserve-spsb, for any prior with nonneg weights. -/
+theorem vickreyReserve_truthful_is_bayes_nash (n : Nat) (r : Fin n)
+    (p : Fin n → Rat) (h_nn : ∀ v, 0 ≤ p v) :
+    IsBayesNashVickreyReserve n r (fun v => v) (fun v => v) p :=
+  ⟨fun s1' v1 => vickreyReserve_truthful_best_response n r s1' (fun v => v)
+                  p h_nn v1,
+   fun s2' v2 => vickreyReserve_truthful_best_response n r s2' (fun v => v)
+                  p h_nn v2⟩
+
+/-- **Kernel ↔ pipeline consistency (2-bidder reserve)**. -/
+theorem IsBayesNashVickreyReserve_iff_pipeline_truthful (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    IsBayesNashVickreyReserve n r (fun v => v) (fun v => v) prior
+    ↔ IsTruthfulPipelineBayesNashSpsbReserveAuction n r prior := by
+  refine ⟨fun _ => spsbReserveAuction_truthful_is_pipeline_bayes_nash n r
+                     prior h_nn,
+          fun _ => vickreyReserve_truthful_is_bayes_nash n r prior h_nn⟩
+
 /-! ## 3-bidder pipeline Bayes-Nash (all three bidders) -/
 
 /-- Bidder 2's expected utility in a 3-bidder Vickrey auction with
@@ -1221,5 +1253,49 @@ theorem spsb3ReserveAuction_truthful_is_pipeline_bayes_nash (n : Nat)
   ⟨spsb3ReserveAuction_truthful_best_response_pipeline n r prior23 h_nn23,
    spsb3ReserveAuction_bidder2_truthful_best_response_pipeline n r prior13 h_nn13,
    spsb3ReserveAuction_bidder3_truthful_best_response_pipeline n r prior12 h_nn12⟩
+
+/-- Kernel-level best response under 3-bidder reserve-spsb (bidder 1's POV). -/
+def IsBestResponseVickreyReserve3 (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n) (p23 : Fin (n * n) → Rat) : Prop :=
+  ∀ (s1' : Fin n → Fin n) (v1 : Fin n),
+    vickreyReserveExpectedUtility3 n r s1 s2 s3 v1 p23
+    ≥ vickreyReserveExpectedUtility3 n r s1' s2 s3 v1 p23
+
+/-- Kernel-level Bayes-Nash equilibrium predicate under 3-bidder
+    reserve-spsb. -/
+def IsBayesNashVickreyReserve3 (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n)
+    (p23 p13 p12 : Fin (n * n) → Rat) : Prop :=
+  IsBestResponseVickreyReserve3 n r s1 s2 s3 p23
+  ∧ IsBestResponseVickreyReserve3 n r s2 s1 s3 p13
+  ∧ IsBestResponseVickreyReserve3 n r s3 s1 s2 p12
+
+/-- Truthful-truthful-truthful is a kernel-level Bayes-Nash
+    equilibrium of 3-bidder reserve-spsb. -/
+theorem vickreyReserve3_truthful_is_bayes_nash (n : Nat) (r : Fin n)
+    (p23 p13 p12 : Fin (n * n) → Rat)
+    (h_nn23 : ∀ v, 0 ≤ p23 v) (h_nn13 : ∀ v, 0 ≤ p13 v)
+    (h_nn12 : ∀ v, 0 ≤ p12 v) :
+    IsBayesNashVickreyReserve3 n r (fun v => v) (fun v => v) (fun v => v)
+                                    p23 p13 p12 :=
+  ⟨fun s1' v1 => vickreyReserve3_truthful_best_response n r s1' (fun v => v)
+                  (fun v => v) p23 h_nn23 v1,
+   fun s2' v2 => vickreyReserve3_truthful_best_response n r s2' (fun v => v)
+                  (fun v => v) p13 h_nn13 v2,
+   fun s3' v3 => vickreyReserve3_truthful_best_response n r s3' (fun v => v)
+                  (fun v => v) p12 h_nn12 v3⟩
+
+/-- **Kernel ↔ pipeline consistency (3-bidder reserve)**. -/
+theorem IsBayesNashVickreyReserve3_iff_pipeline_truthful (n : Nat) (r : Fin n)
+    (prior23 prior13 prior12 : Fin (n * n) → Rat)
+    (h_nn23 : ∀ v, 0 ≤ prior23 v) (h_nn13 : ∀ v, 0 ≤ prior13 v)
+    (h_nn12 : ∀ v, 0 ≤ prior12 v) :
+    IsBayesNashVickreyReserve3 n r (fun v => v) (fun v => v) (fun v => v)
+                                  prior23 prior13 prior12
+    ↔ IsTruthfulPipelineBayesNashSpsb3ReserveAuction n r prior23 prior13 prior12 := by
+  refine ⟨fun _ => spsb3ReserveAuction_truthful_is_pipeline_bayes_nash n r
+                     prior23 prior13 prior12 h_nn23 h_nn13 h_nn12,
+          fun _ => vickreyReserve3_truthful_is_bayes_nash n r prior23 prior13
+                     prior12 h_nn23 h_nn13 h_nn12⟩
 
 end AuctionCat
