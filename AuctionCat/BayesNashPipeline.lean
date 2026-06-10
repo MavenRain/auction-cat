@@ -487,6 +487,21 @@ theorem spsbAuction_truthful_is_pipeline_bayes_nash (n : Nat)
   ⟨spsbAuction_truthful_best_response_pipeline n prior h_nn,
    spsbAuction_bidder2_truthful_best_response_pipeline n prior h_nn⟩
 
+/-- **Kernel ↔ pipeline consistency**: the truthful-truthful profile
+    is a kernel-level Bayes-Nash equilibrium of 2-bidder Vickrey iff
+    it is a pipeline-level Bayes-Nash equilibrium of `spsbAuction n`,
+    under any prior with nonnegative weights.
+
+    Both directions reduce to the same per-bidder best-response
+    inequalities (truthful-dominance), expressed at different
+    layers of the framework. -/
+theorem IsBayesNashVickrey_iff_pipeline_truthful (n : Nat)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    IsBayesNashVickrey n (fun v => v) (fun v => v) prior
+    ↔ IsTruthfulPipelineBayesNashSpsbAuction n prior := by
+  refine ⟨fun _ => spsbAuction_truthful_is_pipeline_bayes_nash n prior h_nn,
+          fun _ => vickrey_truthful_is_bayes_nash n prior h_nn⟩
+
 /-! ## Bidder-2 symmetric pipeline Bayes-Nash for spsbReserve -/
 
 /-- Bidder 2's expected utility in a 2-bidder Vickrey-with-reserve
@@ -905,6 +920,21 @@ theorem spsb3Auction_truthful_is_pipeline_bayes_nash (n : Nat)
   ⟨spsb3Auction_truthful_best_response_pipeline n prior23 h_nn23,
    spsb3Auction_bidder2_truthful_best_response_pipeline n prior13 h_nn13,
    spsb3Auction_bidder3_truthful_best_response_pipeline n prior12 h_nn12⟩
+
+/-- **Kernel ↔ pipeline consistency (3 bidders)**: kernel-level
+    `IsBayesNashVickrey3` for truthful-truthful-truthful is equivalent
+    to pipeline-level `IsTruthfulPipelineBayesNashSpsb3Auction`. -/
+theorem IsBayesNashVickrey3_iff_pipeline_truthful (n : Nat)
+    (prior23 prior13 prior12 : Fin (n * n) → Rat)
+    (h_nn23 : ∀ v, 0 ≤ prior23 v) (h_nn13 : ∀ v, 0 ≤ prior13 v)
+    (h_nn12 : ∀ v, 0 ≤ prior12 v) :
+    IsBayesNashVickrey3 n (fun v => v) (fun v => v) (fun v => v)
+                          prior23 prior13 prior12
+    ↔ IsTruthfulPipelineBayesNashSpsb3Auction n prior23 prior13 prior12 := by
+  refine ⟨fun _ => spsb3Auction_truthful_is_pipeline_bayes_nash n
+                     prior23 prior13 prior12 h_nn23 h_nn13 h_nn12,
+          fun _ => vickrey3_truthful_is_bayes_nash n
+                     prior23 prior13 prior12 h_nn23 h_nn13 h_nn12⟩
 
 /-! ## 3-bidder reserve pipeline Bayes-Nash (full BN, all 3 bidders) -/
 
