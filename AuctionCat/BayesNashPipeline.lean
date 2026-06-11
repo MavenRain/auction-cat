@@ -1429,4 +1429,51 @@ theorem spsbAuction_main_pipeline_results (n : Nat) (prior : Fin n → Rat)
    auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral n prior,
    spsbAuction_truthful_is_pipeline_bayes_nash n prior h_nn⟩
 
+/-- **Main pipeline Vickrey-with-reserve theorem** (2-bidder).  For
+    `spsbReserveAuction n r`:
+
+    1. The pipeline reduces to `detMatrix (spsbReserveAuctionFn n r)`.
+    2. Bidder 1's expected pipeline utility equals
+       `vickreyReserveEqUtility n r prior`.
+    3. Truthful-truthful is a Bayes-Nash equilibrium. -/
+theorem spsbReserveAuction_main_pipeline_results (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    spsbReserveAuction n r = detMatrix (spsbReserveAuctionFn n r)
+    ∧ (∀ v1, auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v1
+              = vickreyReserveEqUtility n r prior v1)
+    ∧ IsTruthfulPipelineBayesNashSpsbReserveAuction n r prior :=
+  ⟨spsbReserveAuction_eq_detMatrix n r,
+   auctionExpectedBidder1Util_spsbReserveAuction_eq_vickreyReserveEqUtility n r prior,
+   spsbReserveAuction_truthful_is_pipeline_bayes_nash n r prior h_nn⟩
+
+/-- **Main pipeline Vickrey theorem** (3-bidder).  For `spsb3Auction n`:
+
+    1. The pipeline reduces to `detMatrix (spsbAuctionFn3 n)`.
+    2. Truthful-truthful-truthful is a Bayes-Nash equilibrium under
+       any independent priors on the other bidders' valuations. -/
+theorem spsb3Auction_main_pipeline_results (n : Nat)
+    (prior23 prior13 prior12 : Fin (n * n) → Rat)
+    (h_nn23 : ∀ v, 0 ≤ prior23 v) (h_nn13 : ∀ v, 0 ≤ prior13 v)
+    (h_nn12 : ∀ v, 0 ≤ prior12 v) :
+    spsb3Auction n = detMatrix (spsbAuctionFn3 n)
+    ∧ IsTruthfulPipelineBayesNashSpsb3Auction n prior23 prior13 prior12 :=
+  ⟨spsb3Auction_eq_detMatrix n,
+   spsb3Auction_truthful_is_pipeline_bayes_nash n prior23 prior13 prior12
+     h_nn23 h_nn13 h_nn12⟩
+
+/-- **Main pipeline Vickrey-with-reserve theorem** (3-bidder).  For
+    `spsb3ReserveAuction n r`:
+
+    1. The pipeline reduces to `detMatrix (spsb3ReserveAuctionFn n r)`.
+    2. Truthful-truthful-truthful is a Bayes-Nash equilibrium. -/
+theorem spsb3ReserveAuction_main_pipeline_results (n : Nat) (r : Fin n)
+    (prior23 prior13 prior12 : Fin (n * n) → Rat)
+    (h_nn23 : ∀ v, 0 ≤ prior23 v) (h_nn13 : ∀ v, 0 ≤ prior13 v)
+    (h_nn12 : ∀ v, 0 ≤ prior12 v) :
+    spsb3ReserveAuction n r = detMatrix (spsb3ReserveAuctionFn n r)
+    ∧ IsTruthfulPipelineBayesNashSpsb3ReserveAuction n r prior23 prior13 prior12 :=
+  ⟨spsb3ReserveAuction_eq_detMatrix n r,
+   spsb3ReserveAuction_truthful_is_pipeline_bayes_nash n r prior23 prior13 prior12
+     h_nn23 h_nn13 h_nn12⟩
+
 end AuctionCat
