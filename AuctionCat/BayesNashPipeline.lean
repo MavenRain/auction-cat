@@ -350,6 +350,7 @@ theorem auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral
   rw [auctionExpectedBidder1Util_spsbAuction_eq_vickreyEqUtility]
   exact vickrey_envelope n prior v1
 
+
 /-- Bidder 1's equilibrium expected utility at type `v1` under
     Vickrey-with-reserve with both bidders truthful and prior `p` on
     bidder 2's valuation.  Reserve-side analog of `vickreyEqUtility`. -/
@@ -463,6 +464,31 @@ theorem spsbAuction_bidder2_truthful_best_response_pipeline (n : Nat)
       auctionExpectedBidder2Util_spsbAuctionDeviator2_eq]
   exact vickrey_bidder2_truthful_best_response n (fun v => v) bid prior
     h_nn v2
+
+/-- **Pipeline ↔ Myerson envelope (bidder 2)**: by Vickrey symmetry,
+    bidder 2's expected pipeline utility under truthful `spsbAuction n`
+    also equals the Myerson envelope integral, evaluated at bidder 2's
+    valuation.
+
+    Both bidders have the same expected-utility profile because
+    spsbAuction is symmetric under bidder swap. -/
+theorem auctionExpectedBidder2Util_spsbAuction_eq_envelopeIntegral
+    (n : Nat) (prior : Fin n → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbAuction n) prior v2
+    = vickreyEnvelopeIntegral n prior v2 := by
+  rw [auctionExpectedBidder2Util_spsbAuction_eq]
+  have hsum :
+      vickreyBidder2ExpectedUtility n (fun v => v) (fun v => v) v2 prior
+      = vickreyEqUtility n prior v2 := by
+    unfold vickreyBidder2ExpectedUtility vickreyEqUtility
+    congr 1
+    funext v1
+    rw [show (((vickreyBidder2Util n v2 v1 v2).val : Nat) : Rat)
+          = (((vickreyUtility n v2 v2 v1).val : Nat) : Rat) from by
+        exact_mod_cast
+          (vickreyUtility_val_eq_vickreyBidder2Util_val_truthful n v2 v1).symm]
+  rw [hsum]
+  exact vickrey_envelope n prior v2
 
 /-- A strategy profile is a *pipeline Bayes-Nash equilibrium of
     spsbAuction* under prior `p` iff neither bidder can improve their
