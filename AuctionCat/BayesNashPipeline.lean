@@ -490,6 +490,17 @@ theorem auctionExpectedBidder2Util_spsbAuction_eq_envelopeIntegral
   rw [hsum]
   exact vickrey_envelope n prior v2
 
+/-- **Pipeline-level Vickrey symmetry**: under truthful `spsbAuction n`,
+    bidder 1 and bidder 2 have equal expected pipeline utility at every
+    common valuation, for any prior.  Direct consequence of both
+    expected utilities equalling the Myerson envelope integral. -/
+theorem spsbAuction_pipeline_utility_symmetric (n : Nat) (prior : Fin n → Rat)
+    (v : Fin n) :
+    auctionExpectedBidder1Util n (spsbAuction n) prior v
+    = auctionExpectedBidder2Util n (spsbAuction n) prior v := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral,
+      auctionExpectedBidder2Util_spsbAuction_eq_envelopeIntegral]
+
 /-- A strategy profile is a *pipeline Bayes-Nash equilibrium of
     spsbAuction* under prior `p` iff neither bidder can improve their
     expected pipeline utility by unilateral deviation.  The
