@@ -1388,6 +1388,34 @@ example :
   unfold vickreyExpectedUtility3
   native_decide
 
+/-- 3-bidder bidder-2 example: at `n = 3` with uniform joint prior `1/9`
+    over `(v1, v3)`, bidder 2 with the top valuation `v2 = 2` in
+    truthful spsb3Auction has expected pipeline utility = `5/9` (by
+    symmetry with bidder 1's case). -/
+example :
+    auctionExpectedBidder2Util3 3 (spsb3Auction 3)
+        (fun _ => (1 : Rat) / 9) ⟨2, by decide⟩
+    = 5 / 9 := by
+  rw [auctionExpectedBidder2Util3_spsb3Auction_eq]
+  unfold vickreyBidder2ExpectedUtility3
+  native_decide
+
+/-- 3-bidder bidder-3 example: at `n = 3` with uniform joint prior `1/9`
+    over `(v1, v2)`, bidder 3 with the top valuation `v3 = 2` in
+    truthful spsb3Auction has expected pipeline utility `5/9`.
+
+    Bidder 3 wins iff `v1 < 2 ∧ v2 < 2` (strict tie-loss), i.e., on
+    the 4 pairs `{(0,0), (0,1), (1,0), (1,1)}` with respective
+    surpluses `(2, 1, 1, 1)`; the other 5 pairs (where `v1 = 2` or
+    `v2 = 2`) give 0.  Sum = `5`, expected = `5/9`. -/
+example :
+    auctionExpectedBidder3Util3 3 (spsb3Auction 3)
+        (fun _ => (1 : Rat) / 9) ⟨2, by decide⟩
+    = 5 / 9 := by
+  rw [auctionExpectedBidder3Util3_spsb3Auction_eq]
+  unfold vickreyBidder3ExpectedUtility3
+  native_decide
+
 /-- Envelope-integral example: at `n = 4` with uniform prior `1/4`,
     bidder 1 with valuation `3` in truthful spsbAuction has expected
     pipeline utility `3/2`, which equals the Myerson envelope
