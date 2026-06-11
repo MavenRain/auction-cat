@@ -1337,4 +1337,39 @@ example :
   unfold vickreyExpectedUtility
   native_decide
 
+/-- Bidder-2 symmetric: at `n = 2` with uniform prior `1/2`,
+    bidder 2 with valuation `1` in truthful spsbAuction has expected
+    pipeline utility `0` because bidder 2 loses ties to bidder 1.
+    With `v1 = 0`: bidder 2 wins (1 > 0), pays 0, utility = 1.
+    With `v1 = 1`: tie, bidder 2 loses (utility = 0).
+    Sum: `(1/2)·1 + (1/2)·0 = 1/2`.  Same as bidder 1's by symmetry. -/
+example :
+    auctionExpectedBidder2Util 2 (spsbAuction 2)
+        (fun _ => (1 : Rat) / 2) ⟨1, by decide⟩
+    = 1 / 2 := by
+  rw [auctionExpectedBidder2Util_spsbAuction_eq]
+  unfold vickreyBidder2ExpectedUtility
+  native_decide
+
+/-- Reserve example: at `n = 4` with uniform prior `1/4` and reserve
+    `r = 2`, bidder 1 with valuation `3` in truthful spsbReserveAuction
+    has expected pipeline utility = `1/4`.
+
+    Computation: bidder 1 wins iff `v1 ≥ v2 ∧ v1 ≥ r` (= `v1 ≥ 2`,
+    holds since `v1 = 3`).  Payment = `max r v2` = `max 2 v2`.
+    For `v2 ∈ {0, 1, 2, 3}`: payments `(2, 2, 2, 2)` → surpluses
+    `(1, 1, 1, 0)` → sum = 3 → expected = `3/4`.  Wait, must
+    handle the tie case `v1 = v2 = 3`: bidder 1 still wins (weak
+    inequality), pays `max 2 3 = 3`, surplus = 0.  Other cases:
+    `v2 < 3`, bidder 1 wins, pays `max 2 v2`.  `v2 = 0`: pays 2, surplus 1.
+    `v2 = 1`: pays 2, surplus 1.  `v2 = 2`: pays 2, surplus 1.
+    Sum = `(1 + 1 + 1 + 0)/4 = 3/4`. -/
+example :
+    auctionExpectedBidder1Util 4 (spsbReserveAuction 4 ⟨2, by decide⟩)
+        (fun _ => (1 : Rat) / 4) ⟨3, by decide⟩
+    = 3 / 4 := by
+  rw [auctionExpectedBidder1Util_spsbReserveAuction_eq]
+  unfold vickreyReserveExpectedUtility
+  native_decide
+
 end AuctionCat
