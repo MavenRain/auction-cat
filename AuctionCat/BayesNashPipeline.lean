@@ -1298,4 +1298,43 @@ theorem IsBayesNashVickreyReserve3_iff_pipeline_truthful (n : Nat) (r : Fin n)
           fun _ => vickreyReserve3_truthful_is_bayes_nash n r prior23 prior13
                      prior12 h_nn23 h_nn13 h_nn12⟩
 
+/-! ## Concrete pipeline computations at small `n`
+
+  Demonstrate that the pipeline framework reduces to concrete
+  numerical values via the `_eq` bridges to kernel forms. -/
+
+/-- At `n = 2` with uniform prior `1/2`, bidder 1 with valuation `1`
+    in truthful spsbAuction has expected pipeline utility `1/2`:
+    half the time bidder 2 has `v2 = 0` (winning utility = 1 - 0 = 1),
+    half the time `v2 = 1` (tied, no positive surplus). -/
+example :
+    auctionExpectedBidder1Util 2 (spsbAuction 2)
+        (fun _ => (1 : Rat) / 2) ⟨1, by decide⟩
+    = 1 / 2 := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq]
+  unfold vickreyExpectedUtility
+  native_decide
+
+/-- At `n = 2` with uniform prior `1/2`, bidder 1 with valuation `0`
+    in truthful spsbAuction has expected pipeline utility `0`. -/
+example :
+    auctionExpectedBidder1Util 2 (spsbAuction 2)
+        (fun _ => (1 : Rat) / 2) ⟨0, by decide⟩
+    = 0 := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq]
+  unfold vickreyExpectedUtility
+  native_decide
+
+/-- At `n = 3` with uniform prior `1/3`, bidder 1 with valuation `2`
+    in truthful spsbAuction has expected pipeline utility `1`:
+    averaged over `v2 ∈ {0, 1, 2}`, the surplus `2 - v2` is
+    `(2 + 1 + 0)/3 = 1`. -/
+example :
+    auctionExpectedBidder1Util 3 (spsbAuction 3)
+        (fun _ => (1 : Rat) / 3) ⟨2, by decide⟩
+    = 1 := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq]
+  unfold vickreyExpectedUtility
+  native_decide
+
 end AuctionCat
