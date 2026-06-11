@@ -1388,4 +1388,22 @@ example :
   unfold vickreyExpectedUtility3
   native_decide
 
+/-- Envelope-integral example: at `n = 4` with uniform prior `1/4`,
+    bidder 1 with valuation `3` in truthful spsbAuction has expected
+    pipeline utility `3/2`, which equals the Myerson envelope
+    integral `Σ_{t < 3} vickreyAllocation t = 1/4 + 1/2 + 3/4 = 3/2`. -/
+example :
+    auctionExpectedBidder1Util 4 (spsbAuction 4)
+        (fun _ => (1 : Rat) / 4) ⟨3, by decide⟩
+    = vickreyEnvelopeIntegral 4 (fun _ => (1 : Rat) / 4) ⟨3, by decide⟩ :=
+  auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral 4
+    (fun _ => (1 : Rat) / 4) ⟨3, by decide⟩
+
+/-- The envelope-integral side computes to `3/2`. -/
+example :
+    vickreyEnvelopeIntegral 4 (fun _ => (1 : Rat) / 4) ⟨3, by decide⟩
+    = 3 / 2 := by
+  unfold vickreyEnvelopeIntegral vickreyAllocation
+  native_decide
+
 end AuctionCat
