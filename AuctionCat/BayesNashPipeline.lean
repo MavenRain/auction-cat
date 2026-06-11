@@ -1372,4 +1372,20 @@ example :
   unfold vickreyReserveExpectedUtility
   native_decide
 
+/-- 3-bidder example: at `n = 3` with uniform joint prior `1/9` over
+    `(v2, v3)`, bidder 1 with the top valuation `v1 = 2` in truthful
+    spsb3Auction has expected pipeline utility = `5/9`.
+
+    Bidder 1 always wins (top type).  Pays `max v2 v3`.  Surplus
+    `2 - max(v2, v3)` summed over the 9 (v2, v3) pairs:
+    `2 + 1 + 0 + 1 + 1 + 0 + 0 + 0 + 0 = 5`.
+    Expected = `5/9`. -/
+example :
+    auctionExpectedBidder1Util3 3 (spsb3Auction 3)
+        (fun _ => (1 : Rat) / 9) ⟨2, by decide⟩
+    = 5 / 9 := by
+  rw [auctionExpectedBidder1Util3_spsb3Auction_eq]
+  unfold vickreyExpectedUtility3
+  native_decide
+
 end AuctionCat
