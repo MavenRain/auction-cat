@@ -1406,4 +1406,27 @@ example :
   unfold vickreyEnvelopeIntegral vickreyAllocation
   native_decide
 
+/-! ## Main pipeline-level results (summary)
+
+  Consolidates the key Vickrey pipeline theorems for `spsbAuction n`:
+  pipeline ↔ closed-form, pipeline ↔ envelope integral, and the
+  truthful-truthful Bayes-Nash equilibrium. -/
+
+/-- **Main pipeline Vickrey theorem** (2-bidder).  For `spsbAuction n`
+    under any prior with nonnegative weights:
+
+    1. The pipeline reduces to `detMatrix (spsbAuctionFn n)`.
+    2. Bidder 1's expected pipeline utility equals the Myerson
+       envelope integral of the Vickrey allocation rule.
+    3. Truthful-truthful is a Bayes-Nash equilibrium. -/
+theorem spsbAuction_main_pipeline_results (n : Nat) (prior : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ prior v) :
+    spsbAuction n = detMatrix (spsbAuctionFn n)
+    ∧ (∀ v1, auctionExpectedBidder1Util n (spsbAuction n) prior v1
+              = vickreyEnvelopeIntegral n prior v1)
+    ∧ IsTruthfulPipelineBayesNashSpsbAuction n prior :=
+  ⟨spsbAuction_eq_detMatrix n,
+   auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral n prior,
+   spsbAuction_truthful_is_pipeline_bayes_nash n prior h_nn⟩
+
 end AuctionCat
