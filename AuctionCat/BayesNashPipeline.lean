@@ -1549,6 +1549,19 @@ theorem pipeline_RET_via_envelope (n : Nat)
     = auctionExpectedBidder1Util n (spsbAuction n) prior v1 := by
   rw [h_env, auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral]
 
+/-- **Pipeline-level RET (bidder 2)**.  Symmetric to bidder 1: any
+    auction whose expected bidder-2 pipeline utility equals the
+    Myerson envelope integral has the same expected pipeline utility
+    as `spsbAuction n`. -/
+theorem pipeline_RET_via_envelope_bidder2 (n : Nat)
+    (auction : StochasticMatrix (n * n) (n * n))
+    (prior : Fin n → Rat)
+    (h_env : ∀ v2, auctionExpectedBidder2Util n auction prior v2
+                  = vickreyEnvelopeIntegral n prior v2) (v2 : Fin n) :
+    auctionExpectedBidder2Util n auction prior v2
+    = auctionExpectedBidder2Util n (spsbAuction n) prior v2 := by
+  rw [h_env, auctionExpectedBidder2Util_spsbAuction_eq_envelopeIntegral]
+
 /-- **Main pipeline Vickrey theorem** (2-bidder).  For `spsbAuction n`
     under any prior with nonnegative weights:
 
