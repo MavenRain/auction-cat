@@ -368,6 +368,7 @@ theorem auctionExpectedBidder1Util_spsbReserveAuction_eq_vickreyReserveEqUtility
   rw [auctionExpectedBidder1Util_spsbReserveAuction_eq]
   rfl
 
+
 /-! ## Bidder-2 symmetric pipeline Bayes-Nash -/
 
 /-- Bidder 2's expected utility in a 2-bidder Vickrey auction with
@@ -650,6 +651,31 @@ theorem spsbReserveAuction_bidder2_truthful_best_response_pipeline
       auctionExpectedBidder2Util_spsbReserveAuctionDeviator2_eq]
   exact vickreyReserve_bidder2_truthful_best_response n r (fun v => v) bid
     prior h_nn v2
+
+/-- Bidder-2 reserve-spsb expected pipeline utility also coincides
+    with `vickreyReserveEqUtility`, by symmetry of Vickrey-with-reserve. -/
+theorem auctionExpectedBidder2Util_spsbReserveAuction_eq_vickreyReserveEqUtility
+    (n : Nat) (r : Fin n) (prior : Fin n → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbReserveAuction n r) prior v2
+    = vickreyReserveEqUtility n r prior v2 := by
+  rw [auctionExpectedBidder2Util_spsbReserveAuction_eq]
+  unfold vickreyReserveBidder2ExpectedUtility vickreyReserveEqUtility
+  congr 1
+  funext v1
+  rw [show (((vickreyReserveBidder2Util n v2 v1 v2 r).val : Nat) : Rat)
+        = (((vickreyReserveUtility n v2 v2 v1 r).val : Nat) : Rat) from by
+        exact_mod_cast
+          (vickreyReserveUtility_val_eq_vickreyReserveBidder2Util_val_truthful n
+            v2 v1 r).symm]
+
+/-- Reserve-spsb is symmetric across bidders 1 and 2: both have equal
+    expected pipeline utility at every common valuation. -/
+theorem spsbReserveAuction_pipeline_utility_symmetric (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) (v : Fin n) :
+    auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v
+    = auctionExpectedBidder2Util n (spsbReserveAuction n r) prior v := by
+  rw [auctionExpectedBidder1Util_spsbReserveAuction_eq_vickreyReserveEqUtility,
+      auctionExpectedBidder2Util_spsbReserveAuction_eq_vickreyReserveEqUtility]
 
 /-- A strategy profile is a *pipeline Bayes-Nash equilibrium of
     spsbReserveAuction* under prior `p`. -/
