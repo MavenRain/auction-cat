@@ -1,4 +1,5 @@
 import AuctionCat.FirstPrice
+import AuctionCat.Auction
 
 /-!
 # AuctionCat.Dutch
@@ -46,5 +47,13 @@ def dutchAuction (n : Nat) :
     `FinStoch` — the categorical statement of strategic equivalence. -/
 theorem dutch_eq_firstPrice (n : Nat) :
     dutchAuction n = firstPriceSealedBid n := rfl
+
+/-- **Dutch ≅ FPSB at the OpenGame pipeline level**: the Dutch
+    auction's pipeline form (score against truthful bidders) equals
+    `fpsbAuction n`.  This is the categorical realization of the
+    strategic equivalence between Dutch (descending) and first-price
+    sealed-bid auctions. -/
+theorem dutch_pipeline_eq_fpsbAuction (n : Nat) :
+    auctionScore n (dutchAuction n) = fpsbAuction n := rfl
 
 end AuctionCat

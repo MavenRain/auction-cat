@@ -1,4 +1,5 @@
 import AuctionCat.SecondPrice
+import AuctionCat.Auction
 
 /-!
 # AuctionCat.English
@@ -46,5 +47,13 @@ def englishAuction (n : Nat) :
     equivalence. -/
 theorem english_eq_secondPrice (n : Nat) :
     englishAuction n = secondPriceSealedBid n := rfl
+
+/-- **English ≅ SPSB at the OpenGame pipeline level**: the English
+    auction's pipeline form (score against truthful bidders) equals
+    `spsbAuction n`.  This is the categorical realization of the
+    strategic equivalence between English (ascending) and Vickrey
+    (second-price sealed-bid) auctions. -/
+theorem english_pipeline_eq_spsbAuction (n : Nat) :
+    auctionScore n (englishAuction n) = spsbAuction n := rfl
 
 end AuctionCat
