@@ -1529,6 +1529,17 @@ example :
   unfold vickreyEnvelopeIntegral vickreyAllocation
   native_decide
 
+/-- Vickrey-symmetry example via the symmetry theorem: bidder 1 and
+    bidder 2 have equal expected pipeline utility at `v = 1` (both
+    1/2 from the earlier concrete examples). -/
+example :
+    auctionExpectedBidder1Util 2 (spsbAuction 2)
+        (fun _ => (1 : Rat) / 2) ⟨1, by decide⟩
+    = auctionExpectedBidder2Util 2 (spsbAuction 2)
+        (fun _ => (1 : Rat) / 2) ⟨1, by decide⟩ :=
+  spsbAuction_pipeline_utility_symmetric 2 (fun _ => (1 : Rat) / 2)
+    ⟨1, by decide⟩
+
 /-! ## Main pipeline-level results (summary)
 
   Consolidates the key Vickrey pipeline theorems for `spsbAuction n`:
