@@ -83,4 +83,37 @@ example :
   unfold IsRevenueEquivalent
   native_decide
 
+/-! ## Strategic-equivalence revenue examples
+
+  The strategic equivalences English ≅ SPSB and Dutch ≅ FPSB lift
+  trivially to revenue equivalence at every concrete `n` and prior.
+  Each example invokes the rfl-level corollary directly. -/
+
+/-- English ≅ SPSB revenue equivalence at `n = 3` under uniform
+    prior — direct application of `english_is_revenue_equivalent_spsb`. -/
+example :
+    IsRevenueEquivalent 3 (englishAuction 3) (secondPriceSealedBid 3)
+                          (uniformPrior 3) :=
+  english_is_revenue_equivalent_spsb 3 (uniformPrior 3)
+
+/-- Dutch ≅ FPSB revenue equivalence at `n = 3` under uniform prior
+    — direct application of `dutch_is_revenue_equivalent_fpsb`. -/
+example :
+    IsRevenueEquivalent 3 (dutchAuction 3) (firstPriceSealedBid 3)
+                          (uniformPrior 3) :=
+  dutch_is_revenue_equivalent_fpsb 3 (uniformPrior 3)
+
+/-- **Four-way revenue equivalence at `n = 3`**: chaining
+    half-shaded FPSB ≡ SPSB (RET-style) ≡ English (kernel rfl)
+    gives that half-shaded Dutch's substitute (half-shaded FPSB) has
+    the same revenue as English under uniform prior. -/
+example :
+    IsRevenueEquivalent 3
+      (biddedMechanism 3 (halfShading 3) (halfShading 3)
+        (firstPriceSealedBid 3))
+      (englishAuction 3)
+      (uniformPrior 3) := by
+  unfold IsRevenueEquivalent
+  native_decide
+
 end AuctionCat
