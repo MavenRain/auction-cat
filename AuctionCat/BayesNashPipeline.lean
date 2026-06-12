@@ -1419,6 +1419,81 @@ theorem IsBayesNashVickreyReserve3_iff_pipeline_truthful (n : Nat) (r : Fin n)
           fun _ => vickreyReserve3_truthful_is_bayes_nash n r prior23 prior13
                      prior12 h_nn23 h_nn13 h_nn12⟩
 
+/-- Bridge: bidder-2 reserve expected utility under truthful equals
+    bidder-1's. -/
+theorem vickreyReserveBidder2ExpectedUtility3_eq_vickreyReserveExpectedUtility3_truthful
+    (n : Nat) (r : Fin n) (v : Fin n) (prior : Fin (n * n) → Rat) :
+    vickreyReserveBidder2ExpectedUtility3 n r (fun v => v) (fun v => v)
+                                                (fun v => v) v prior
+    = vickreyReserveExpectedUtility3 n r (fun v => v) (fun v => v)
+                                          (fun v => v) v prior := by
+  unfold vickreyReserveBidder2ExpectedUtility3 vickreyReserveExpectedUtility3
+  congr 1
+  funext v13
+  rw [show (((vickreyReserveBidder2Util3 n v (Fin.first v13) v
+                                              (Fin.second v13) r).val
+              : Nat) : Rat)
+        = (((vickreyReserveUtility3 n v v (Fin.first v13)
+                                           (Fin.second v13) r).val
+              : Nat) : Rat) from by
+        exact_mod_cast
+          (vickreyReserveUtility3_val_eq_vickreyReserveBidder2Util3_val_truthful
+            n v (Fin.first v13) (Fin.second v13) r).symm]
+
+/-- Bridge: bidder-3 reserve expected utility under truthful equals
+    bidder-1's. -/
+theorem vickreyReserveBidder3ExpectedUtility3_eq_vickreyReserveExpectedUtility3_truthful
+    (n : Nat) (r : Fin n) (v : Fin n) (prior : Fin (n * n) → Rat) :
+    vickreyReserveBidder3ExpectedUtility3 n r (fun v => v) (fun v => v)
+                                                (fun v => v) v prior
+    = vickreyReserveExpectedUtility3 n r (fun v => v) (fun v => v)
+                                          (fun v => v) v prior := by
+  unfold vickreyReserveBidder3ExpectedUtility3 vickreyReserveExpectedUtility3
+  congr 1
+  funext v12
+  rw [show (((vickreyReserveBidder3Util3 n v (Fin.first v12)
+                                              (Fin.second v12) v r).val
+              : Nat) : Rat)
+        = (((vickreyReserveUtility3 n v v (Fin.first v12)
+                                           (Fin.second v12) r).val
+              : Nat) : Rat) from by
+        exact_mod_cast
+          (vickreyReserveUtility3_val_eq_vickreyReserveBidder3Util3_val_truthful
+            n v (Fin.first v12) (Fin.second v12) r).symm]
+
+/-- **3-bidder reserve pipeline-level Vickrey symmetry**. -/
+theorem spsb3ReserveAuction_pipeline_utility_symmetric (n : Nat) (r : Fin n)
+    (prior : Fin (n * n) → Rat) (v : Fin n) :
+    auctionExpectedBidder1Util3 n (spsb3ReserveAuction n r) prior v
+    = auctionExpectedBidder2Util3 n (spsb3ReserveAuction n r) prior v
+    ∧ auctionExpectedBidder1Util3 n (spsb3ReserveAuction n r) prior v
+    = auctionExpectedBidder3Util3 n (spsb3ReserveAuction n r) prior v := by
+  refine ⟨?_, ?_⟩
+  · rw [auctionExpectedBidder2Util3_spsb3ReserveAuction_eq,
+        vickreyReserveBidder2ExpectedUtility3_eq_vickreyReserveExpectedUtility3_truthful]
+    -- Need: auctionExpectedBidder1Util3 n (spsb3ReserveAuction n r) prior v
+    --   = vickreyReserveExpectedUtility3 n r id id id v prior
+    unfold auctionExpectedBidder1Util3
+    have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+    have hnn : 0 < n * n := Nat.mul_pos hn hn
+    unfold vickreyReserveExpectedUtility3
+    congr 1
+    funext v23
+    rw [spsb3ReserveAuction_eq_detMatrix, auctionBidder1Util3_det]
+    unfold spsb3ReserveAuctionFn
+    simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+  · rw [auctionExpectedBidder3Util3_spsb3ReserveAuction_eq,
+        vickreyReserveBidder3ExpectedUtility3_eq_vickreyReserveExpectedUtility3_truthful]
+    unfold auctionExpectedBidder1Util3
+    have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v.isLt
+    have hnn : 0 < n * n := Nat.mul_pos hn hn
+    unfold vickreyReserveExpectedUtility3
+    congr 1
+    funext v12
+    rw [spsb3ReserveAuction_eq_detMatrix, auctionBidder1Util3_det]
+    unfold spsb3ReserveAuctionFn
+    simp only [Fin.first_pair, Fin.second_pair hn, Fin.second_pair hnn]
+
 /-! ## Concrete pipeline computations at small `n`
 
   Demonstrate that the pipeline framework reduces to concrete
