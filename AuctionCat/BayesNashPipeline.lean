@@ -1535,6 +1535,20 @@ example :
   pipeline ↔ closed-form, pipeline ↔ envelope integral, and the
   truthful-truthful Bayes-Nash equilibrium. -/
 
+/-- **Pipeline-level RET (revenue equivalence via envelope)**.
+    Any auction whose expected pipeline utility equals the Myerson
+    envelope integral has the same expected pipeline utility as
+    `spsbAuction n` at every type.  This is the "envelope side" of
+    Myerson's RET: same envelope integral → same utility profile. -/
+theorem pipeline_RET_via_envelope (n : Nat)
+    (auction : StochasticMatrix (n * n) (n * n))
+    (prior : Fin n → Rat)
+    (h_env : ∀ v1, auctionExpectedBidder1Util n auction prior v1
+                  = vickreyEnvelopeIntegral n prior v1) (v1 : Fin n) :
+    auctionExpectedBidder1Util n auction prior v1
+    = auctionExpectedBidder1Util n (spsbAuction n) prior v1 := by
+  rw [h_env, auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral]
+
 /-- **Main pipeline Vickrey theorem** (2-bidder).  For `spsbAuction n`
     under any prior with nonnegative weights:
 
