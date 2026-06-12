@@ -501,6 +501,7 @@ theorem spsbAuction_pipeline_utility_symmetric (n : Nat) (prior : Fin n → Rat)
   rw [auctionExpectedBidder1Util_spsbAuction_eq_envelopeIntegral,
       auctionExpectedBidder2Util_spsbAuction_eq_envelopeIntegral]
 
+
 /-- A strategy profile is a *pipeline Bayes-Nash equilibrium of
     spsbAuction* under prior `p` iff neither bidder can improve their
     expected pipeline utility by unilateral deviation.  The
@@ -989,6 +990,63 @@ theorem spsb3Auction_truthful_is_pipeline_bayes_nash (n : Nat)
   ⟨spsb3Auction_truthful_best_response_pipeline n prior23 h_nn23,
    spsb3Auction_bidder2_truthful_best_response_pipeline n prior13 h_nn13,
    spsb3Auction_bidder3_truthful_best_response_pipeline n prior12 h_nn12⟩
+
+/-- Bridge: 3-bidder bidder-2 expected utility under truthful equals
+    the analogous bidder-1 expected utility. -/
+theorem vickreyBidder2ExpectedUtility3_eq_vickreyExpectedUtility3_truthful
+    (n : Nat) (v : Fin n) (prior : Fin (n * n) → Rat) :
+    vickreyBidder2ExpectedUtility3 n (fun v => v) (fun v => v) (fun v => v)
+                                     v prior
+    = vickreyExpectedUtility3 n (fun v => v) (fun v => v) (fun v => v)
+                                v prior := by
+  unfold vickreyBidder2ExpectedUtility3 vickreyExpectedUtility3
+  congr 1
+  funext v13
+  rw [show (((vickreyBidder2Util3 n v (Fin.first v13) v
+                                       (Fin.second v13)).val : Nat) : Rat)
+        = (((vickreyUtility3 n v v (Fin.first v13)
+                                    (Fin.second v13)).val : Nat) : Rat)
+        from by
+        exact_mod_cast
+          (vickreyUtility3_val_eq_vickreyBidder2Util3_val_truthful n v
+            (Fin.first v13) (Fin.second v13)).symm]
+
+/-- Bridge: 3-bidder bidder-3 expected utility under truthful equals
+    the analogous bidder-1 expected utility. -/
+theorem vickreyBidder3ExpectedUtility3_eq_vickreyExpectedUtility3_truthful
+    (n : Nat) (v : Fin n) (prior : Fin (n * n) → Rat) :
+    vickreyBidder3ExpectedUtility3 n (fun v => v) (fun v => v) (fun v => v)
+                                     v prior
+    = vickreyExpectedUtility3 n (fun v => v) (fun v => v) (fun v => v)
+                                v prior := by
+  unfold vickreyBidder3ExpectedUtility3 vickreyExpectedUtility3
+  congr 1
+  funext v12
+  rw [show (((vickreyBidder3Util3 n v (Fin.first v12) (Fin.second v12)
+                                       v).val : Nat) : Rat)
+        = (((vickreyUtility3 n v v (Fin.first v12)
+                                    (Fin.second v12)).val : Nat) : Rat)
+        from by
+        exact_mod_cast
+          (vickreyUtility3_val_eq_vickreyBidder3Util3_val_truthful n v
+            (Fin.first v12) (Fin.second v12)).symm]
+
+/-- **3-bidder pipeline-level Vickrey symmetry**: under truthful
+    `spsb3Auction n`, all three bidders have equal expected pipeline
+    utility at every common valuation. -/
+theorem spsb3Auction_pipeline_utility_symmetric (n : Nat)
+    (prior : Fin (n * n) → Rat) (v : Fin n) :
+    auctionExpectedBidder1Util3 n (spsb3Auction n) prior v
+    = auctionExpectedBidder2Util3 n (spsb3Auction n) prior v
+    ∧ auctionExpectedBidder1Util3 n (spsb3Auction n) prior v
+    = auctionExpectedBidder3Util3 n (spsb3Auction n) prior v := by
+  refine ⟨?_, ?_⟩
+  · rw [auctionExpectedBidder1Util3_spsb3Auction_eq,
+        auctionExpectedBidder2Util3_spsb3Auction_eq,
+        vickreyBidder2ExpectedUtility3_eq_vickreyExpectedUtility3_truthful]
+  · rw [auctionExpectedBidder1Util3_spsb3Auction_eq,
+        auctionExpectedBidder3Util3_spsb3Auction_eq,
+        vickreyBidder3ExpectedUtility3_eq_vickreyExpectedUtility3_truthful]
 
 /-- **Kernel ↔ pipeline consistency (3 bidders)**: kernel-level
     `IsBayesNashVickrey3` for truthful-truthful-truthful is equivalent
