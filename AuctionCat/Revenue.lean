@@ -1,5 +1,7 @@
 import AuctionCat.FirstPrice
 import AuctionCat.SecondPrice
+import AuctionCat.English
+import AuctionCat.Dutch
 
 /-!
 # AuctionCat.Revenue
@@ -151,5 +153,38 @@ theorem IsRevenueEquivalent.trans' {n : Nat}
 /-- The uniform prior over joint valuations `Fin (n * n)`. -/
 def uniformPrior (n : Nat) : Fin (n * n) → Rat :=
   fun _ => 1 / ((n * n : Nat) : Rat)
+
+/-! ## Strategic-equivalence revenue corollaries
+
+  English ≅ SecondPriceSealedBid and Dutch ≅ FirstPriceSealedBid at
+  the mechanism level (kernel rfl), so their expected revenues match
+  trivially under any prior.  These are the kernel-level Revenue
+  Equivalence statements between {English, SPSB} and {Dutch, FPSB}. -/
+
+/-- English auction has the same expected revenue as Vickrey under
+    any prior — corollary of `english_eq_secondPrice`. -/
+theorem english_revenue_eq_spsb (n : Nat) (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (englishAuction n) prior
+    = expectedRevenue n (secondPriceSealedBid n) prior := rfl
+
+/-- Dutch auction has the same expected revenue as first-price
+    sealed-bid under any prior — corollary of `dutch_eq_firstPrice`. -/
+theorem dutch_revenue_eq_fpsb (n : Nat) (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (dutchAuction n) prior
+    = expectedRevenue n (firstPriceSealedBid n) prior := rfl
+
+/-- English ≅ SPSB revenue equivalence as an inhabitant of the
+    `IsRevenueEquivalent` relation. -/
+theorem english_is_revenue_equivalent_spsb (n : Nat)
+    (prior : Fin (n * n) → Rat) :
+    IsRevenueEquivalent n (englishAuction n) (secondPriceSealedBid n) prior :=
+  rfl
+
+/-- Dutch ≅ FPSB revenue equivalence as an inhabitant of the
+    `IsRevenueEquivalent` relation. -/
+theorem dutch_is_revenue_equivalent_fpsb (n : Nat)
+    (prior : Fin (n * n) → Rat) :
+    IsRevenueEquivalent n (dutchAuction n) (firstPriceSealedBid n) prior :=
+  rfl
 
 end AuctionCat

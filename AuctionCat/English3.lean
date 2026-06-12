@@ -1,4 +1,5 @@
 import AuctionCat.SecondPrice3
+import AuctionCat.Auction
 
 /-!
 # AuctionCat.English3
@@ -37,5 +38,13 @@ def englishAuction3 (X : Nat) :
     (Vickrey) at three bidders as morphisms in `FinStoch`. -/
 theorem english3_eq_secondPrice3 (X : Nat) :
     englishAuction3 X = secondPriceSealedBid3 X := rfl
+
+/-- **English ≅ SPSB at the OpenGame pipeline level (3 bidders)**:
+    the three-bidder English auction's pipeline form equals
+    `spsb3Auction n`.  Categorical realization of the strategic
+    equivalence between English (ascending) and Vickrey
+    (second-price sealed-bid) auctions for three bidders. -/
+theorem english3_pipeline_eq_spsb3Auction (n : Nat) :
+    auctionScore3 n (englishAuction3 n) = spsb3Auction n := rfl
 
 end AuctionCat

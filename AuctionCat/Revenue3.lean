@@ -1,5 +1,7 @@
 import AuctionCat.FirstPrice3
 import AuctionCat.SecondPrice3
+import AuctionCat.English3
+import AuctionCat.Dutch3
 
 /-!
 # AuctionCat.Revenue3
@@ -94,5 +96,68 @@ example (n : Nat)
     (M : StochasticMatrix ((n * n) * n) (((2 * n) * (2 * n)) * (2 * n)))
     (prior : Fin ((n * n) * n) → Rat) :
     IsRevenueEquivalent3 n M M prior := rfl
+
+/-- Reflexivity: every three-bidder mechanism is revenue equivalent to
+    itself. -/
+theorem IsRevenueEquivalent3.refl' {n : Nat}
+    (M : StochasticMatrix ((n * n) * n) (((2 * n) * (2 * n)) * (2 * n)))
+    (prior : Fin ((n * n) * n) → Rat) :
+    IsRevenueEquivalent3 n M M prior :=
+  Eq.refl _
+
+/-- Symmetry of the three-bidder revenue-equivalence relation. -/
+theorem IsRevenueEquivalent3.symm' {n : Nat}
+    {M1 M2 : StochasticMatrix ((n * n) * n)
+              (((2 * n) * (2 * n)) * (2 * n))}
+    {prior : Fin ((n * n) * n) → Rat}
+    (h : IsRevenueEquivalent3 n M1 M2 prior) :
+    IsRevenueEquivalent3 n M2 M1 prior :=
+  h.symm
+
+/-- Transitivity of the three-bidder revenue-equivalence relation. -/
+theorem IsRevenueEquivalent3.trans' {n : Nat}
+    {M1 M2 M3 : StochasticMatrix ((n * n) * n)
+                  (((2 * n) * (2 * n)) * (2 * n))}
+    {prior : Fin ((n * n) * n) → Rat}
+    (h12 : IsRevenueEquivalent3 n M1 M2 prior)
+    (h23 : IsRevenueEquivalent3 n M2 M3 prior) :
+    IsRevenueEquivalent3 n M1 M3 prior :=
+  h12.trans h23
+
+/-! ## Strategic-equivalence revenue corollaries (3 bidders)
+
+  English3 ≅ SecondPriceSealedBid3 and Dutch3 ≅ FirstPriceSealedBid3
+  at the mechanism level (kernel rfl), so their expected revenues
+  match trivially under any prior at three bidders. -/
+
+/-- Three-bidder English has the same expected revenue as Vickrey
+    under any prior — corollary of `english3_eq_secondPrice3`. -/
+theorem english3_revenue_eq_spsb3 (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (englishAuction3 n) prior
+    = expectedRevenue3 n (secondPriceSealedBid3 n) prior := rfl
+
+/-- Three-bidder Dutch has the same expected revenue as first-price
+    sealed-bid under any prior — corollary of `dutch3_eq_firstPrice3`. -/
+theorem dutch3_revenue_eq_fpsb3 (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (dutchAuction3 n) prior
+    = expectedRevenue3 n (firstPriceSealedBid3 n) prior := rfl
+
+/-- English3 ≅ SPSB3 revenue equivalence as an inhabitant of the
+    `IsRevenueEquivalent3` relation. -/
+theorem english3_is_revenue_equivalent_spsb3 (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) :
+    IsRevenueEquivalent3 n (englishAuction3 n)
+                            (secondPriceSealedBid3 n) prior :=
+  rfl
+
+/-- Dutch3 ≅ FPSB3 revenue equivalence as an inhabitant of the
+    `IsRevenueEquivalent3` relation. -/
+theorem dutch3_is_revenue_equivalent_fpsb3 (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) :
+    IsRevenueEquivalent3 n (dutchAuction3 n)
+                            (firstPriceSealedBid3 n) prior :=
+  rfl
 
 end AuctionCat
