@@ -338,4 +338,22 @@ example :
     3 ⟨1, by decide⟩ (fun _ => (1/3 : Rat))
     (fun _ => by norm_num) ⟨2, by decide⟩
 
+/-- **Concrete numeric witness of the spsb > fpsb pipeline gap** at
+    `n = 2`, uniform prior `1/2`, `v1 = 1`: spsb pipeline yields
+    `1/2` (winner pays opponent's bid 0 with prob 1/2, util = 1; tie
+    pays own bid 1 with util 0).  Fpsb pipeline yields `0`.  Strict
+    gap of `1/2`. -/
+example :
+    auctionExpectedBidder1Util 2 (spsbAuction 2)
+      (fun _ => (1/2 : Rat)) ⟨1, by decide⟩ = 1 / 2 := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq]
+  unfold vickreyExpectedUtility vickreyUtility
+  native_decide
+
+example :
+    auctionExpectedBidder1Util 2 (fpsbAuction 2)
+      (fun _ => (1/2 : Rat)) ⟨1, by decide⟩ = 0 :=
+  auctionExpectedBidder1Util_fpsbAuction_eq_zero 2 (fun _ => (1/2 : Rat))
+    ⟨1, by decide⟩
+
 end AuctionCat
