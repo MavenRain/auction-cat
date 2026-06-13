@@ -233,6 +233,64 @@ theorem expectedRevenue_spsbReserve_eq_sum (n : Nat) (r : Fin n)
   intro v
   rw [spsbReserve_revenue_eq]
 
+/-- **Expected-revenue dominance** of fpsb3Reserve over spsb3Reserve
+    (3 bidders).  Under any prior with nonnegative weights and any
+    reserve price `r`, fpsb3Reserve's expected revenue is at least
+    spsb3Reserve's. -/
+theorem expectedRevenue3_fpsb3Reserve_ge_spsb3Reserve (n : Nat) (r : Fin n)
+    (prior : Fin ((n * n) * n) → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    expectedRevenue3 n (fpsb3Reserve n r) prior
+    ≥ expectedRevenue3 n (spsb3Reserve n r) prior := by
+  unfold fpsb3Reserve spsb3Reserve
+  rw [expectedRevenue3_detMatrix_eq, expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_le_rev
+  intro v
+  apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v)
+  exact_mod_cast fpsb3Reserve_revenue_ge_spsb3Reserve n r v
+
+/-- Closed-form expected fpsb3Reserve revenue under truthful play:
+    `Σ_v prior(v) · (if max3 ≥ r then max3 else 0)`. -/
+theorem expectedRevenue3_fpsb3Reserve_eq_sum (n : Nat) (r : Fin n)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (fpsb3Reserve n r) prior
+    = Fin.sumRat (fun v : Fin ((n * n) * n) =>
+        prior v
+        * ((if max (Fin.first (Fin.first v)).val
+                (max (Fin.second (Fin.first v)).val (Fin.second v).val)
+              ≥ r.val
+            then max (Fin.first (Fin.first v)).val
+                  (max (Fin.second (Fin.first v)).val (Fin.second v).val)
+            else 0) : Nat).cast) := by
+  unfold fpsb3Reserve
+  rw [expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsb3Reserve_revenue_eq]
+
+/-- Closed-form expected spsb3Reserve revenue under truthful play:
+    `Σ_v prior(v) · (if max3 ≥ r then max(r, second_max3) else 0)`. -/
+theorem expectedRevenue3_spsb3Reserve_eq_sum (n : Nat) (r : Fin n)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (spsb3Reserve n r) prior
+    = Fin.sumRat (fun v : Fin ((n * n) * n) =>
+        prior v
+        * ((if max (Fin.first (Fin.first v)).val
+                (max (Fin.second (Fin.first v)).val (Fin.second v).val)
+              ≥ r.val
+            then max r.val
+                  (max (min (Fin.first (Fin.first v)).val
+                            (Fin.second (Fin.first v)).val)
+                      (max (min (Fin.first (Fin.first v)).val
+                                (Fin.second v).val)
+                           (min (Fin.second (Fin.first v)).val
+                                (Fin.second v).val)))
+            else 0) : Nat).cast) := by
+  unfold spsb3Reserve
+  rw [expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [spsb3Reserve_revenue_eq]
+
 /-- Closed-form expected spsb3 revenue under truthful play:
     `Σ_v prior(v) · second_max3(b1, b2, b3)`. -/
 theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
