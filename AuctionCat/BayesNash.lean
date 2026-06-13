@@ -297,4 +297,25 @@ theorem fpsb3Reserve_truthful_expected_utility_zero (n : Nat) (r : Fin n)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- Bidder 2's expected utility in a 2-bidder fpsb auction.  Mirrors
+    `fpsbExpectedUtility` for bidder 2's perspective. -/
+def fpsbBidder2ExpectedUtility (n : Nat) (s1 s2 : Fin n → Fin n)
+    (v2 : Fin n) (p : Fin n → Rat) : Rat :=
+  Fin.sumRat (fun v1 : Fin n =>
+    p v1 * ((fpsbBidder2Util n v2 (s1 v1) (s2 v2)).val : Nat).cast)
+
+/-- **Bidder 2's truthful expected utility in fpsb is zero under any
+    prior and opponent strategy** (2 bidders). -/
+theorem fpsb_bidder2_truthful_expected_utility_zero (n : Nat)
+    (s1 : Fin n → Fin n) (v2 : Fin n) (p : Fin n → Rat) :
+    fpsbBidder2ExpectedUtility n s1 (fun v => v) v2 p = 0 := by
+  unfold fpsbBidder2ExpectedUtility
+  have h : ∀ v1 : Fin n,
+      p v1 * ((fpsbBidder2Util n v2 (s1 v1) v2).val : Nat).cast = 0 := by
+    intro v1
+    rw [fpsb_bidder2_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 end AuctionCat
