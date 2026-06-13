@@ -1823,4 +1823,32 @@ theorem auctionExpectedBidder1Util3_fpsb3ReserveAuction_eq_zero (n : Nat)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-! ## Pipeline-level spsb ≥ fpsb truthful comparison
+
+  Under truthful play, the spsbAuction pipeline yields weakly more
+  expected utility than the fpsbAuction pipeline.  Direct lift of
+  the kernel-level `vickreyExpectedUtility_truthful_ge_fpsbExpectedUtility_truthful`
+  via the pipeline ↔ kernel-utility equivalence. -/
+
+/-- **Pipeline-level positivity**: bidder 1's expected pipeline
+    utility in spsbAuction under truthful play is nonneg for any
+    nonneg prior. -/
+theorem auctionExpectedBidder1Util_spsbAuction_nonneg (n : Nat)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) (v1 : Fin n) :
+    0 ≤ auctionExpectedBidder1Util n (spsbAuction n) prior v1 := by
+  rw [auctionExpectedBidder1Util_spsbAuction_eq]
+  have h_vk := vickreyExpectedUtility_truthful_ge_fpsbExpectedUtility_truthful
+    n (fun v => v) v1 prior h_nn
+  rw [fpsb_truthful_expected_utility_zero] at h_vk
+  exact h_vk
+
+/-- **Pipeline-level dominance**: spsbAuction's expected pipeline
+    utility weakly dominates fpsbAuction's for any nonneg prior. -/
+theorem auctionExpectedBidder1Util_spsbAuction_ge_fpsbAuction (n : Nat)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) (v1 : Fin n) :
+    auctionExpectedBidder1Util n (spsbAuction n) prior v1
+    ≥ auctionExpectedBidder1Util n (fpsbAuction n) prior v1 := by
+  rw [auctionExpectedBidder1Util_fpsbAuction_eq_zero]
+  exact auctionExpectedBidder1Util_spsbAuction_nonneg n prior h_nn v1
+
 end AuctionCat
