@@ -373,4 +373,29 @@ theorem fpsb3Reserve_revenue_ge_spsb3Reserve (n : Nat) (r : Fin n)
   · simp [hr]; omega
   · simp [hr]
 
+/-! ## Trivial reserve = no reserve (3 bidders)
+
+  At `r = 0` the reserve is non-binding, so three-bidder reserve
+  auctions reduce to their no-reserve counterparts at the revenue
+  level (mirroring the 2-bidder case). -/
+
+/-- At reserve `r = 0`, fpsb3Reserve revenue equals fpsb3 revenue at
+    every joint-bid input. -/
+theorem fpsb3Reserve_zero_revenue_eq_fpsb3 (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n ⟨0, hn⟩ i)
+    = outcomeRevenue3 n (fpsb3Fn n i) := by
+  rw [fpsb3Reserve_revenue_eq, fpsb3_revenue_eq_max]
+  simp
+
+/-- At reserve `r = 0`, spsb3Reserve revenue equals spsb3 revenue at
+    every joint-bid input.  Note: `max 0 (second_max3) = second_max3`
+    so the reserve drops out. -/
+theorem spsb3Reserve_zero_revenue_eq_spsb3 (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (spsb3ReserveFn n ⟨0, hn⟩ i)
+    = outcomeRevenue3 n (spsb3Fn n i) := by
+  rw [spsb3Reserve_revenue_eq, spsb3_revenue_eq_second_max]
+  simp
+
 end AuctionCat
