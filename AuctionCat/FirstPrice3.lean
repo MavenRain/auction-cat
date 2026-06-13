@@ -79,4 +79,24 @@ theorem fpsb3_utility_truthful_val_eq_zero (n : Nat) (v b2 b3 : Fin n) :
   · simp [h]
   · simp [h]
 
+/-- Bidder 1's truncated utility in a 3-bidder fpsb-with-reserve
+    auction.  Same tie-break as `fpsb3ReserveFn`: b1 wins iff
+    `b1 ≥ b2 ∧ b1 ≥ b3 ∧ b1 ≥ r`.  Utility = `v - b1` (Nat monus) on
+    win, else 0. -/
+def fpsbReserveUtility3 (n : Nat) (r v b1 b2 b3 : Fin n) : Fin n :=
+  if b1.val ≥ b2.val ∧ b1.val ≥ b3.val ∧ b1.val ≥ r.val then
+    ⟨v.val - b1.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 1 gets zero utility in 3-bidder
+    fpsb-with-reserve at every valuation profile and reserve. -/
+theorem fpsb3Reserve_utility_truthful_val_eq_zero (n : Nat)
+    (r v b2 b3 : Fin n) :
+    (fpsbReserveUtility3 n r v v b2 b3).val = 0 := by
+  unfold fpsbReserveUtility3
+  by_cases h : v.val ≥ b2.val ∧ v.val ≥ b3.val ∧ v.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
