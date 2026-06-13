@@ -342,6 +342,51 @@ theorem expectedRevenue3_spsb3Reserve_zero_eq_spsb3 (n : Nat) (hn : 0 < n)
   intro v
   rw [spsb3Reserve_zero_revenue_eq_spsb3]
 
+/-! ## Expected-revenue collapse at maximal reserve
+
+  At `r = n - 1`, the maximal-reserve pointwise equality
+  `fpsbReserve_max_revenue_eq_spsbReserve_max` lifts to expected
+  revenue equality under any prior. -/
+
+/-- At maximal reserve `r = n - 1`, fpsbReserve and spsbReserve have
+    identical expected revenue under any prior (2 bidders). -/
+theorem expectedRevenue_fpsbReserve_max_eq_spsbReserve_max (n : Nat)
+    (hn : 0 < n) (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (fpsbReserve n ⟨n - 1, by omega⟩) prior
+    = expectedRevenue n (spsbReserve n ⟨n - 1, by omega⟩) prior := by
+  unfold fpsbReserve spsbReserve
+  rw [expectedRevenue_detMatrix_eq, expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsbReserve_max_revenue_eq_spsbReserve_max]
+
+/-- Three-bidder version of `expectedRevenue_fpsbReserve_max_eq_spsbReserve_max`. -/
+theorem expectedRevenue3_fpsb3Reserve_max_eq_spsb3Reserve_max (n : Nat)
+    (hn : 0 < n) (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (fpsb3Reserve n ⟨n - 1, by omega⟩) prior
+    = expectedRevenue3 n (spsb3Reserve n ⟨n - 1, by omega⟩) prior := by
+  unfold fpsb3Reserve spsb3Reserve
+  rw [expectedRevenue3_detMatrix_eq, expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsb3Reserve_max_revenue_eq_spsb3Reserve_max]
+
+/-- Maximal-reserve revenue equivalence as `IsRevenueEquivalent`
+    (2 bidders). -/
+theorem fpsbReserve_max_is_revenue_equivalent_spsbReserve_max (n : Nat)
+    (hn : 0 < n) (prior : Fin (n * n) → Rat) :
+    IsRevenueEquivalent n (fpsbReserve n ⟨n - 1, by omega⟩)
+                          (spsbReserve n ⟨n - 1, by omega⟩) prior :=
+  expectedRevenue_fpsbReserve_max_eq_spsbReserve_max n hn prior
+
+/-- Maximal-reserve revenue equivalence as `IsRevenueEquivalent3`
+    (3 bidders). -/
+theorem fpsb3Reserve_max_is_revenue_equivalent_spsb3Reserve_max (n : Nat)
+    (hn : 0 < n) (prior : Fin ((n * n) * n) → Rat) :
+    IsRevenueEquivalent3 n (fpsb3Reserve n ⟨n - 1, by omega⟩)
+                            (spsb3Reserve n ⟨n - 1, by omega⟩) prior :=
+  expectedRevenue3_fpsb3Reserve_max_eq_spsb3Reserve_max n hn prior
+
 /-- Closed-form expected spsb3 revenue under truthful play:
     `Σ_v prior(v) · second_max3(b1, b2, b3)`. -/
 theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
