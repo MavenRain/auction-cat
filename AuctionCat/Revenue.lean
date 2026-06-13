@@ -354,4 +354,21 @@ theorem fpsbReserve_max_revenue_eq_spsbReserve_max (n : Nat) (hn : 0 < n)
   · simp [hr]; omega
   · simp [hr]
 
+/-- Strict pointwise dominance for reserve auctions: when the
+    auction allocates (max ≥ r), the top bidder strictly clears the
+    reserve (max > r), AND bids differ, fpsbReserve extracts
+    strictly more than spsbReserve.  The two strict conditions
+    together ensure the spsbReserve payment `max(r, min)` is
+    strictly below `max`. -/
+theorem fpsbReserve_revenue_gt_spsbReserve_of_strict (n : Nat) (r : Fin n)
+    (i : Fin (n * n))
+    (h_strict : max (Fin.first i).val (Fin.second i).val > r.val)
+    (h_ne : (Fin.first i).val ≠ (Fin.second i).val) :
+    outcomeRevenue n (fpsbReserveFn n r i)
+    > outcomeRevenue n (spsbReserveFn n r i) := by
+  rw [fpsbReserve_revenue_eq, spsbReserve_revenue_eq]
+  have hr : max (Fin.first i).val (Fin.second i).val ≥ r.val := by omega
+  simp [hr]
+  omega
+
 end AuctionCat
