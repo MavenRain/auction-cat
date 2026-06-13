@@ -1784,4 +1784,43 @@ theorem auctionExpectedBidder1Util3_fpsb3Auction_eq_zero (n : Nat)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- **Pipeline-level truthful zero utility for fpsbReserveAuction**:
+    under truthful play, bidder 1's expected pipeline utility is
+    zero under any reserve and prior.  Same constant-zero outcome
+    as fpsbAuction since both collapse to `detMatrix (fpsbAuctionFn n)`. -/
+theorem auctionExpectedBidder1Util_fpsbReserveAuction_eq_zero (n : Nat)
+    (r : Fin n) (prior : Fin n → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util n (fpsbReserveAuction n r) prior v1 = 0 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v1.isLt
+  unfold auctionExpectedBidder1Util
+  have h : ∀ v2 : Fin n,
+      prior v2 * auctionBidder1Util n (fpsbReserveAuction n r)
+        (Fin.pair v1 v2)
+      = 0 := by
+    intro v2
+    rw [fpsbReserveAuction_eq_detMatrix, auctionBidder1Util_det]
+    unfold fpsbAuctionFn
+    simp [Fin.first_pair]
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- **Pipeline-level truthful zero utility for fpsb3ReserveAuction**
+    (3 bidders, with reserve). -/
+theorem auctionExpectedBidder1Util3_fpsb3ReserveAuction_eq_zero (n : Nat)
+    (r : Fin n) (prior23 : Fin (n * n) → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util3 n (fpsb3ReserveAuction n r) prior23 v1
+    = 0 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v1.isLt
+  unfold auctionExpectedBidder1Util3
+  have h : ∀ v23 : Fin (n * n),
+      prior23 v23 * auctionBidder1Util3 n (fpsb3ReserveAuction n r)
+        (Fin.pair (Fin.pair v1 (Fin.first v23)) (Fin.second v23))
+      = 0 := by
+    intro v23
+    rw [fpsb3ReserveAuction_eq_detMatrix, auctionBidder1Util3_det]
+    unfold fpsbAuctionFn3
+    simp [Fin.first_pair]
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 end AuctionCat
