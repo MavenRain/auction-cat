@@ -204,4 +204,93 @@ theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
   intro v
   rw [spsb3_revenue_eq_second_max]
 
+/-! ## Expected revenue gap
+
+  Combining `expectedRevenue_fpsb_eq_sum_max` with
+  `expectedRevenue_spsb_eq_sum_min` and the pointwise gap identity
+  `max = min + (max - min)`, we get the expected revenue gap
+  formula: fpsb's expected revenue equals spsb's expected revenue
+  plus the expected gap.  Same shape at three bidders. -/
+
+/-- Expected revenue gap (2 bidders): fpsb truthful expected revenue
+    equals spsb truthful expected revenue plus the expected pointwise
+    gap `(max - min)`. -/
+theorem expectedRevenue_fpsb_eq_spsb_plus_gap (n : Nat)
+    (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (firstPriceSealedBid n) prior
+    = expectedRevenue n (secondPriceSealedBid n) prior
+      + Fin.sumRat (fun v : Fin (n * n) =>
+          prior v
+          * ((max (Fin.first v).val (Fin.second v).val
+              - min (Fin.first v).val (Fin.second v).val) : Nat).cast) := by
+  rw [expectedRevenue_fpsb_eq_sum_max, expectedRevenue_spsb_eq_sum_min,
+      ← Fin.sumRat_add]
+  apply Fin.sumRat_congr
+  intro v
+  have hgap : min (Fin.first v).val (Fin.second v).val
+            + (max (Fin.first v).val (Fin.second v).val
+              - min (Fin.first v).val (Fin.second v).val)
+            = max (Fin.first v).val (Fin.second v).val := by omega
+  have hcast :
+      (max (Fin.first v).val (Fin.second v).val : Nat).cast
+      = ((min (Fin.first v).val (Fin.second v).val : Nat).cast : Rat)
+        + ((max (Fin.first v).val (Fin.second v).val
+           - min (Fin.first v).val (Fin.second v).val) : Nat).cast := by
+    exact_mod_cast hgap.symm
+  rw [hcast, Rat.mul_add]
+
+/-- Expected revenue gap (3 bidders): fpsb3 truthful expected revenue
+    equals spsb3 truthful expected revenue plus the expected pointwise
+    gap `(max3 - second_max3)`. -/
+theorem expectedRevenue3_fpsb3_eq_spsb3_plus_gap (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (firstPriceSealedBid3 n) prior
+    = expectedRevenue3 n (secondPriceSealedBid3 n) prior
+      + Fin.sumRat (fun v : Fin ((n * n) * n) =>
+          prior v
+          * ((max (Fin.first (Fin.first v)).val
+                  (max (Fin.second (Fin.first v)).val (Fin.second v).val)
+              - max (min (Fin.first (Fin.first v)).val
+                         (Fin.second (Fin.first v)).val)
+                  (max (min (Fin.first (Fin.first v)).val (Fin.second v).val)
+                       (min (Fin.second (Fin.first v)).val
+                            (Fin.second v).val))) : Nat).cast) := by
+  rw [expectedRevenue3_fpsb3_eq_sum_max,
+      expectedRevenue3_spsb3_eq_sum_second_max,
+      ← Fin.sumRat_add]
+  apply Fin.sumRat_congr
+  intro v
+  have hgap :
+      max (min (Fin.first (Fin.first v)).val
+               (Fin.second (Fin.first v)).val)
+          (max (min (Fin.first (Fin.first v)).val (Fin.second v).val)
+               (min (Fin.second (Fin.first v)).val (Fin.second v).val))
+      + (max (Fin.first (Fin.first v)).val
+            (max (Fin.second (Fin.first v)).val (Fin.second v).val)
+        - max (min (Fin.first (Fin.first v)).val
+                   (Fin.second (Fin.first v)).val)
+            (max (min (Fin.first (Fin.first v)).val (Fin.second v).val)
+                 (min (Fin.second (Fin.first v)).val (Fin.second v).val)))
+      = max (Fin.first (Fin.first v)).val
+            (max (Fin.second (Fin.first v)).val (Fin.second v).val) := by
+    omega
+  have hcast :
+      (max (Fin.first (Fin.first v)).val
+            (max (Fin.second (Fin.first v)).val (Fin.second v).val)
+       : Nat).cast
+      = ((max (min (Fin.first (Fin.first v)).val
+                   (Fin.second (Fin.first v)).val)
+              (max (min (Fin.first (Fin.first v)).val (Fin.second v).val)
+                   (min (Fin.second (Fin.first v)).val
+                        (Fin.second v).val)) : Nat).cast : Rat)
+        + ((max (Fin.first (Fin.first v)).val
+                (max (Fin.second (Fin.first v)).val (Fin.second v).val)
+            - max (min (Fin.first (Fin.first v)).val
+                       (Fin.second (Fin.first v)).val)
+                (max (min (Fin.first (Fin.first v)).val (Fin.second v).val)
+                     (min (Fin.second (Fin.first v)).val
+                          (Fin.second v).val))) : Nat).cast := by
+    exact_mod_cast hgap.symm
+  rw [hcast, Rat.mul_add]
+
 end AuctionCat
