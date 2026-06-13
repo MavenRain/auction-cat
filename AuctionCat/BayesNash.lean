@@ -199,4 +199,29 @@ theorem fpsb_truthful_strictly_dominated_n2 :
   unfold fpsbExpectedUtility fpsbUtility
   native_decide
 
+/-- Pointwise utility of truthful bidder 1 in fpsb is always zero:
+    if `b1 = v` then either the bidder loses (utility = 0) or wins
+    and pays own bid = own valuation (utility = `v - v = 0`). -/
+theorem fpsb_utility_truthful_val_eq_zero (n : Nat) (v b2 : Fin n) :
+    (fpsbUtility n v v b2).val = 0 := by
+  unfold fpsbUtility
+  by_cases h : v.val ≥ b2.val
+  · simp [h]
+  · simp [h]
+
+/-- **Truthful expected utility in fpsb is zero under any prior and
+    against any opponent strategy**.  Direct lift of the pointwise
+    `fpsb_utility_truthful_val_eq_zero` via linearity of `Fin.sumRat`. -/
+theorem fpsb_truthful_expected_utility_zero (n : Nat) (s2 : Fin n → Fin n)
+    (v1 : Fin n) (p : Fin n → Rat) :
+    fpsbExpectedUtility n (fun v => v) s2 v1 p = 0 := by
+  unfold fpsbExpectedUtility
+  have h : ∀ v2 : Fin n,
+      p v2 * ((fpsbUtility n v1 v1 (s2 v2)).val : Nat).cast = 0 := by
+    intro v2
+    rw [fpsb_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 end AuctionCat
