@@ -212,4 +212,61 @@ example :
   expectedRevenue3_dutch3_ge_english3 2 (uniformPrior3 2)
     (fun _ => by unfold uniformPrior3; native_decide)
 
+/-! ## Reserve-auction concrete expected-revenue values
+
+  Numeric verification of the reserve closed forms at small `n`
+  under uniform prior, showing how a binding reserve increases
+  spsb revenue toward fpsb. -/
+
+/-- At `n = 2`, `r = 1` uniform prior: E[fpsbReserve] = 3/4 (same as
+    no-reserve since the only excluded profile (0,0) had revenue 0). -/
+example :
+    expectedRevenue 2 (fpsbReserve 2 ⟨1, by decide⟩) (uniformPrior 2)
+    = 3 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- At `n = 2`, `r = 1` uniform prior: E[spsbReserve] = 3/4 (jumps
+    from no-reserve's 1/4 — a binding reserve closes the revenue gap
+    with fpsb). -/
+example :
+    expectedRevenue 2 (spsbReserve 2 ⟨1, by decide⟩) (uniformPrior 2)
+    = 3 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- At `n = 2`, `r = 1`: with this binding reserve, fpsbReserve and
+    spsbReserve yield equal expected revenue — the reserve eliminates
+    the truthful-play revenue gap. -/
+example :
+    IsRevenueEquivalent 2 (fpsbReserve 2 ⟨1, by decide⟩)
+                          (spsbReserve 2 ⟨1, by decide⟩)
+                          (uniformPrior 2) := by
+  unfold IsRevenueEquivalent expectedRevenue uniformPrior
+  native_decide
+
+/-- At `n = 3`, `r = 1` uniform prior: E[spsbReserve] = 1 (jumps
+    from no-reserve's 5/9). -/
+example :
+    expectedRevenue 3 (spsbReserve 3 ⟨1, by decide⟩) (uniformPrior 3)
+    = 1 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- At `n = 3`, `r = 2` (maximal reserve) uniform prior:
+    E[fpsbReserve] = E[spsbReserve] = 10/9.  Winner always pays exactly
+    r when allocation occurs, so both formats collapse to the same
+    revenue. -/
+example :
+    expectedRevenue 3 (fpsbReserve 3 ⟨2, by decide⟩) (uniformPrior 3)
+    = 10 / 9 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+example :
+    expectedRevenue 3 (spsbReserve 3 ⟨2, by decide⟩) (uniformPrior 3)
+    = 10 / 9 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
 end AuctionCat
