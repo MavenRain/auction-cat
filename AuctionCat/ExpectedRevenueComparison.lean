@@ -291,6 +291,57 @@ theorem expectedRevenue3_spsb3Reserve_eq_sum (n : Nat) (r : Fin n)
   intro v
   rw [spsb3Reserve_revenue_eq]
 
+/-! ## Expected revenue at trivial reserve = expected revenue at no reserve
+
+  Lifting the pointwise `*Reserve_zero_revenue_eq_*` theorems to
+  expected revenue under any prior. -/
+
+/-- At reserve `r = 0`, fpsbReserve and fpsb have the same expected
+    revenue under any prior. -/
+theorem expectedRevenue_fpsbReserve_zero_eq_fpsb (n : Nat) (hn : 0 < n)
+    (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (fpsbReserve n ⟨0, hn⟩) prior
+    = expectedRevenue n (firstPriceSealedBid n) prior := by
+  unfold fpsbReserve firstPriceSealedBid
+  rw [expectedRevenue_detMatrix_eq, expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsbReserve_zero_revenue_eq_fpsb]
+
+/-- At reserve `r = 0`, spsbReserve and spsb have the same expected
+    revenue under any prior. -/
+theorem expectedRevenue_spsbReserve_zero_eq_spsb (n : Nat) (hn : 0 < n)
+    (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (spsbReserve n ⟨0, hn⟩) prior
+    = expectedRevenue n (secondPriceSealedBid n) prior := by
+  unfold spsbReserve secondPriceSealedBid
+  rw [expectedRevenue_detMatrix_eq, expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [spsbReserve_zero_revenue_eq_spsb]
+
+/-- Three-bidder version of `expectedRevenue_fpsbReserve_zero_eq_fpsb`. -/
+theorem expectedRevenue3_fpsb3Reserve_zero_eq_fpsb3 (n : Nat) (hn : 0 < n)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (fpsb3Reserve n ⟨0, hn⟩) prior
+    = expectedRevenue3 n (firstPriceSealedBid3 n) prior := by
+  unfold fpsb3Reserve firstPriceSealedBid3
+  rw [expectedRevenue3_detMatrix_eq, expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsb3Reserve_zero_revenue_eq_fpsb3]
+
+/-- Three-bidder version of `expectedRevenue_spsbReserve_zero_eq_spsb`. -/
+theorem expectedRevenue3_spsb3Reserve_zero_eq_spsb3 (n : Nat) (hn : 0 < n)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (spsb3Reserve n ⟨0, hn⟩) prior
+    = expectedRevenue3 n (secondPriceSealedBid3 n) prior := by
+  unfold spsb3Reserve secondPriceSealedBid3
+  rw [expectedRevenue3_detMatrix_eq, expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [spsb3Reserve_zero_revenue_eq_spsb3]
+
 /-- Closed-form expected spsb3 revenue under truthful play:
     `Σ_v prior(v) · second_max3(b1, b2, b3)`. -/
 theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
