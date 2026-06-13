@@ -1,5 +1,6 @@
 import AuctionCat.BayesNash
 import AuctionCat.KernelTruth
+import AuctionCat.KernelFirstPrice
 import AuctionCat.ReserveTruth
 import AuctionCat.Reserve3Truth
 import AuctionCat.Envelope
@@ -1737,5 +1738,30 @@ theorem spsb3ReserveAuction_main_pipeline_results (n : Nat) (r : Fin n)
   ⟨spsb3ReserveAuction_eq_detMatrix n r,
    spsb3ReserveAuction_truthful_is_pipeline_bayes_nash n r prior23 prior13 prior12
      h_nn23 h_nn13 h_nn12⟩
+
+/-! ## Pipeline-level zero-utility for fpsbAuction
+
+  At the OpenGame pipeline level, truthful play of `fpsbAuction n`
+  yields zero expected bidder-1 utility under any prior — the
+  pipeline-level reflection of the fact that fpsb under truthful
+  always pays own bid = own valuation. -/
+
+/-- **Pipeline-level truthful zero utility for fpsbAuction**: under
+    truthful play, bidder 1's expected pipeline utility is zero for
+    any prior. -/
+theorem auctionExpectedBidder1Util_fpsbAuction_eq_zero (n : Nat)
+    (prior : Fin n → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util n (fpsbAuction n) prior v1 = 0 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v1.isLt
+  unfold auctionExpectedBidder1Util
+  have h : ∀ v2 : Fin n,
+      prior v2 * auctionBidder1Util n (fpsbAuction n) (Fin.pair v1 v2)
+      = 0 := by
+    intro v2
+    rw [fpsbAuction_eq_detMatrix, auctionBidder1Util_det]
+    unfold fpsbAuctionFn
+    simp [Fin.first_pair]
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
 
 end AuctionCat
