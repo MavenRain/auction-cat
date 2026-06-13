@@ -332,4 +332,27 @@ theorem vickreyUtility_truthful_ge_fpsbUtility_truthful (n : Nat)
   rw [fpsb_utility_truthful_val_eq_zero]
   exact Nat.zero_le _
 
+/-- **Expected**: vickreyExpectedUtility under truthful play weakly
+    dominates fpsbExpectedUtility under truthful play for any
+    nonneg prior and opponent strategy.  RHS is zero by
+    `fpsb_truthful_expected_utility_zero`, LHS is nonneg by
+    nonnegativity of vickrey utility values and prior weights. -/
+theorem vickreyExpectedUtility_truthful_ge_fpsbExpectedUtility_truthful
+    (n : Nat) (s2 : Fin n → Fin n) (v1 : Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) :
+    vickreyExpectedUtility n (fun v => v) s2 v1 p
+    ≥ fpsbExpectedUtility n (fun v => v) s2 v1 p := by
+  rw [fpsb_truthful_expected_utility_zero]
+  unfold vickreyExpectedUtility
+  apply Fin.sumRat_le
+  intro v2
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyUtility n v1 v1 (s2 v2)).val : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyUtility n v1 v1 (s2 v2)).val : Nat).cast := by
+        rw [Rat.zero_mul]
+    _ ≤ p v2 * ((vickreyUtility n v1 v1 (s2 v2)).val : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v2) h_cast_nn
+
 end AuctionCat
