@@ -2069,6 +2069,41 @@ theorem auctionExpectedBidder2Util3_spsb3Auction_ge_fpsb3Auction (n : Nat)
   rw [auctionExpectedBidder2Util3_fpsb3Auction_eq_zero]
   exact auctionExpectedBidder2Util3_spsb3Auction_nonneg n prior13 h_nn v2
 
+/-- **Pipeline-level bidder-3 positivity for spsb3Auction** (3 bidders). -/
+theorem auctionExpectedBidder3Util3_spsb3Auction_nonneg (n : Nat)
+    (prior12 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior12 v) (v3 : Fin n) :
+    0 ≤ auctionExpectedBidder3Util3 n (spsb3Auction n) prior12 v3 := by
+  rw [auctionExpectedBidder3Util3_spsb3Auction_eq]
+  unfold vickreyBidder3ExpectedUtility3
+  have h_const_zero : Fin.sumRat (fun _ : Fin (n * n) => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v12
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyBidder3Util3 n v3 (Fin.first v12)
+                                    (Fin.second v12) v3).val
+         : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyBidder3Util3 n v3 (Fin.first v12)
+                                        (Fin.second v12) v3).val
+            : Nat).cast := by rw [Rat.zero_mul]
+    _ ≤ prior12 v12
+        * ((vickreyBidder3Util3 n v3 (Fin.first v12)
+                                      (Fin.second v12) v3).val
+          : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v12) h_cast_nn
+
+/-- **Pipeline-level bidder-3 dominance** (3 bidders): spsb3Auction
+    weakly dominates fpsb3Auction for bidder 3. -/
+theorem auctionExpectedBidder3Util3_spsb3Auction_ge_fpsb3Auction (n : Nat)
+    (prior12 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior12 v) (v3 : Fin n) :
+    auctionExpectedBidder3Util3 n (spsb3Auction n) prior12 v3
+    ≥ auctionExpectedBidder3Util3 n (fpsb3Auction n) prior12 v3 := by
+  rw [auctionExpectedBidder3Util3_fpsb3Auction_eq_zero]
+  exact auctionExpectedBidder3Util3_spsb3Auction_nonneg n prior12 h_nn v3
+
 /-- **Main four-way spsb ≥ fpsb pipeline results**.  Under truthful
     play at any nonneg prior, spsb's pipeline expected bidder-1
     utility weakly dominates fpsb's across all four standard
