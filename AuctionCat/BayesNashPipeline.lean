@@ -2001,6 +2001,41 @@ theorem auctionExpectedBidder2Util_spsbAuction_ge_fpsbAuction (n : Nat)
   rw [auctionExpectedBidder2Util_fpsbAuction_eq_zero]
   exact auctionExpectedBidder2Util_spsbAuction_nonneg n prior h_nn v2
 
+/-- **Pipeline-level bidder-2 truthful zero utility for fpsb3Auction**. -/
+theorem auctionExpectedBidder2Util3_fpsb3Auction_eq_zero (n : Nat)
+    (prior13 : Fin (n * n) → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util3 n (fpsb3Auction n) prior13 v2 = 0 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  unfold auctionExpectedBidder2Util3
+  have h : ∀ v13 : Fin (n * n),
+      prior13 v13 * auctionBidder2Util3 n (fpsb3Auction n)
+        (Fin.pair (Fin.pair (Fin.first v13) v2) (Fin.second v13))
+      = 0 := by
+    intro v13
+    rw [fpsb3Auction_eq_detMatrix, auctionBidder2Util3_det]
+    unfold fpsbAuctionFn3
+    simp [Fin.first_pair, Fin.second_pair hn]
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- **Pipeline-level bidder-3 truthful zero utility for fpsb3Auction**. -/
+theorem auctionExpectedBidder3Util3_fpsb3Auction_eq_zero (n : Nat)
+    (prior12 : Fin (n * n) → Rat) (v3 : Fin n) :
+    auctionExpectedBidder3Util3 n (fpsb3Auction n) prior12 v3 = 0 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v3.isLt
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  unfold auctionExpectedBidder3Util3
+  have h : ∀ v12 : Fin (n * n),
+      prior12 v12 * auctionBidder3Util3 n (fpsb3Auction n)
+        (Fin.pair v12 v3)
+      = 0 := by
+    intro v12
+    rw [fpsb3Auction_eq_detMatrix, auctionBidder3Util3_det]
+    unfold fpsbAuctionFn3
+    simp [Fin.second_pair hnn]
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 /-- **Main four-way spsb ≥ fpsb pipeline results**.  Under truthful
     play at any nonneg prior, spsb's pipeline expected bidder-1
     utility weakly dominates fpsb's across all four standard
