@@ -2,6 +2,7 @@ import AuctionCat.FirstPrice
 import AuctionCat.SecondPrice
 import AuctionCat.English
 import AuctionCat.Dutch
+import AuctionCat.Reserve
 
 /-!
 # AuctionCat.Revenue
@@ -231,5 +232,70 @@ theorem dutch_is_revenue_equivalent_fpsb (n : Nat)
     (prior : Fin (n * n) → Rat) :
     IsRevenueEquivalent n (dutchAuction n) (firstPriceSealedBid n) prior :=
   rfl
+
+/-! ## Reserve-auction closed-form revenue
+
+  Reserve auctions have two regimes per joint bid: if the highest
+  bid clears the reserve, the auction allocates and extracts revenue
+  per the underlying format; otherwise no one wins and revenue = 0. -/
+
+/-- Closed-form fpsbReserve revenue: if `max(b1, b2) ≥ r`, the
+    revenue equals `max(b1, b2)` (winner pays own bid); else 0. -/
+theorem fpsbReserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n r i)
+    = (if max (Fin.first i).val (Fin.second i).val ≥ r.val
+        then max (Fin.first i).val (Fin.second i).val
+        else 0) := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue fpsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hb : (Fin.first i).val ≥ (Fin.second i).val
+  · by_cases hr1 : (Fin.first i).val ≥ r.val
+    · simp [hb, hr1]; omega
+    · simp [hb, hr1]; omega
+  · by_cases hr2 : (Fin.second i).val ≥ r.val
+    · simp [hb, hr2]; omega
+    · simp [hb, hr2]; omega
+
+/-- Closed-form spsbReserve revenue: if `max(b1, b2) ≥ r`, the
+    revenue equals `max(r, min(b1, b2))` (winner pays max of reserve
+    and loser's bid); else 0. -/
+theorem spsbReserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (spsbReserveFn n r i)
+    = (if max (Fin.first i).val (Fin.second i).val ≥ r.val
+        then max r.val (min (Fin.first i).val (Fin.second i).val)
+        else 0) := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue spsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hb : (Fin.first i).val ≥ (Fin.second i).val
+  · by_cases hr1 : (Fin.first i).val ≥ r.val
+    · simp [hb, hr1]; omega
+    · simp [hb, hr1]; omega
+  · by_cases hr2 : (Fin.second i).val ≥ r.val
+    · simp [hb, hr2]; omega
+    · simp [hb, hr2]; omega
+
+/-- Pointwise revenue comparison for reserve auctions: fpsbReserve ≥
+    spsbReserve at every joint-bid input.  In the no-allocation
+    regime both are 0; in the allocation regime fpsb extracts
+    `max(b1,b2)` while spsb extracts `max(r, min(b1,b2))`, and
+    `max(b1,b2) ≥ max(r, min(b1,b2))` whenever the auction allocates. -/
+theorem fpsbReserve_revenue_ge_spsbReserve (n : Nat) (r : Fin n)
+    (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n r i)
+    ≥ outcomeRevenue n (spsbReserveFn n r i) := by
+  rw [fpsbReserve_revenue_eq, spsbReserve_revenue_eq]
+  by_cases hr : max (Fin.first i).val (Fin.second i).val ≥ r.val
+  · simp [hr]; omega
+  · simp [hr]
 
 end AuctionCat
