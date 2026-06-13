@@ -1908,4 +1908,45 @@ theorem auctionExpectedBidder1Util_spsbReserveAuction_ge_fpsbReserveAuction
   rw [auctionExpectedBidder1Util_fpsbReserveAuction_eq_zero]
   exact auctionExpectedBidder1Util_spsbReserveAuction_nonneg n r prior h_nn v1
 
+/-- **Pipeline-level positivity (spsb3Reserve, 3 bidders)**: bidder 1's
+    expected pipeline utility under truthful play in spsb3ReserveAuction
+    is nonneg for any reserve and any nonneg joint prior. -/
+theorem auctionExpectedBidder1Util3_spsb3ReserveAuction_nonneg (n : Nat)
+    (r : Fin n) (prior23 : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ prior23 v) (v1 : Fin n) :
+    0 ≤ auctionExpectedBidder1Util3 n (spsb3ReserveAuction n r) prior23 v1 := by
+  rw [auctionExpectedBidder1Util3_spsb3ReserveAuction_eq]
+  unfold vickreyReserveExpectedUtility3
+  have h_const_zero : Fin.sumRat (fun _ : Fin (n * n) => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v23
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyReserveUtility3 n v1 v1 (Fin.first v23)
+                                          (Fin.second v23) r).val
+         : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyReserveUtility3 n v1 v1 (Fin.first v23)
+                                              (Fin.second v23) r).val
+            : Nat).cast := by rw [Rat.zero_mul]
+    _ ≤ prior23 v23
+        * ((vickreyReserveUtility3 n v1 v1 (Fin.first v23)
+                                            (Fin.second v23) r).val
+          : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v23) h_cast_nn
+
+/-- **Pipeline-level dominance (spsb3Reserve vs fpsb3Reserve, 3 bidders)**:
+    spsb3ReserveAuction's expected pipeline utility weakly dominates
+    fpsb3ReserveAuction's for any reserve and any nonneg joint prior. -/
+theorem auctionExpectedBidder1Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
+    (n : Nat) (r : Fin n) (prior23 : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ prior23 v) (v1 : Fin n) :
+    auctionExpectedBidder1Util3 n (spsb3ReserveAuction n r) prior23 v1
+    ≥ auctionExpectedBidder1Util3 n (fpsb3ReserveAuction n r) prior23 v1 := by
+  rw [auctionExpectedBidder1Util3_fpsb3ReserveAuction_eq_zero]
+  exact auctionExpectedBidder1Util3_spsb3ReserveAuction_nonneg
+    n r prior23 h_nn v1
+
 end AuctionCat
