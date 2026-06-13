@@ -186,6 +186,21 @@ theorem expectedRevenue3_fpsb3_eq_sum_max (n : Nat)
   intro v
   rw [fpsb3_revenue_eq_max]
 
+/-- **Expected-revenue dominance** of fpsbReserve over spsbReserve
+    (2 bidders).  Under any prior with nonnegative weights and any
+    reserve price `r`, fpsbReserve's expected revenue is at least
+    spsbReserve's. -/
+theorem expectedRevenue_fpsbReserve_ge_spsbReserve (n : Nat) (r : Fin n)
+    (prior : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    expectedRevenue n (fpsbReserve n r) prior
+    ≥ expectedRevenue n (spsbReserve n r) prior := by
+  unfold fpsbReserve spsbReserve
+  rw [expectedRevenue_detMatrix_eq, expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_le_rev
+  intro v
+  apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v)
+  exact_mod_cast fpsbReserve_revenue_ge_spsbReserve n r v
+
 /-- Closed-form expected spsb3 revenue under truthful play:
     `Σ_v prior(v) · second_max3(b1, b2, b3)`. -/
 theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
