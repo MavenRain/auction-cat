@@ -1851,4 +1851,26 @@ theorem auctionExpectedBidder1Util_spsbAuction_ge_fpsbAuction (n : Nat)
   rw [auctionExpectedBidder1Util_fpsbAuction_eq_zero]
   exact auctionExpectedBidder1Util_spsbAuction_nonneg n prior h_nn v1
 
+/-- **Pipeline-level positivity (3 bidders)**: bidder 1's expected
+    pipeline utility in spsb3Auction under truthful play is nonneg
+    for any nonneg joint prior. -/
+theorem auctionExpectedBidder1Util3_spsb3Auction_nonneg (n : Nat)
+    (prior23 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior23 v) (v1 : Fin n) :
+    0 ≤ auctionExpectedBidder1Util3 n (spsb3Auction n) prior23 v1 := by
+  rw [auctionExpectedBidder1Util3_spsb3Auction_eq]
+  have h_vk := vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
+    n (fun v => v) (fun v => v) v1 prior23 h_nn
+  rw [fpsb3_truthful_expected_utility_zero] at h_vk
+  exact h_vk
+
+/-- **Pipeline-level dominance (3 bidders)**: spsb3Auction's expected
+    pipeline utility weakly dominates fpsb3Auction's for any nonneg
+    joint prior. -/
+theorem auctionExpectedBidder1Util3_spsb3Auction_ge_fpsb3Auction (n : Nat)
+    (prior23 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior23 v) (v1 : Fin n) :
+    auctionExpectedBidder1Util3 n (spsb3Auction n) prior23 v1
+    ≥ auctionExpectedBidder1Util3 n (fpsb3Auction n) prior23 v1 := by
+  rw [auctionExpectedBidder1Util3_fpsb3Auction_eq_zero]
+  exact auctionExpectedBidder1Util3_spsb3Auction_nonneg n prior23 h_nn v1
+
 end AuctionCat
