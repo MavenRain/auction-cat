@@ -59,4 +59,24 @@ def firstPriceSealedBid3 (X : Nat) :
     StochasticMatrix (X * X * X) ((2 * X) * (2 * X) * (2 * X)) :=
   detMatrix (fpsb3Fn X)
 
+/-- Bidder 1's truncated utility in a 3-bidder first-price sealed-bid
+    auction, given valuation `v`, own bid `b1`, and opponent bids
+    `b2`, `b3`.  Same tie-break as `fpsb3Fn` (bidder 1 wins iff
+    `b1 ≥ b2 ∧ b1 ≥ b3`).  When b1 wins, utility = `v - b1` (Nat
+    monus); else utility = 0. -/
+def fpsbUtility3 (n : Nat) (v b1 b2 b3 : Fin n) : Fin n :=
+  if b1.val ≥ b2.val ∧ b1.val ≥ b3.val then
+    ⟨v.val - b1.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Pointwise utility of truthful bidder 1 in 3-bidder fpsb is always
+    zero: under `b1 = v`, the winner pays own bid = own valuation. -/
+theorem fpsb3_utility_truthful_val_eq_zero (n : Nat) (v b2 b3 : Fin n) :
+    (fpsbUtility3 n v v b2 b3).val = 0 := by
+  unfold fpsbUtility3
+  by_cases h : v.val ≥ b2.val ∧ v.val ≥ b3.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat

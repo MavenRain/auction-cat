@@ -224,4 +224,29 @@ theorem fpsb_truthful_expected_utility_zero (n : Nat) (s2 : Fin n → Fin n)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- Bidder 1's expected utility in a 3-bidder fpsb auction. -/
+def fpsbExpectedUtility3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (v1 : Fin n) (p23 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v23 : Fin (n * n) =>
+    p23 v23 *
+      ((fpsbUtility3 n v1 (s1 v1) (s2 (Fin.first v23))
+                          (s3 (Fin.second v23))).val : Nat).cast)
+
+/-- **Truthful expected utility in 3-bidder fpsb is zero under any
+    joint prior and against any opponent strategies**.  Same zero-
+    surplus observation as the 2-bidder case. -/
+theorem fpsb3_truthful_expected_utility_zero (n : Nat)
+    (s2 s3 : Fin n → Fin n) (v1 : Fin n) (p23 : Fin (n * n) → Rat) :
+    fpsbExpectedUtility3 n (fun v => v) s2 s3 v1 p23 = 0 := by
+  unfold fpsbExpectedUtility3
+  have h : ∀ v23 : Fin (n * n),
+      p23 v23 * ((fpsbUtility3 n v1 v1 (s2 (Fin.first v23))
+                                       (s3 (Fin.second v23))).val
+                : Nat).cast = 0 := by
+    intro v23
+    rw [fpsb3_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 end AuctionCat
