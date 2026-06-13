@@ -416,4 +416,32 @@ theorem fpsb3Reserve_max_revenue_eq_spsb3Reserve_max (n : Nat) (hn : 0 < n)
   · simp [hr]; omega
   · simp [hr]
 
+/-- Strict pointwise dominance for 3-bidder reserve auctions: when
+    `max3 > r` (top bidder strictly clears reserve) AND `max3 >
+    second_max3` (unique top bidder), fpsb3Reserve extracts strictly
+    more revenue than spsb3Reserve.  Together these ensure
+    `max3 > max(r, second_max3)`. -/
+theorem fpsb3Reserve_revenue_gt_spsb3Reserve_of_strict (n : Nat) (r : Fin n)
+    (i : Fin (n * n * n))
+    (h_strict :
+      max (Fin.first (Fin.first i)).val
+          (max (Fin.second (Fin.first i)).val (Fin.second i).val) > r.val)
+    (h_unique :
+      max (Fin.first (Fin.first i)).val
+          (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+      > max (min (Fin.first (Fin.first i)).val
+                 (Fin.second (Fin.first i)).val)
+            (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                 (min (Fin.second (Fin.first i)).val
+                      (Fin.second i).val))) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    > outcomeRevenue3 n (spsb3ReserveFn n r i) := by
+  rw [fpsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  have hr :
+      max (Fin.first (Fin.first i)).val
+          (max (Fin.second (Fin.first i)).val (Fin.second i).val) ≥ r.val := by
+    omega
+  simp [hr]
+  omega
+
 end AuctionCat
