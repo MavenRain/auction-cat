@@ -2,6 +2,7 @@ import AuctionCat.Auction
 import AuctionCat.Revenue
 import AuctionCat.Revenue3
 import AuctionCat.ExpectedRevenueComparison
+import AuctionCat.BayesNashPipeline
 
 /-!
 # AuctionCat.Examples
@@ -307,5 +308,34 @@ example :
                             (uniformPrior3 2) :=
   fpsb3Reserve_max_is_revenue_equivalent_spsb3Reserve_max 2 (by decide)
     (uniformPrior3 2)
+
+/-! ## Pipeline-level spsb ≥ fpsb utility witnesses
+
+  Direct applications of the pipeline dominance theorems at small
+  uniform-ish priors, exercising the structural theorems at
+  concrete `n` and `v1`. -/
+
+/-- At `n = 3`, uniform-style prior `1/3`, `v1 = 2`: spsb pipeline
+    utility weakly dominates fpsb pipeline utility. -/
+example :
+    auctionExpectedBidder1Util 3 (spsbAuction 3)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+    ≥ auctionExpectedBidder1Util 3 (fpsbAuction 3)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ :=
+  auctionExpectedBidder1Util_spsbAuction_ge_fpsbAuction 3
+    (fun _ => (1/3 : Rat))
+    (fun _ => by norm_num) ⟨2, by decide⟩
+
+/-- At `n = 3`, `r = 1`, `v1 = 2`: spsbReserve pipeline utility
+    weakly dominates fpsbReserve pipeline utility under uniform-style
+    prior `1/3`. -/
+example :
+    auctionExpectedBidder1Util 3 (spsbReserveAuction 3 ⟨1, by decide⟩)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+    ≥ auctionExpectedBidder1Util 3 (fpsbReserveAuction 3 ⟨1, by decide⟩)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ :=
+  auctionExpectedBidder1Util_spsbReserveAuction_ge_fpsbReserveAuction
+    3 ⟨1, by decide⟩ (fun _ => (1/3 : Rat))
+    (fun _ => by norm_num) ⟨2, by decide⟩
 
 end AuctionCat
