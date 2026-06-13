@@ -398,4 +398,22 @@ theorem spsb3Reserve_zero_revenue_eq_spsb3 (n : Nat) (hn : 0 < n)
   rw [spsb3Reserve_revenue_eq, spsb3_revenue_eq_second_max]
   simp
 
+/-- At maximal reserve `r = n - 1`, fpsb3Reserve and spsb3Reserve give
+    identical revenue at every joint-bid input (3 bidders).  Same
+    rationale as the 2-bidder case: the allocation condition forces
+    `max3 = n - 1`, so the winner pays exactly `r` in both formats. -/
+theorem fpsb3Reserve_max_revenue_eq_spsb3Reserve_max (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n ⟨n - 1, by omega⟩ i)
+    = outcomeRevenue3 n (spsb3ReserveFn n ⟨n - 1, by omega⟩ i) := by
+  rw [fpsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  have hb1 := (Fin.first (Fin.first i)).isLt
+  have hb2 := (Fin.second (Fin.first i)).isLt
+  have hb3 := (Fin.second i).isLt
+  by_cases hr :
+      max (Fin.first (Fin.first i)).val
+          (max (Fin.second (Fin.first i)).val (Fin.second i).val) ≥ n - 1
+  · simp [hr]; omega
+  · simp [hr]
+
 end AuctionCat
