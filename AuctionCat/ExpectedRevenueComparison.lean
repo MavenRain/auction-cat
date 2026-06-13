@@ -136,4 +136,72 @@ theorem expectedRevenue3_dutch3_ge_english3 (n : Nat)
     ≥ expectedRevenue3 n (englishAuction3 n) prior :=
   expectedRevenue3_fpsb3_ge_spsb3 n prior h_nn
 
+/-! ## Closed-form expected revenue under truthful play
+
+  Combining the kernel-collapsing lemma `expectedRevenue_detMatrix_eq`
+  with the pointwise closed forms gives clean formulas for the
+  expected revenue of fpsb / spsb under any prior. -/
+
+/-- Closed-form expected fpsb revenue under truthful play:
+    `Σ_v prior(v) · max(b1, b2)`. -/
+theorem expectedRevenue_fpsb_eq_sum_max (n : Nat)
+    (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (firstPriceSealedBid n) prior
+    = Fin.sumRat (fun v : Fin (n * n) =>
+        prior v
+        * (max (Fin.first v).val (Fin.second v).val : Nat).cast) := by
+  unfold firstPriceSealedBid
+  rw [expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsb_revenue_eq_max]
+
+/-- Closed-form expected spsb revenue under truthful play:
+    `Σ_v prior(v) · min(b1, b2)`. -/
+theorem expectedRevenue_spsb_eq_sum_min (n : Nat)
+    (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (secondPriceSealedBid n) prior
+    = Fin.sumRat (fun v : Fin (n * n) =>
+        prior v
+        * (min (Fin.first v).val (Fin.second v).val : Nat).cast) := by
+  unfold secondPriceSealedBid
+  rw [expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [spsb_revenue_eq_min]
+
+/-- Closed-form expected fpsb3 revenue under truthful play:
+    `Σ_v prior(v) · max3(b1, b2, b3)`. -/
+theorem expectedRevenue3_fpsb3_eq_sum_max (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (firstPriceSealedBid3 n) prior
+    = Fin.sumRat (fun v : Fin ((n * n) * n) =>
+        prior v
+        * (max (Fin.first (Fin.first v)).val
+            (max (Fin.second (Fin.first v)).val
+                 (Fin.second v).val) : Nat).cast) := by
+  unfold firstPriceSealedBid3
+  rw [expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsb3_revenue_eq_max]
+
+/-- Closed-form expected spsb3 revenue under truthful play:
+    `Σ_v prior(v) · second_max3(b1, b2, b3)`. -/
+theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) :
+    expectedRevenue3 n (secondPriceSealedBid3 n) prior
+    = Fin.sumRat (fun v : Fin ((n * n) * n) =>
+        prior v
+        * (max (min (Fin.first (Fin.first v)).val
+                    (Fin.second (Fin.first v)).val)
+              (max (min (Fin.first (Fin.first v)).val (Fin.second v).val)
+                   (min (Fin.second (Fin.first v)).val
+                        (Fin.second v).val)) : Nat).cast) := by
+  unfold secondPriceSealedBid3
+  rw [expectedRevenue3_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [spsb3_revenue_eq_second_max]
+
 end AuctionCat
