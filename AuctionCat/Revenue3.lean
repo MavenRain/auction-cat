@@ -197,4 +197,55 @@ theorem fpsb3_revenue_ge_spsb3 (n : Nat) (i : Fin (n * n * n)) :
     · simp [hw2]
       omega
 
+/-- Closed-form fpsb3 revenue: at every joint bid `i`, the
+    three-bidder first-price revenue equals the maximum of the three
+    bids.  Winner-pays-own-bid rule as a three-way `max`. -/
+theorem fpsb3_revenue_eq_max (n : Nat) (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (fpsb3Fn n i)
+    = max (Fin.first (Fin.first i)).val
+        (max (Fin.second (Fin.first i)).val (Fin.second i).val) := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue3 fpsb3Fn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw1 :
+      (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+      ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+  · simp [hw1]; omega
+  · simp [hw1]
+    by_cases hw2 : (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+    · simp [hw2]; omega
+    · simp [hw2]; omega
+
+/-- Closed-form spsb3 revenue: at every joint bid `i`, the
+    three-bidder second-price (Vickrey) revenue equals the
+    second-highest of the three bids, expressed as
+    `max (min b1 b2) (max (min b1 b3) (min b2 b3))`. -/
+theorem spsb3_revenue_eq_second_max (n : Nat) (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (spsb3Fn n i)
+    = max (min (Fin.first (Fin.first i)).val
+               (Fin.second (Fin.first i)).val)
+          (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+               (min (Fin.second (Fin.first i)).val (Fin.second i).val)) := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue3 spsb3Fn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw1 :
+      (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+      ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+  · simp [hw1]; omega
+  · simp [hw1]
+    by_cases hw2 : (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+    · simp [hw2]; omega
+    · simp [hw2]; omega
+
 end AuctionCat
