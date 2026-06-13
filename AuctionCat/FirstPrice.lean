@@ -112,4 +112,25 @@ theorem fpsbReserve_utility_truthful_val_eq_zero (n : Nat) (r v b2 : Fin n) :
   · simp [h]
   · simp [h]
 
+/-- Bidder 2's truncated utility in a 2-bidder first-price sealed-bid
+    auction, given valuation `v`, opponent's bid `opp_bid`, and own
+    bid `my_bid`.  Bidder 2 wins iff `my_bid > opp_bid` (strict — ties
+    go to bidder 1, matching `fpsbFn`'s convention).  Utility:
+    `v - my_bid` on win (Nat monus); 0 on loss. -/
+def fpsbBidder2Util (n : Nat) (v opp_bid my_bid : Fin n) : Fin n :=
+  if opp_bid.val < my_bid.val then
+    ⟨v.val - my_bid.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 2 in fpsb gets zero utility regardless of opponent
+    bid: winner pays own bid = own valuation; loser gets 0. -/
+theorem fpsb_bidder2_utility_truthful_val_eq_zero (n : Nat)
+    (v opp_bid : Fin n) :
+    (fpsbBidder2Util n v opp_bid v).val = 0 := by
+  unfold fpsbBidder2Util
+  by_cases h : opp_bid.val < v.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
