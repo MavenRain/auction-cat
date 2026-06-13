@@ -387,6 +387,26 @@ theorem fpsb3Reserve_max_is_revenue_equivalent_spsb3Reserve_max (n : Nat)
                             (spsb3Reserve n ⟨n - 1, by omega⟩) prior :=
   expectedRevenue3_fpsb3Reserve_max_eq_spsb3Reserve_max n hn prior
 
+/-- **Main four-way fpsb ≥ spsb revenue dominance results**.  Under
+    truthful play at any nonneg prior, fpsb's expected revenue
+    weakly dominates spsb's across all four standard settings:
+    {2-bidder, 3-bidder} × {no reserve, with reserve}. -/
+theorem fpsb_ge_spsb_revenue_main (n : Nat) (r : Fin n)
+    (prior : Fin (n * n) → Rat) (prior3 : Fin ((n * n) * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ prior v) (h_nn3 : ∀ v, 0 ≤ prior3 v) :
+    expectedRevenue n (firstPriceSealedBid n) prior
+      ≥ expectedRevenue n (secondPriceSealedBid n) prior
+    ∧ expectedRevenue n (fpsbReserve n r) prior
+      ≥ expectedRevenue n (spsbReserve n r) prior
+    ∧ expectedRevenue3 n (firstPriceSealedBid3 n) prior3
+      ≥ expectedRevenue3 n (secondPriceSealedBid3 n) prior3
+    ∧ expectedRevenue3 n (fpsb3Reserve n r) prior3
+      ≥ expectedRevenue3 n (spsb3Reserve n r) prior3 :=
+  ⟨expectedRevenue_fpsb_ge_spsb n prior h_nn,
+   expectedRevenue_fpsbReserve_ge_spsbReserve n r prior h_nn,
+   expectedRevenue3_fpsb3_ge_spsb3 n prior3 h_nn3,
+   expectedRevenue3_fpsb3Reserve_ge_spsb3Reserve n r prior3 h_nn3⟩
+
 /-- Closed-form expected spsb3 revenue under truthful play:
     `Σ_v prior(v) · second_max3(b1, b2, b3)`. -/
 theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
