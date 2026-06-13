@@ -1873,4 +1873,39 @@ theorem auctionExpectedBidder1Util3_spsb3Auction_ge_fpsb3Auction (n : Nat)
   rw [auctionExpectedBidder1Util3_fpsb3Auction_eq_zero]
   exact auctionExpectedBidder1Util3_spsb3Auction_nonneg n prior23 h_nn v1
 
+/-- **Pipeline-level positivity (spsbReserve, 2 bidders)**: bidder 1's
+    expected pipeline utility under truthful play in spsbReserveAuction
+    is nonneg for any reserve and any nonneg prior. -/
+theorem auctionExpectedBidder1Util_spsbReserveAuction_nonneg (n : Nat)
+    (r : Fin n) (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v)
+    (v1 : Fin n) :
+    0 ≤ auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v1 := by
+  rw [auctionExpectedBidder1Util_spsbReserveAuction_eq]
+  unfold vickreyReserveExpectedUtility
+  have h_const_zero : Fin.sumRat (fun _ : Fin n => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v2
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyReserveUtility n v1 v1 v2 r).val : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyReserveUtility n v1 v1 v2 r).val : Nat).cast := by
+        rw [Rat.zero_mul]
+    _ ≤ prior v2
+        * ((vickreyReserveUtility n v1 v1 v2 r).val : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v2) h_cast_nn
+
+/-- **Pipeline-level dominance (spsbReserve vs fpsbReserve, 2 bidders)**:
+    spsbReserveAuction's expected pipeline utility weakly dominates
+    fpsbReserveAuction's for any reserve and any nonneg prior. -/
+theorem auctionExpectedBidder1Util_spsbReserveAuction_ge_fpsbReserveAuction
+    (n : Nat) (r : Fin n) (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v)
+    (v1 : Fin n) :
+    auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v1
+    ≥ auctionExpectedBidder1Util n (fpsbReserveAuction n r) prior v1 := by
+  rw [auctionExpectedBidder1Util_fpsbReserveAuction_eq_zero]
+  exact auctionExpectedBidder1Util_spsbReserveAuction_nonneg n r prior h_nn v1
+
 end AuctionCat
