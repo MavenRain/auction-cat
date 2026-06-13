@@ -1,5 +1,6 @@
 import AuctionCat.Auction
 import AuctionCat.Revenue
+import AuctionCat.Revenue3
 import AuctionCat.ExpectedRevenueComparison
 
 /-!
@@ -156,5 +157,30 @@ example :
     = 8 / 9 := by
   unfold expectedRevenue uniformPrior
   native_decide
+
+/-! ## Three-bidder concrete expected-revenue values
+
+  Same pattern at three bidders.  The 2-bidder uniform spsb gives
+  1/4 and fpsb gives 3/4 (n=2); the 3-bidder uniform spsb gives 1/2
+  and fpsb gives 7/8 (n=2), already in Revenue3.lean. -/
+
+/-- **Three-bidder expected-revenue gap at `n = 2`**: under uniform
+    prior over 8 valuation triples, truthful fpsb3's expected
+    revenue exceeds truthful spsb3's by `7/8 - 1/2 = 3/8`. -/
+example :
+    expectedRevenue3 2 (firstPriceSealedBid3 2) (uniformPrior3 2)
+    - expectedRevenue3 2 (secondPriceSealedBid3 2) (uniformPrior3 2)
+    = 3 / 8 := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- Three-bidder dominance verified at `n = 2`: fpsb3 truthful
+    expected revenue ≥ spsb3 truthful expected revenue under uniform
+    prior.  Direct application of `expectedRevenue3_fpsb3_ge_spsb3`. -/
+example :
+    expectedRevenue3 2 (firstPriceSealedBid3 2) (uniformPrior3 2)
+    ≥ expectedRevenue3 2 (secondPriceSealedBid3 2) (uniformPrior3 2) :=
+  expectedRevenue3_fpsb3_ge_spsb3 2 (uniformPrior3 2)
+    (fun _ => by unfold uniformPrior3; native_decide)
 
 end AuctionCat
