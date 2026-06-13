@@ -1,5 +1,6 @@
 import AuctionCat.Auction
 import AuctionCat.Revenue
+import AuctionCat.ExpectedRevenueComparison
 
 /-!
 # AuctionCat.Examples
@@ -114,6 +115,46 @@ example :
       (englishAuction 3)
       (uniformPrior 3) := by
   unfold IsRevenueEquivalent
+  native_decide
+
+/-! ## Concrete expected-revenue values under truthful play
+
+  Numeric verification of the closed-form expected-revenue
+  expressions at small `n` under uniform prior. -/
+
+/-- At `n = 2` uniform prior: E[fpsb truthful] = 3/4. -/
+example :
+    expectedRevenue 2 (firstPriceSealedBid 2) (uniformPrior 2) = 3 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- At `n = 2` uniform prior: E[spsb truthful] = 1/4. -/
+example :
+    expectedRevenue 2 (secondPriceSealedBid 2) (uniformPrior 2) = 1 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- At `n = 3` uniform prior: E[fpsb truthful] = 13/9. -/
+example :
+    expectedRevenue 3 (firstPriceSealedBid 3) (uniformPrior 3) = 13 / 9 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- At `n = 3` uniform prior: E[spsb truthful] = 5/9.  Recorded
+    redundantly here for use in the gap example below. -/
+example :
+    expectedRevenue 3 (secondPriceSealedBid 3) (uniformPrior 3) = 5 / 9 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- **Expected-revenue gap at `n = 3`**: under uniform prior,
+    truthful fpsb's expected revenue exceeds truthful spsb's by
+    `13/9 - 5/9 = 8/9`.  This is the discrete IPV revenue gap. -/
+example :
+    expectedRevenue 3 (firstPriceSealedBid 3) (uniformPrior 3)
+    - expectedRevenue 3 (secondPriceSealedBid 3) (uniformPrior 3)
+    = 8 / 9 := by
+  unfold expectedRevenue uniformPrior
   native_decide
 
 end AuctionCat
