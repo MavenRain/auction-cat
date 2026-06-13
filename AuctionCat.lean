@@ -12,6 +12,7 @@ import AuctionCat.Reserve
 import AuctionCat.Auction
 import AuctionCat.Revenue
 import AuctionCat.Revenue3
+import AuctionCat.ExpectedRevenueComparison
 import AuctionCat.Examples
 import AuctionCat.BayesNash
 import AuctionCat.Envelope
