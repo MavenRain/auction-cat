@@ -145,6 +145,15 @@ theorem fpsb_minus_spsb_revenue (n : Nat) (i : Fin (n * n)) :
   rw [fpsb_revenue_eq_max, spsb_revenue_eq_min]
   omega
 
+/-- Strict pointwise dominance: when the two bids differ, fpsb
+    extracts strictly more revenue than spsb (the gap is exactly
+    `|b1 - b2| > 0`). -/
+theorem fpsb_revenue_gt_spsb_of_ne (n : Nat) (i : Fin (n * n))
+    (h_ne : (Fin.first i).val ≠ (Fin.second i).val) :
+    outcomeRevenue n (fpsbFn n i) > outcomeRevenue n (spsbFn n i) := by
+  rw [fpsb_revenue_eq_max, spsb_revenue_eq_min]
+  omega
+
 /-! ## Revenue equivalence as a relation
 
   The canonical statement of Myerson's Revenue Equivalence Theorem

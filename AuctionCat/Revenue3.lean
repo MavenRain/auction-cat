@@ -265,6 +265,23 @@ theorem fpsb3_minus_spsb3_revenue (n : Nat) (i : Fin (n * n * n)) :
   rw [fpsb3_revenue_eq_max, spsb3_revenue_eq_second_max]
   omega
 
+/-- Strict pointwise dominance at three bidders: when `max3 > second_max3`
+    (i.e., the top bidder is unique — not tied with any other),
+    fpsb3 extracts strictly more revenue than spsb3.  Same condition
+    as "the maximum is strictly greater than the second maximum". -/
+theorem fpsb3_revenue_gt_spsb3_of_strict_max (n : Nat) (i : Fin (n * n * n))
+    (h_strict :
+      max (Fin.first (Fin.first i)).val
+          (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+      > max (min (Fin.first (Fin.first i)).val
+                 (Fin.second (Fin.first i)).val)
+            (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                 (min (Fin.second (Fin.first i)).val
+                      (Fin.second i).val))) :
+    outcomeRevenue3 n (fpsb3Fn n i) > outcomeRevenue3 n (spsb3Fn n i) := by
+  rw [fpsb3_revenue_eq_max, spsb3_revenue_eq_second_max]
+  exact h_strict
+
 /-! ## Three-bidder reserve-auction closed-form revenue
 
   As in the 2-bidder case, three-bidder reserve auctions have a
