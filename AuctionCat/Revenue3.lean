@@ -160,4 +160,41 @@ theorem dutch3_is_revenue_equivalent_fpsb3 (n : Nat)
                             (firstPriceSealedBid3 n) prior :=
   rfl
 
+/-! ## Pointwise revenue comparison at three bidders
+
+  Under truthful bidding, three-bidder first-price extracts the
+  highest bid (= valuation) as revenue, while three-bidder
+  second-price extracts the second-highest bid.  Hence at every
+  joint-valuation input, the first-price revenue is weakly greater
+  than the second-price revenue.  This is the discrete analogue of
+  the standard "fpsb yields higher revenue than spsb pointwise under
+  truthful play" observation. -/
+
+/-- Pointwise revenue comparison at three bidders: first-price ≥
+    second-price at every joint-bid input.  Both formats put exactly
+    one bidder paying (the winner); for fpsb that is the winner's own
+    bid (= max), for spsb it is the max of the other two bids (=
+    second-max), so the inequality follows by case analysis on which
+    bidder wins. -/
+theorem fpsb3_revenue_ge_spsb3 (n : Nat) (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (fpsb3Fn n i) ≥ outcomeRevenue3 n (spsb3Fn n i) := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue3 fpsb3Fn spsb3Fn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw1 :
+      (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+      ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+  · simp [hw1]
+  · simp [hw1]
+    by_cases hw2 : (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+    · simp [hw2]
+      omega
+    · simp [hw2]
+      omega
+
 end AuctionCat
