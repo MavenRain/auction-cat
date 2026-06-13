@@ -99,6 +99,51 @@ theorem fpsb_revenue_ge_spsb (n : Nat) (i : Fin (n * n)) :
   · simp [hb]
   · simp [hb]; omega
 
+/-- Closed-form fpsb revenue: at every joint bid `i`, the first-price
+    revenue equals the maximum of the two bids.  This is the
+    winner-pays-own-bid rule expressed as a `max` selector. -/
+theorem fpsb_revenue_eq_max (n : Nat) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbFn n i)
+    = max (Fin.first i).val (Fin.second i).val := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue fpsbFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hb : (Fin.first i).val ≥ (Fin.second i).val
+  · simp [hb]; omega
+  · simp [hb]; omega
+
+/-- Closed-form spsb revenue: at every joint bid `i`, the second-price
+    (Vickrey) revenue equals the minimum of the two bids.  This is
+    the winner-pays-others-bid rule expressed as a `min` selector. -/
+theorem spsb_revenue_eq_min (n : Nat) (i : Fin (n * n)) :
+    outcomeRevenue n (spsbFn n i)
+    = min (Fin.first i).val (Fin.second i).val := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue spsbFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hb : (Fin.first i).val ≥ (Fin.second i).val
+  · simp [hb]; omega
+  · simp [hb]; omega
+
+/-- Pointwise revenue gap: `fpsb - spsb = |b1 - b2|` as Nat.  Combines
+    the `max`/`min` closed forms to give the discrete IPV revenue
+    gap between the two formats at every joint bid. -/
+theorem fpsb_minus_spsb_revenue (n : Nat) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbFn n i)
+    = outcomeRevenue n (spsbFn n i)
+      + (max (Fin.first i).val (Fin.second i).val
+        - min (Fin.first i).val (Fin.second i).val) := by
+  rw [fpsb_revenue_eq_max, spsb_revenue_eq_min]
+  omega
+
 /-! ## Revenue equivalence as a relation
 
   The canonical statement of Myerson's Revenue Equivalence Theorem
