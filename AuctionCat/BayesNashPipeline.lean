@@ -1949,6 +1949,58 @@ theorem auctionExpectedBidder1Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
   exact auctionExpectedBidder1Util3_spsb3ReserveAuction_nonneg
     n r prior23 h_nn v1
 
+/-! ## Bidder-2 pipeline zero-utility for fpsbAuction
+
+  Mirror of the bidder-1 pipeline zero-utility result for bidder 2:
+  under truthful play in fpsbAuction, bidder 2's expected pipeline
+  utility is also zero (same reason — constant zero output). -/
+
+/-- **Pipeline-level bidder-2 truthful zero utility for fpsbAuction**. -/
+theorem auctionExpectedBidder2Util_fpsbAuction_eq_zero (n : Nat)
+    (prior : Fin n → Rat) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (fpsbAuction n) prior v2 = 0 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v2.isLt
+  unfold auctionExpectedBidder2Util
+  have h : ∀ v1 : Fin n,
+      prior v1 * auctionBidder2Util n (fpsbAuction n) (Fin.pair v1 v2)
+      = 0 := by
+    intro v1
+    rw [fpsbAuction_eq_detMatrix, auctionBidder2Util_det]
+    unfold fpsbAuctionFn
+    simp [Fin.second_pair hn]
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- **Pipeline-level bidder-2 positivity for spsbAuction** under any
+    nonneg prior. -/
+theorem auctionExpectedBidder2Util_spsbAuction_nonneg (n : Nat)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) (v2 : Fin n) :
+    0 ≤ auctionExpectedBidder2Util n (spsbAuction n) prior v2 := by
+  rw [auctionExpectedBidder2Util_spsbAuction_eq]
+  unfold vickreyBidder2ExpectedUtility
+  have h_const_zero : Fin.sumRat (fun _ : Fin n => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v1
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyBidder2Util n v2 v1 v2).val : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyBidder2Util n v2 v1 v2).val : Nat).cast := by
+        rw [Rat.zero_mul]
+    _ ≤ prior v1 * ((vickreyBidder2Util n v2 v1 v2).val : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v1) h_cast_nn
+
+/-- **Pipeline-level bidder-2 dominance**: spsbAuction's expected
+    pipeline utility weakly dominates fpsbAuction's for bidder 2. -/
+theorem auctionExpectedBidder2Util_spsbAuction_ge_fpsbAuction (n : Nat)
+    (prior : Fin n → Rat) (h_nn : ∀ v, 0 ≤ prior v) (v2 : Fin n) :
+    auctionExpectedBidder2Util n (spsbAuction n) prior v2
+    ≥ auctionExpectedBidder2Util n (fpsbAuction n) prior v2 := by
+  rw [auctionExpectedBidder2Util_fpsbAuction_eq_zero]
+  exact auctionExpectedBidder2Util_spsbAuction_nonneg n prior h_nn v2
+
 /-- **Main four-way spsb ≥ fpsb pipeline results**.  Under truthful
     play at any nonneg prior, spsb's pipeline expected bidder-1
     utility weakly dominates fpsb's across all four standard
