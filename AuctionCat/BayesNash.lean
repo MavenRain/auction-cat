@@ -1,4 +1,5 @@
 import AuctionCat.SecondPrice
+import AuctionCat.FirstPrice
 import AuctionCat.Vickrey3
 
 /-!
@@ -156,5 +157,46 @@ theorem vickrey3_truthful_is_bayes_nash (n : Nat)
                   (fun v => v) p13 h_nn13 v2,
    fun s3' v3 => vickrey3_truthful_best_response n s3' (fun v => v)
                   (fun v => v) p12 h_nn12 v3⟩
+
+/-! ## Fpsb Bayes-Nash (negative result)
+
+  Truthful is NOT a best response, hence (truthful, truthful) is NOT
+  a Bayes-Nash equilibrium of fpsb under generic priors. -/
+
+/-- Bidder 1's expected utility in a 2-bidder fpsb auction. -/
+def fpsbExpectedUtility (n : Nat) (s1 s2 : Fin n → Fin n)
+    (v1 : Fin n) (p : Fin n → Rat) : Rat :=
+  Fin.sumRat (fun v2 : Fin n =>
+    p v2 * ((fpsbUtility n v1 (s1 v1) (s2 v2)).val : Nat).cast)
+
+/-- Strategy `s1` is a *best response* to `s2` at every type, given
+    prior `p`, in the 2-bidder fpsb auction. -/
+def IsBestResponseFpsb (n : Nat) (s1 s2 : Fin n → Fin n)
+    (p : Fin n → Rat) : Prop :=
+  ∀ (s1' : Fin n → Fin n) (v1 : Fin n),
+    fpsbExpectedUtility n s1 s2 v1 p
+    ≥ fpsbExpectedUtility n s1' s2 v1 p
+
+/-- A pair `(s1, s2)` is a *Bayes-Nash equilibrium* in the 2-bidder
+    fpsb auction under prior `p`. -/
+def IsBayesNashFpsb (n : Nat) (s1 s2 : Fin n → Fin n)
+    (p : Fin n → Rat) : Prop :=
+  IsBestResponseFpsb n s1 s2 p
+  ∧ IsBestResponseFpsb n s2 s1 p
+
+/-- **Pointwise non-dominance witness for fpsb at uniform-style prior**
+    (concrete `n = 2`).  At `v1 = 1`, truthful expected utility = 0,
+    while bidding `0` against the constant-zero opponent gives
+    expected utility `1` (since opponent always bids `0`, b1 = 0
+    wins by tiebreak and pays 0).  Hence truthful is strictly
+    dominated by the zero-bid deviation under this prior. -/
+theorem fpsb_truthful_strictly_dominated_n2 :
+    fpsbExpectedUtility 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
+        ⟨1, by decide⟩ (fun v => if v.val = 0 then 1 else 0)
+    < fpsbExpectedUtility 2 (fun _ => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) := by
+  unfold fpsbExpectedUtility fpsbUtility
+  native_decide
 
 end AuctionCat
