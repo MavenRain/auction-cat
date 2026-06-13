@@ -67,4 +67,29 @@ def fpsbAuctionFn (n : Nat) (v_joint : Fin (n * n)) : Fin (n * n) :=
   let hn  : 0 < n     := Nat.pos_of_mul_pos_right hnn
   Fin.pair (⟨0, hn⟩ : Fin n) (⟨0, hn⟩ : Fin n)
 
+/-- Bidder 1's truncated utility in a 2-bidder first-price sealed-bid
+    auction, given valuation `v`, own bid `b1`, and opponent bid `b2`.
+    Same tie-break as `fpsbFn` (bidder 1 wins iff `b1 ≥ b2`).  When
+    b1 wins, utility = `v - b1` (Nat monus, so over-bidding truncates
+    to 0); when b1 loses, utility = 0. -/
+def fpsbUtility (n : Nat) (v b1 b2 : Fin n) : Fin n :=
+  if b1.val ≥ b2.val then
+    ⟨v.val - b1.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- **Truthful bidding is NOT a dominant strategy in fpsb**.  Concrete
+    counterexample: at `v = 1`, bidding `0` against `b2 = 0` strictly
+    dominates truthful (bidding `1` against `b2 = 0`).
+
+    Truthful yields utility `1 - 1 = 0`; the deviation `b1 = 0` wins
+    by tie-break and pays `0`, yielding utility `1 - 0 = 1`.  Hence
+    `fpsbUtility n 1 1 0 < fpsbUtility n 1 0 0` strictly. -/
+theorem fpsb_truthful_not_dominant (n : Nat) (h2 : 2 ≤ n) :
+    ∃ (v b1 b2 : Fin n),
+      (fpsbUtility n v v b2).val < (fpsbUtility n v b1 b2).val := by
+  refine ⟨⟨1, by omega⟩, ⟨0, by omega⟩, ⟨0, by omega⟩, ?_⟩
+  unfold fpsbUtility
+  simp
+
 end AuctionCat
