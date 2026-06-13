@@ -355,4 +355,39 @@ theorem vickreyExpectedUtility_truthful_ge_fpsbExpectedUtility_truthful
     _ ≤ p v2 * ((vickreyUtility n v1 v1 (s2 v2)).val : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v2) h_cast_nn
 
+/-- Pointwise (3 bidders): vickreyUtility3 under truthful play weakly
+    dominates fpsbUtility3 under truthful play. -/
+theorem vickreyUtility3_truthful_ge_fpsbUtility3_truthful (n : Nat)
+    (v b2 b3 : Fin n) :
+    (vickreyUtility3 n v v b2 b3).val ≥ (fpsbUtility3 n v v b2 b3).val := by
+  rw [fpsb3_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
+/-- **Expected (3 bidders)**: vickreyExpectedUtility3 under truthful
+    play weakly dominates fpsbExpectedUtility3 under truthful play
+    for any nonneg joint prior and opponent strategies. -/
+theorem vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
+    (n : Nat) (s2 s3 : Fin n → Fin n) (v1 : Fin n)
+    (p23 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ p23 v) :
+    vickreyExpectedUtility3 n (fun v => v) s2 s3 v1 p23
+    ≥ fpsbExpectedUtility3 n (fun v => v) s2 s3 v1 p23 := by
+  rw [fpsb3_truthful_expected_utility_zero]
+  unfold vickreyExpectedUtility3
+  apply Fin.sumRat_le
+  intro v23
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyUtility3 n v1 v1 (s2 (Fin.first v23))
+                                   (s3 (Fin.second v23))).val
+         : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyUtility3 n v1 v1 (s2 (Fin.first v23))
+                                       (s3 (Fin.second v23))).val
+            : Nat).cast := by rw [Rat.zero_mul]
+    _ ≤ p23 v23
+        * ((vickreyUtility3 n v1 v1 (s2 (Fin.first v23))
+                                     (s3 (Fin.second v23))).val
+          : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v23) h_cast_nn
+
 end AuctionCat
