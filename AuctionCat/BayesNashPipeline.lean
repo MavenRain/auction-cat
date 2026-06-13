@@ -1949,4 +1949,28 @@ theorem auctionExpectedBidder1Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
   exact auctionExpectedBidder1Util3_spsb3ReserveAuction_nonneg
     n r prior23 h_nn v1
 
+/-- **Main four-way spsb ≥ fpsb pipeline results**.  Under truthful
+    play at any nonneg prior, spsb's pipeline expected bidder-1
+    utility weakly dominates fpsb's across all four standard
+    settings: {2-bidder, 3-bidder} × {no reserve, with reserve}. -/
+theorem spsb_ge_fpsb_pipeline_main (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) (prior23 : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ prior v) (h_nn23 : ∀ v, 0 ≤ prior23 v)
+    (v1 : Fin n) :
+    auctionExpectedBidder1Util n (spsbAuction n) prior v1
+      ≥ auctionExpectedBidder1Util n (fpsbAuction n) prior v1
+    ∧ auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v1
+      ≥ auctionExpectedBidder1Util n (fpsbReserveAuction n r) prior v1
+    ∧ auctionExpectedBidder1Util3 n (spsb3Auction n) prior23 v1
+      ≥ auctionExpectedBidder1Util3 n (fpsb3Auction n) prior23 v1
+    ∧ auctionExpectedBidder1Util3 n (spsb3ReserveAuction n r) prior23 v1
+      ≥ auctionExpectedBidder1Util3 n (fpsb3ReserveAuction n r) prior23 v1 :=
+  ⟨auctionExpectedBidder1Util_spsbAuction_ge_fpsbAuction n prior h_nn v1,
+   auctionExpectedBidder1Util_spsbReserveAuction_ge_fpsbReserveAuction
+     n r prior h_nn v1,
+   auctionExpectedBidder1Util3_spsb3Auction_ge_fpsb3Auction
+     n prior23 h_nn23 v1,
+   auctionExpectedBidder1Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
+     n r prior23 h_nn23 v1⟩
+
 end AuctionCat
