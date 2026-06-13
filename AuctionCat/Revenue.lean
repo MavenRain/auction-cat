@@ -307,4 +307,29 @@ theorem fpsbReserve_revenue_ge_spsbReserve (n : Nat) (r : Fin n)
   · simp [hr]; omega
   · simp [hr]
 
+/-! ## Trivial reserve = no reserve
+
+  At `r = 0` the reserve is non-binding (every bid clears 0), so
+  reserve auctions reduce to their no-reserve counterparts at the
+  revenue level. -/
+
+/-- At reserve `r = 0`, fpsbReserve revenue equals fpsb revenue at
+    every joint-bid input. -/
+theorem fpsbReserve_zero_revenue_eq_fpsb (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n ⟨0, hn⟩ i)
+    = outcomeRevenue n (fpsbFn n i) := by
+  rw [fpsbReserve_revenue_eq, fpsb_revenue_eq_max]
+  simp
+
+/-- At reserve `r = 0`, spsbReserve revenue equals spsb revenue at
+    every joint-bid input.  Note: `max 0 (min b1 b2) = min b1 b2`
+    so the reserve drops out. -/
+theorem spsbReserve_zero_revenue_eq_spsb (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n)) :
+    outcomeRevenue n (spsbReserveFn n ⟨0, hn⟩ i)
+    = outcomeRevenue n (spsbFn n i) := by
+  rw [spsbReserve_revenue_eq, spsb_revenue_eq_min]
+  simp
+
 end AuctionCat
