@@ -106,4 +106,34 @@ theorem expectedRevenue3_fpsb3_ge_spsb3 (n : Nat)
   apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v)
   exact_mod_cast fpsb3_revenue_ge_spsb3 n v
 
+/-! ## Strategic-equivalence dominance corollaries
+
+  Dutch ≅ FPSB and English ≅ SPSB at the mechanism level, so the
+  expected-revenue inequality transports directly to:
+
+    Dutch  ≥  English  (2 bidders)
+    Dutch3 ≥ English3  (3 bidders)
+
+  under any nonnegative prior. -/
+
+/-- Expected-revenue dominance of Dutch over English (2 bidders) under
+    truthful play and any nonnegative prior — corollary of
+    `expectedRevenue_fpsb_ge_spsb` via the kernel-level strategic
+    equivalences. -/
+theorem expectedRevenue_dutch_ge_english (n : Nat)
+    (prior : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    expectedRevenue n (dutchAuction n) prior
+    ≥ expectedRevenue n (englishAuction n) prior :=
+  expectedRevenue_fpsb_ge_spsb n prior h_nn
+
+/-- Expected-revenue dominance of Dutch over English (3 bidders) under
+    truthful play and any nonnegative prior — corollary of
+    `expectedRevenue3_fpsb3_ge_spsb3` via the kernel-level strategic
+    equivalences. -/
+theorem expectedRevenue3_dutch3_ge_english3 (n : Nat)
+    (prior : Fin ((n * n) * n) → Rat) (h_nn : ∀ v, 0 ≤ prior v) :
+    expectedRevenue3 n (dutchAuction3 n) prior
+    ≥ expectedRevenue3 n (englishAuction3 n) prior :=
+  expectedRevenue3_fpsb3_ge_spsb3 n prior h_nn
+
 end AuctionCat
