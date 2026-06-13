@@ -1,6 +1,7 @@
 import AuctionCat.BayesNash
 import AuctionCat.KernelTruth
 import AuctionCat.KernelFirstPrice
+import AuctionCat.KernelFirstPrice3
 import AuctionCat.ReserveTruth
 import AuctionCat.Reserve3Truth
 import AuctionCat.Envelope
@@ -1760,6 +1761,25 @@ theorem auctionExpectedBidder1Util_fpsbAuction_eq_zero (n : Nat)
     intro v2
     rw [fpsbAuction_eq_detMatrix, auctionBidder1Util_det]
     unfold fpsbAuctionFn
+    simp [Fin.first_pair]
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- **Pipeline-level truthful zero utility for fpsb3Auction**: under
+    truthful play, bidder 1's expected pipeline utility is zero for
+    any joint prior on the other bidders' valuations. -/
+theorem auctionExpectedBidder1Util3_fpsb3Auction_eq_zero (n : Nat)
+    (prior23 : Fin (n * n) → Rat) (v1 : Fin n) :
+    auctionExpectedBidder1Util3 n (fpsb3Auction n) prior23 v1 = 0 := by
+  have hn : 0 < n := Nat.lt_of_le_of_lt (Nat.zero_le _) v1.isLt
+  unfold auctionExpectedBidder1Util3
+  have h : ∀ v23 : Fin (n * n),
+      prior23 v23 * auctionBidder1Util3 n (fpsb3Auction n)
+        (Fin.pair (Fin.pair v1 (Fin.first v23)) (Fin.second v23))
+      = 0 := by
+    intro v23
+    rw [fpsb3Auction_eq_detMatrix, auctionBidder1Util3_det]
+    unfold fpsbAuctionFn3
     simp [Fin.first_pair]
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
