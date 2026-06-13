@@ -318,4 +318,18 @@ theorem fpsb_bidder2_truthful_expected_utility_zero (n : Nat)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-! ## Spsb vs fpsb pointwise utility comparison
+
+  Under truthful play, Vickrey utility weakly dominates fpsb utility
+  at every joint-bid input: spsb's `v - b2 = v - opponent's bid` is
+  always ≥ fpsb's identically-zero `v - v` (when winner). -/
+
+/-- Pointwise: vickreyUtility under truthful play weakly dominates
+    fpsbUtility under truthful play at every joint-bid input. -/
+theorem vickreyUtility_truthful_ge_fpsbUtility_truthful (n : Nat)
+    (v b2 : Fin n) :
+    (vickreyUtility n v v b2).val ≥ (fpsbUtility n v v b2).val := by
+  rw [fpsb_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
 end AuctionCat
