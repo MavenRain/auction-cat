@@ -332,4 +332,26 @@ theorem spsbReserve_zero_revenue_eq_spsb (n : Nat) (hn : 0 < n)
   rw [spsbReserve_revenue_eq, spsb_revenue_eq_min]
   simp
 
+/-! ## Maximal-reserve revenue collapse
+
+  At `r = n - 1` (the highest possible bid in `Fin n`), the
+  allocation condition `max ≥ r` forces `max = n - 1`, so both
+  fpsbReserve and spsbReserve extract exactly `n - 1` per
+  allocation.  The two formats coincide pointwise at this reserve. -/
+
+/-- At maximal reserve `r = n - 1`, fpsbReserve and spsbReserve give
+    identical revenue at every joint-bid input.  Reason: the allocation
+    condition `max ≥ n - 1` forces `max = n - 1` (since bids live in
+    `Fin n`), so the winner pays exactly `r`. -/
+theorem fpsbReserve_max_revenue_eq_spsbReserve_max (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n ⟨n - 1, by omega⟩ i)
+    = outcomeRevenue n (spsbReserveFn n ⟨n - 1, by omega⟩ i) := by
+  rw [fpsbReserve_revenue_eq, spsbReserve_revenue_eq]
+  have hb1 := (Fin.first i).isLt
+  have hb2 := (Fin.second i).isLt
+  by_cases hr : max (Fin.first i).val (Fin.second i).val ≥ n - 1
+  · simp [hr]; omega
+  · simp [hr]
+
 end AuctionCat
