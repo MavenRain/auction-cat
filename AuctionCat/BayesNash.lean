@@ -249,4 +249,52 @@ theorem fpsb3_truthful_expected_utility_zero (n : Nat)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- Bidder 1's expected utility in a 2-bidder fpsb-with-reserve
+    auction. -/
+def fpsbReserveExpectedUtility (n : Nat) (r : Fin n)
+    (s1 s2 : Fin n → Fin n) (v1 : Fin n) (p : Fin n → Rat) : Rat :=
+  Fin.sumRat (fun v2 : Fin n =>
+    p v2 * ((fpsbReserveUtility n r v1 (s1 v1) (s2 v2)).val : Nat).cast)
+
+/-- **Truthful expected utility in fpsb-with-reserve is zero under any
+    reserve, prior, and opponent strategy** (2 bidders). -/
+theorem fpsbReserve_truthful_expected_utility_zero (n : Nat) (r : Fin n)
+    (s2 : Fin n → Fin n) (v1 : Fin n) (p : Fin n → Rat) :
+    fpsbReserveExpectedUtility n r (fun v => v) s2 v1 p = 0 := by
+  unfold fpsbReserveExpectedUtility
+  have h : ∀ v2 : Fin n,
+      p v2 * ((fpsbReserveUtility n r v1 v1 (s2 v2)).val : Nat).cast = 0 := by
+    intro v2
+    rw [fpsbReserve_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- Bidder 1's expected utility in a 3-bidder fpsb-with-reserve
+    auction. -/
+def fpsbReserveExpectedUtility3 (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n) (v1 : Fin n)
+    (p23 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v23 : Fin (n * n) =>
+    p23 v23 *
+      ((fpsbReserveUtility3 n r v1 (s1 v1) (s2 (Fin.first v23))
+                                     (s3 (Fin.second v23))).val
+       : Nat).cast)
+
+/-- **Truthful expected utility in 3-bidder fpsb-with-reserve is zero
+    under any reserve, joint prior, and opponent strategies**. -/
+theorem fpsb3Reserve_truthful_expected_utility_zero (n : Nat) (r : Fin n)
+    (s2 s3 : Fin n → Fin n) (v1 : Fin n) (p23 : Fin (n * n) → Rat) :
+    fpsbReserveExpectedUtility3 n r (fun v => v) s2 s3 v1 p23 = 0 := by
+  unfold fpsbReserveExpectedUtility3
+  have h : ∀ v23 : Fin (n * n),
+      p23 v23 * ((fpsbReserveUtility3 n r v1 v1 (s2 (Fin.first v23))
+                                                (s3 (Fin.second v23))).val
+                : Nat).cast = 0 := by
+    intro v23
+    rw [fpsb3Reserve_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 end AuctionCat
