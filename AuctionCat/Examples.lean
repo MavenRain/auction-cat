@@ -269,4 +269,43 @@ example :
   unfold expectedRevenue uniformPrior
   native_decide
 
+/-- At `n = 3`, `r = n - 1 = 2`: revenue-equivalence witness via the
+    structural `fpsbReserve_max_is_revenue_equivalent_spsbReserve_max`
+    theorem (no recomputation needed). -/
+example :
+    IsRevenueEquivalent 3 (fpsbReserve 3 ⟨3 - 1, by decide⟩)
+                          (spsbReserve 3 ⟨3 - 1, by decide⟩)
+                          (uniformPrior 3) :=
+  fpsbReserve_max_is_revenue_equivalent_spsbReserve_max 3 (by decide)
+    (uniformPrior 3)
+
+/-! ## Three-bidder reserve numeric examples -/
+
+/-- At `n = 2` (3 bidders), `r = 1 = n - 1` uniform prior:
+    E[fpsb3Reserve] = 7/8 (every profile with at least one bid ≥ 1
+    contributes — 7 of 8 profiles, revenue 1 each). -/
+example :
+    expectedRevenue3 2 (fpsb3Reserve 2 ⟨1, by decide⟩) (uniformPrior3 2)
+    = 7 / 8 := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- At `n = 2` (3 bidders), `r = 1 = n - 1`: E[spsb3Reserve] = 7/8
+    (matches fpsb3Reserve at maximal reserve, jumps from no-reserve's
+    1/2). -/
+example :
+    expectedRevenue3 2 (spsb3Reserve 2 ⟨1, by decide⟩) (uniformPrior3 2)
+    = 7 / 8 := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- At `n = 2` (3 bidders), maximal reserve: structural revenue
+    equivalence via `fpsb3Reserve_max_is_revenue_equivalent_spsb3Reserve_max`. -/
+example :
+    IsRevenueEquivalent3 2 (fpsb3Reserve 2 ⟨2 - 1, by decide⟩)
+                            (spsb3Reserve 2 ⟨2 - 1, by decide⟩)
+                            (uniformPrior3 2) :=
+  fpsb3Reserve_max_is_revenue_equivalent_spsb3Reserve_max 2 (by decide)
+    (uniformPrior3 2)
+
 end AuctionCat
