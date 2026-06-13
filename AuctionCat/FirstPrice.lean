@@ -92,4 +92,24 @@ theorem fpsb_truthful_not_dominant (n : Nat) (h2 : 2 ≤ n) :
   unfold fpsbUtility
   simp
 
+/-- Bidder 1's truncated utility in a 2-bidder fpsb-with-reserve
+    auction, given reserve `r`, valuation `v`, own bid `b1`, and
+    opponent bid `b2`.  Same tie-break as `fpsbReserveFn`.  When b1
+    wins (b1 ≥ b2 ∧ b1 ≥ r), utility = `v - b1` (Nat monus); else 0. -/
+def fpsbReserveUtility (n : Nat) (r v b1 b2 : Fin n) : Fin n :=
+  if b1.val ≥ b2.val ∧ b1.val ≥ r.val then
+    ⟨v.val - b1.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 1 gets zero utility in fpsb-with-reserve at every
+    valuation profile and reserve.  If they win, they pay own bid =
+    own valuation; if they lose (either outbid or below reserve), 0. -/
+theorem fpsbReserve_utility_truthful_val_eq_zero (n : Nat) (r v b2 : Fin n) :
+    (fpsbReserveUtility n r v v b2).val = 0 := by
+  unfold fpsbReserveUtility
+  by_cases h : v.val ≥ b2.val ∧ v.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
