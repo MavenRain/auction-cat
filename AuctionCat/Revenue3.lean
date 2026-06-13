@@ -2,6 +2,7 @@ import AuctionCat.FirstPrice3
 import AuctionCat.SecondPrice3
 import AuctionCat.English3
 import AuctionCat.Dutch3
+import AuctionCat.Reserve
 
 /-!
 # AuctionCat.Revenue3
@@ -263,5 +264,96 @@ theorem fpsb3_minus_spsb3_revenue (n : Nat) (i : Fin (n * n * n)) :
                  (min (Fin.second (Fin.first i)).val (Fin.second i).val))) := by
   rw [fpsb3_revenue_eq_max, spsb3_revenue_eq_second_max]
   omega
+
+/-! ## Three-bidder reserve-auction closed-form revenue
+
+  As in the 2-bidder case, three-bidder reserve auctions have a
+  two-regime structure: allocate to the highest bidder (if any
+  bidder clears the reserve) or extract zero (if no bidder does). -/
+
+/-- Closed-form fpsb3Reserve revenue: if `max3(b1,b2,b3) ≥ r`, the
+    revenue equals `max3(b1,b2,b3)` (winner pays own bid); else 0. -/
+theorem fpsb3Reserve_revenue_eq (n : Nat) (r : Fin n)
+    (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    = (if max (Fin.first (Fin.first i)).val
+            (max (Fin.second (Fin.first i)).val (Fin.second i).val) ≥ r.val
+        then max (Fin.first (Fin.first i)).val
+              (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+        else 0) := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue3 fpsb3ReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw1 :
+      (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+      ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+      ∧ (Fin.first (Fin.first i)).val ≥ r.val
+  · simp [hw1]; omega
+  · simp [hw1]
+    by_cases hw2 :
+        (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+        ∧ (Fin.second (Fin.first i)).val ≥ r.val
+    · simp [hw2]; omega
+    · simp [hw2]
+      by_cases hw3 : (Fin.second i).val ≥ r.val
+      · simp [hw3]; omega
+      · simp [hw3]; omega
+
+/-- Closed-form spsb3Reserve revenue: if `max3(b1,b2,b3) ≥ r`, the
+    revenue equals `max(r, second_max3(b1,b2,b3))` (winner pays max
+    of reserve and second-highest bid); else 0. -/
+theorem spsb3Reserve_revenue_eq (n : Nat) (r : Fin n)
+    (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (spsb3ReserveFn n r i)
+    = (if max (Fin.first (Fin.first i)).val
+            (max (Fin.second (Fin.first i)).val (Fin.second i).val) ≥ r.val
+        then max r.val
+              (max (min (Fin.first (Fin.first i)).val
+                        (Fin.second (Fin.first i)).val)
+                  (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                       (min (Fin.second (Fin.first i)).val
+                            (Fin.second i).val)))
+        else 0) := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue3 spsb3ReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw1 :
+      (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+      ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+      ∧ (Fin.first (Fin.first i)).val ≥ r.val
+  · simp [hw1]; omega
+  · simp [hw1]
+    by_cases hw2 :
+        (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+        ∧ (Fin.second (Fin.first i)).val ≥ r.val
+    · simp [hw2]; omega
+    · simp [hw2]
+      by_cases hw3 : (Fin.second i).val ≥ r.val
+      · simp [hw3]; omega
+      · simp [hw3]; omega
+
+/-- Pointwise revenue comparison for 3-bidder reserve auctions:
+    fpsb3Reserve ≥ spsb3Reserve at every joint bid.  Same two-regime
+    structure as the 2-bidder case. -/
+theorem fpsb3Reserve_revenue_ge_spsb3Reserve (n : Nat) (r : Fin n)
+    (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    ≥ outcomeRevenue3 n (spsb3ReserveFn n r i) := by
+  rw [fpsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  by_cases hr :
+      max (Fin.first (Fin.first i)).val
+          (max (Fin.second (Fin.first i)).val (Fin.second i).val) ≥ r.val
+  · simp [hr]; omega
+  · simp [hr]
 
 end AuctionCat
