@@ -183,4 +183,33 @@ example :
   expectedRevenue3_fpsb3_ge_spsb3 2 (uniformPrior3 2)
     (fun _ => by unfold uniformPrior3; native_decide)
 
+/-! ## Dominance instantiations at concrete n (2 bidders)
+
+  Direct applications of `expectedRevenue_fpsb_ge_spsb` to small
+  uniform priors.  Each example produces a `Rat`-level inequality
+  witness. -/
+
+/-- Two-bidder dominance verified at `n = 3`: fpsb truthful expected
+    revenue ≥ spsb truthful expected revenue under uniform prior. -/
+example :
+    expectedRevenue 3 (firstPriceSealedBid 3) (uniformPrior 3)
+    ≥ expectedRevenue 3 (secondPriceSealedBid 3) (uniformPrior 3) :=
+  expectedRevenue_fpsb_ge_spsb 3 (uniformPrior 3)
+    (fun _ => by unfold uniformPrior; native_decide)
+
+/-- Dutch ≥ English under uniform prior at `n = 3` — strategic
+    equivalence corollary of the fpsb-spsb dominance. -/
+example :
+    expectedRevenue 3 (dutchAuction 3) (uniformPrior 3)
+    ≥ expectedRevenue 3 (englishAuction 3) (uniformPrior 3) :=
+  expectedRevenue_dutch_ge_english 3 (uniformPrior 3)
+    (fun _ => by unfold uniformPrior; native_decide)
+
+/-- Three-bidder Dutch ≥ English under uniform prior at `n = 2`. -/
+example :
+    expectedRevenue3 2 (dutchAuction3 2) (uniformPrior3 2)
+    ≥ expectedRevenue3 2 (englishAuction3 2) (uniformPrior3 2) :=
+  expectedRevenue3_dutch3_ge_english3 2 (uniformPrior3 2)
+    (fun _ => by unfold uniformPrior3; native_decide)
+
 end AuctionCat
