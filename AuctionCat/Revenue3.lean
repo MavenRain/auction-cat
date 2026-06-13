@@ -248,4 +248,20 @@ theorem spsb3_revenue_eq_second_max (n : Nat) (i : Fin (n * n * n)) :
     · simp [hw2]; omega
     · simp [hw2]; omega
 
+/-- Pointwise revenue gap at three bidders: `fpsb3 - spsb3 = max - second_max`
+    as Nat (via monus, well-defined since max ≥ second_max).  Combines
+    the closed forms of fpsb3 and spsb3 to give the per-input discrete
+    IPV revenue gap. -/
+theorem fpsb3_minus_spsb3_revenue (n : Nat) (i : Fin (n * n * n)) :
+    outcomeRevenue3 n (fpsb3Fn n i)
+    = outcomeRevenue3 n (spsb3Fn n i)
+      + (max (Fin.first (Fin.first i)).val
+            (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+        - max (min (Fin.first (Fin.first i)).val
+                   (Fin.second (Fin.first i)).val)
+            (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                 (min (Fin.second (Fin.first i)).val (Fin.second i).val))) := by
+  rw [fpsb3_revenue_eq_max, spsb3_revenue_eq_second_max]
+  omega
+
 end AuctionCat
