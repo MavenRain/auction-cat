@@ -201,6 +201,38 @@ theorem expectedRevenue_fpsbReserve_ge_spsbReserve (n : Nat) (r : Fin n)
   apply Rat.mul_le_mul_of_nonneg_left _ (h_nn v)
   exact_mod_cast fpsbReserve_revenue_ge_spsbReserve n r v
 
+/-- Closed-form expected fpsbReserve revenue under truthful play:
+    `Σ_v prior(v) · (if max(b1,b2) ≥ r then max(b1,b2) else 0)`. -/
+theorem expectedRevenue_fpsbReserve_eq_sum (n : Nat) (r : Fin n)
+    (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (fpsbReserve n r) prior
+    = Fin.sumRat (fun v : Fin (n * n) =>
+        prior v
+        * ((if max (Fin.first v).val (Fin.second v).val ≥ r.val
+            then max (Fin.first v).val (Fin.second v).val
+            else 0) : Nat).cast) := by
+  unfold fpsbReserve
+  rw [expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [fpsbReserve_revenue_eq]
+
+/-- Closed-form expected spsbReserve revenue under truthful play:
+    `Σ_v prior(v) · (if max(b1,b2) ≥ r then max(r, min(b1,b2)) else 0)`. -/
+theorem expectedRevenue_spsbReserve_eq_sum (n : Nat) (r : Fin n)
+    (prior : Fin (n * n) → Rat) :
+    expectedRevenue n (spsbReserve n r) prior
+    = Fin.sumRat (fun v : Fin (n * n) =>
+        prior v
+        * ((if max (Fin.first v).val (Fin.second v).val ≥ r.val
+            then max r.val (min (Fin.first v).val (Fin.second v).val)
+            else 0) : Nat).cast) := by
+  unfold spsbReserve
+  rw [expectedRevenue_detMatrix_eq]
+  apply Fin.sumRat_congr
+  intro v
+  rw [spsbReserve_revenue_eq]
+
 /-- Closed-form expected spsb3 revenue under truthful play:
     `Σ_v prior(v) · second_max3(b1, b2, b3)`. -/
 theorem expectedRevenue3_spsb3_eq_sum_second_max (n : Nat)
