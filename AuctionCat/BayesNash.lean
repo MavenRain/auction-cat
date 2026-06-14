@@ -328,6 +328,32 @@ theorem fpsb3_truthful_not_best_response_n2 :
     h_br (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
   exact absurd h_le (not_le_of_lt fpsb3_truthful_strictly_dominated_n2)
 
+/-- **(Truthful, truthful, truthful) is NOT a Bayes-Nash equilibrium
+    of 3-bidder fpsb at n=2** under the joint prior concentrated at
+    `(v2, v3) = (0, 0)`.  Same idea as the 2-bidder case: bidder 1's
+    expected truthful utility is 0, while bidding 0 at v1=1 wins by
+    tiebreak against the (concentrated) opponents and yields utility
+    1.  This breaks the bidder-1 best-response side of the BN
+    conjunction. -/
+theorem fpsb3_truthful_truthful_truthful_not_bayes_nash_n2 :
+    ¬ IsBayesNashFpsb3 2 (fun v => v) (fun v => v) (fun v => v)
+        (fun v => if v.val = 0 then 1 else 0)
+        (fun v => if v.val = 0 then 1 else 0)
+        (fun v => if v.val = 0 then 1 else 0) := by
+  intro h_bn
+  have h_br1 := h_bn.1
+  have h_le :=
+    h_br1 (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+  rw [fpsb3_truthful_expected_utility_zero] at h_le
+  have h_rhs :
+      fpsbExpectedUtility3 2 (fun _ : Fin 2 => ⟨0, by decide⟩)
+        (fun v : Fin 2 => v) (fun v : Fin 2 => v) ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) = 1 := by
+    unfold fpsbExpectedUtility3 fpsbUtility3
+    native_decide
+  rw [h_rhs] at h_le
+  exact absurd h_le (by norm_num)
+
 /-- Bidder 1's expected utility in a 2-bidder fpsb-with-reserve
     auction. -/
 def fpsbReserveExpectedUtility (n : Nat) (r : Fin n)
