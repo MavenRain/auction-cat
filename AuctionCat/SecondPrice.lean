@@ -53,6 +53,24 @@ def secondPriceSealedBid (n : Nat) :
     StochasticMatrix (n * n) ((2 * n) * (2 * n)) :=
   detMatrix (spsbFn n)
 
+/-- **Allocation efficiency** of spsb under truthful play.  Bidder 1
+    is allocated the item (`a1 = 1`) iff bidder 1's bid is at least
+    bidder 2's (equivalently, under truthful, iff `v1 ≥ v2`).
+    Tie-break favors bidder 1. -/
+theorem spsb_bidder1_allocated_iff_higher_bid (n : Nat) (i : Fin (n * n)) :
+    (Fin.first (Fin.first (spsbFn n i))).val = 1
+    ↔ (Fin.first i).val ≥ (Fin.second i).val := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold spsbFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  · simp [h]
+  · simp [h]
+
 /-! ## Dominant-strategy truthfulness
 
   The Vickrey auction's central property: bidding one's valuation is
