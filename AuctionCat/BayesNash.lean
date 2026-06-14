@@ -423,6 +423,29 @@ theorem fpsb_bidder2_truthful_expected_utility_zero (n : Nat)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- Bidder 2's expected utility in a 2-bidder fpsb-with-reserve
+    auction. -/
+def fpsbReserveBidder2ExpectedUtility (n : Nat) (r : Fin n)
+    (s1 s2 : Fin n → Fin n) (v2 : Fin n) (p : Fin n → Rat) : Rat :=
+  Fin.sumRat (fun v1 : Fin n =>
+    p v1 * ((fpsbReserveBidder2Util n r v2 (s1 v1) (s2 v2)).val
+              : Nat).cast)
+
+/-- **Bidder 2's truthful expected utility in fpsbReserve is zero
+    under any prior, opponent strategy, and reserve** (2 bidders). -/
+theorem fpsbReserve_bidder2_truthful_expected_utility_zero (n : Nat)
+    (r : Fin n) (s1 : Fin n → Fin n) (v2 : Fin n) (p : Fin n → Rat) :
+    fpsbReserveBidder2ExpectedUtility n r s1 (fun v => v) v2 p = 0 := by
+  unfold fpsbReserveBidder2ExpectedUtility
+  have h : ∀ v1 : Fin n,
+      p v1 * ((fpsbReserveBidder2Util n r v2 (s1 v1) v2).val
+              : Nat).cast = 0 := by
+    intro v1
+    rw [fpsbReserve_bidder2_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 /-! ## Spsb vs fpsb pointwise utility comparison
 
   Under truthful play, Vickrey utility weakly dominates fpsb utility
