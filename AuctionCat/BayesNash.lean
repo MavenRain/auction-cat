@@ -261,6 +261,49 @@ theorem fpsb3_truthful_expected_utility_zero (n : Nat)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- Strategy `s1` is a *best response* (from bidder 1's perspective)
+    to `(s2, s3)` at every type, given joint prior `p23`, in 3-bidder
+    fpsb. -/
+def IsBestResponseFpsb3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (p23 : Fin (n * n) → Rat) : Prop :=
+  ∀ (s1' : Fin n → Fin n) (v1 : Fin n),
+    fpsbExpectedUtility3 n s1 s2 s3 v1 p23
+    ≥ fpsbExpectedUtility3 n s1' s2 s3 v1 p23
+
+/-- A profile `(s1, s2, s3)` is a *Bayes-Nash equilibrium* of the
+    3-bidder fpsb auction under priors `(p23, p13, p12)`. -/
+def IsBayesNashFpsb3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (p23 p13 p12 : Fin (n * n) → Rat) : Prop :=
+  IsBestResponseFpsb3 n s1 s2 s3 p23
+  ∧ IsBestResponseFpsb3 n s2 s1 s3 p13
+  ∧ IsBestResponseFpsb3 n s3 s1 s2 p12
+
+/-- **Strict-dominance witness for 3-bidder fpsb truthful at n=2**.
+    At `v1 = 1`, bidding 0 against constant-zero opponents gives
+    expected utility 1, while truthful gives 0. -/
+theorem fpsb3_truthful_strictly_dominated_n2 :
+    fpsbExpectedUtility3 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0)
+    < fpsbExpectedUtility3 2 (fun _ => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩) (fun _ => ⟨0, by decide⟩)
+        ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) := by
+  unfold fpsbExpectedUtility3 fpsbUtility3
+  native_decide
+
+/-- **3-bidder fpsb truthful is NOT a best response** against
+    constant-zero opponents under a prior concentrated at v=0
+    (concrete n=2). -/
+theorem fpsb3_truthful_not_best_response_n2 :
+    ¬ IsBestResponseFpsb3 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩)
+        (fun v => if v.val = 0 then 1 else 0) := by
+  intro h_br
+  have h_le :=
+    h_br (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+  exact absurd h_le (not_le_of_lt fpsb3_truthful_strictly_dominated_n2)
+
 /-- Bidder 1's expected utility in a 2-bidder fpsb-with-reserve
     auction. -/
 def fpsbReserveExpectedUtility (n : Nat) (r : Fin n)
