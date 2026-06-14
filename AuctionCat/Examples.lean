@@ -356,4 +356,20 @@ example :
   auctionExpectedBidder1Util_fpsbAuction_eq_zero 2 (fun _ => (1/2 : Rat))
     ⟨1, by decide⟩
 
+/-- **3-bidder concrete strict gap** at `n = 3`, uniform joint
+    prior `1/9`, `v1 = 2`: spsb3 pipeline yields `5/9`; fpsb3
+    pipeline yields `0`.  Strict gap of `5/9`. -/
+example :
+    auctionExpectedBidder1Util3 3 (spsb3Auction 3)
+      (fun _ => (1/9 : Rat)) ⟨2, by decide⟩ = 5 / 9 := by
+  rw [auctionExpectedBidder1Util3_spsb3Auction_eq]
+  unfold vickreyExpectedUtility3 vickreyUtility3
+  native_decide
+
+example :
+    auctionExpectedBidder1Util3 3 (fpsb3Auction 3)
+      (fun _ => (1/9 : Rat)) ⟨2, by decide⟩ = 0 :=
+  auctionExpectedBidder1Util3_fpsb3Auction_eq_zero 3
+    (fun _ => (1/9 : Rat)) ⟨2, by decide⟩
+
 end AuctionCat
