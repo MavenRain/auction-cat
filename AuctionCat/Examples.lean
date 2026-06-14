@@ -555,4 +555,24 @@ example :
   unfold vickreyBidder2ExpectedUtility3 vickreyBidder2Util3
   native_decide
 
+/-- **Three-way utility chain at `n = 3`, `v = 2`, uniform joint prior
+    `1/9`**: bidder 1 = 1, bidder 2 = 5/9, bidder 3 = 1/3.  Confirms
+    the strict ordering imposed by the tiebreak: bidder 1 > bidder 2
+    > bidder 3 in expected truthful utility at top valuation. -/
+example :
+    vickreyBidder3ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat))
+    < vickreyBidder2ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) := by
+  have h3 : vickreyBidder3ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 1 / 3 := by
+    unfold vickreyBidder3ExpectedUtility3 vickreyBidder3Util3
+    native_decide
+  have h2 : vickreyBidder2ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 5 / 9 := by
+    unfold vickreyBidder2ExpectedUtility3 vickreyBidder2Util3
+    native_decide
+  rw [h3, h2]
+  norm_num
+
 end AuctionCat
