@@ -84,6 +84,26 @@ def expectedRevenue (n : Nat)
   the lowest.  Hence at every outcome, the first-price revenue is
   weakly greater than the second-price revenue. -/
 
+/-- **fpsb and spsb have IDENTICAL allocation rules**: bidder 1
+    gets the item in fpsb iff bidder 1 gets the item in spsb (both
+    formats use `b1 ≥ b2 → bidder 1 wins`).  The two formats differ
+    only in PRICING, not allocation. -/
+theorem fpsb_spsb_same_allocation (n : Nat) (i : Fin (n * n)) :
+    (Fin.first (Fin.first (fpsbFn n i))).val
+    = (Fin.first (Fin.first (spsbFn n i))).val := by
+  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  · rw [(fpsb_bidder1_allocated_iff_higher_bid n i).mpr h,
+        (spsb_bidder1_allocated_iff_higher_bid n i).mpr h]
+  · have h_fpsb : (Fin.first (Fin.first (fpsbFn n i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((fpsb_bidder1_allocated_iff_higher_bid n i).mp hcontra)
+    have h_spsb : (Fin.first (Fin.first (spsbFn n i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((spsb_bidder1_allocated_iff_higher_bid n i).mp hcontra)
+    have hb1 := (Fin.first (Fin.first (fpsbFn n i))).isLt
+    have hb2 := (Fin.first (Fin.first (spsbFn n i))).isLt
+    omega
+
 /-- Pointwise revenue comparison: first-price ≥ second-price at every
     joint-bid input.  Specialised to the truthful case via the
     auction assembly (truthful bidders submit valuations as bids). -/
