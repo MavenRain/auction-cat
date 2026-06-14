@@ -86,4 +86,51 @@ theorem spsb3_bidder1_allocated_iff_winner (n : Nat) (i : Fin (n * n * n)) :
   · simp [h]
   · simp [h]
 
+/-- Bidder 2's spsb3 allocation: bidder 2 wins iff `¬win1 ∧ b2 ≥ b3`
+    (i.e., bidder 1 doesn't win AND bidder 2's bid ≥ bidder 3's). -/
+theorem spsb3_bidder2_allocated_iff_winner (n : Nat) (i : Fin (n * n * n)) :
+    (Fin.first (Fin.second (Fin.first (spsb3Fn n i)))).val = 1
+    ↔ ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
+      ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold spsb3Fn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw2 : ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+                  ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
+                ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+  · simp [hw2]
+  · simp [hw2]
+
+/-- Bidder 3's spsb3 allocation: bidder 3 wins iff `¬win1 ∧ ¬win2`
+    (the only remaining case). -/
+theorem spsb3_bidder3_allocated_iff_winner (n : Nat) (i : Fin (n * n * n)) :
+    (Fin.first (Fin.second (spsb3Fn n i))).val = 1
+    ↔ ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
+      ∧ ¬(¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+            ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
+          ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val) := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold spsb3Fn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw3 :
+      ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
+      ∧ ¬(¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+            ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
+          ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val)
+  · simp [hw3]
+  · simp [hw3]
+
 end AuctionCat
