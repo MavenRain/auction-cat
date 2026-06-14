@@ -133,4 +133,26 @@ theorem spsb3_bidder3_allocated_iff_winner (n : Nat) (i : Fin (n * n * n)) :
   · simp [hw3]
   · simp [hw3]
 
+/-- **Exactly one winner** in spsb3: a1 + a2 + a3 = 1 at every joint
+    bid.  Captures the single-item-auction property at 3 bidders. -/
+theorem spsb3_exactly_one_winner (n : Nat) (i : Fin (n * n * n)) :
+    (Fin.first (Fin.first (Fin.first (spsb3Fn n i)))).val
+    + (Fin.first (Fin.second (Fin.first (spsb3Fn n i)))).val
+    + (Fin.first (Fin.second (spsb3Fn n i))).val = 1 := by
+  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold spsb3Fn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases hw1 : (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+                ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+  · simp [hw1]
+  · simp [hw1]
+    by_cases hw2 : (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+    · simp [hw2]
+    · simp [hw2]
+
 end AuctionCat
