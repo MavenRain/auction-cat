@@ -575,4 +575,40 @@ example :
   rw [h3, h2]
   norm_num
 
+/-! ## Kernel-utility RET illustration
+
+  At `n = 3`, top valuation `v1 = 2`, uniform prior `1/3`: fpsb
+  under half-shading and Vickrey under truthful give bidder 1 the
+  same expected utility (= 1).  This is the utility-level
+  manifestation of the revenue equivalence theorem at this concrete
+  case (which we already verified at the revenue level in the
+  half-shading RET example above). -/
+
+/-- fpsb half-shaded bidder-1 expected utility at `n = 3`, `v1 = 2`,
+    uniform prior `1/3` equals `1`. -/
+example :
+    fpsbExpectedUtility 3 (halfShading 3) (halfShading 3) ⟨2, by decide⟩
+        (fun _ => (1/3 : Rat)) = 1 := by
+  unfold fpsbExpectedUtility fpsbUtility halfShading
+  native_decide
+
+/-- **Bidder-1 utility equivalence at `n = 3`, `v1 = 2`, uniform**:
+    fpsb under half-shading equilibrium and Vickrey under truthful
+    yield IDENTICAL expected utility (`= 1`).  Discrete-IPV utility-
+    side RET witness. -/
+example :
+    fpsbExpectedUtility 3 (halfShading 3) (halfShading 3) ⟨2, by decide⟩
+        (fun _ => (1/3 : Rat))
+    = vickreyExpectedUtility 3 (fun v => v) (fun v => v) ⟨2, by decide⟩
+        (fun _ => (1/3 : Rat)) := by
+  have h_fpsb : fpsbExpectedUtility 3 (halfShading 3) (halfShading 3)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold fpsbExpectedUtility fpsbUtility halfShading
+    native_decide
+  have h_vickrey : vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold vickreyExpectedUtility vickreyUtility
+    native_decide
+  rw [h_fpsb, h_vickrey]
+
 end AuctionCat
