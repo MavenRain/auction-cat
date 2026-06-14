@@ -544,4 +544,15 @@ example :
   rw [h1, h2]
   norm_num
 
+/-- **Bidder-2 intermediate position** at `n = 3`, `v = 2`, uniform
+    joint prior `1/9`: bidder 2's expected utility is `5/9`,
+    strictly between bidder 3's `1/3` and bidder 1's `1`.  Bidder 2
+    wins ties against bidder 3 (weak ≥) but loses ties against
+    bidder 1 (strict <), placing it intermediate in the asymmetry. -/
+example :
+    vickreyBidder2ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 5 / 9 := by
+  unfold vickreyBidder2ExpectedUtility3 vickreyBidder2Util3
+  native_decide
+
 end AuctionCat
