@@ -138,4 +138,44 @@ theorem fpsb3_bidder3_utility_truthful_val_eq_zero (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- Bidder 2's truncated utility in 3-bidder fpsb-with-reserve.  Same
+    tiebreak as no-reserve PLUS the reserve clearing condition. -/
+def fpsbReserveBidder2Util3 (n : Nat)
+    (r v opp_b1 my_b2 opp_b3 : Fin n) : Fin n :=
+  if opp_b1.val < my_b2.val ∧ my_b2.val ≥ opp_b3.val ∧ my_b2.val ≥ r.val then
+    ⟨v.val - my_b2.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 2 in 3-bidder fpsb-with-reserve gets zero utility
+    at every profile and reserve. -/
+theorem fpsb3Reserve_bidder2_utility_truthful_val_eq_zero (n : Nat)
+    (r v opp_b1 opp_b3 : Fin n) :
+    (fpsbReserveBidder2Util3 n r v opp_b1 v opp_b3).val = 0 := by
+  unfold fpsbReserveBidder2Util3
+  by_cases h :
+      opp_b1.val < v.val ∧ v.val ≥ opp_b3.val ∧ v.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
+/-- Bidder 3's truncated utility in 3-bidder fpsb-with-reserve.  Same
+    tiebreak as no-reserve PLUS the reserve clearing condition. -/
+def fpsbReserveBidder3Util3 (n : Nat)
+    (r v opp_b1 opp_b2 my_b3 : Fin n) : Fin n :=
+  if opp_b1.val < my_b3.val ∧ opp_b2.val < my_b3.val ∧ my_b3.val ≥ r.val then
+    ⟨v.val - my_b3.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 3 in 3-bidder fpsb-with-reserve gets zero utility
+    at every profile and reserve. -/
+theorem fpsb3Reserve_bidder3_utility_truthful_val_eq_zero (n : Nat)
+    (r v opp_b1 opp_b2 : Fin n) :
+    (fpsbReserveBidder3Util3 n r v opp_b1 opp_b2 v).val = 0 := by
+  unfold fpsbReserveBidder3Util3
+  by_cases h :
+      opp_b1.val < v.val ∧ opp_b2.val < v.val ∧ v.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
