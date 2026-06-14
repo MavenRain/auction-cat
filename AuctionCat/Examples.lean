@@ -388,4 +388,20 @@ example :
   fpsb_truthful_expected_utility_zero 3 (fun v => v) ⟨2, by decide⟩
     (fun _ => (1/3 : Rat))
 
+/-- **Trivial Bayes-Nash at maximal reserve**: at `n = 3`, `r = 2`
+    (maximal), any strategy pair is a Bayes-Nash equilibrium of
+    fpsbReserve under any prior — every strategy yields zero
+    utility. -/
+example (s1 s2 : Fin 3 → Fin 3) (p : Fin 3 → Rat) :
+    IsBayesNashFpsbReserve 3 ⟨3 - 1, by decide⟩ s1 s2 p :=
+  fpsbReserve_any_pair_is_bayes_nash_at_max_reserve 3 (by decide) s1 s2 p
+
+/-- **Trivial Bayes-Nash at maximal reserve (3 bidders)**: at `n = 2`,
+    `r = 1` (maximal), any strategy triple is a Bayes-Nash
+    equilibrium of fpsb3Reserve under any joint priors. -/
+example (s1 s2 s3 : Fin 2 → Fin 2) (p23 p13 p12 : Fin (2 * 2) → Rat) :
+    IsBayesNashFpsb3Reserve 2 ⟨2 - 1, by decide⟩ s1 s2 s3 p23 p13 p12 :=
+  fpsb3Reserve_any_triple_is_bayes_nash_at_max_reserve 2 (by decide)
+    s1 s2 s3 p23 p13 p12
+
 end AuctionCat
