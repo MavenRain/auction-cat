@@ -1979,6 +1979,64 @@ theorem vickreyBidder2ExpectedUtility_truthful_ge_fpsbBidder2_truthful
     _ ≤ p v1 * ((vickreyBidder2Util n v2 (s1 v1) v2).val : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v1) h_cast_nn
 
+/-- **Bidder 2 expected (3 bidders)**: vickreyBidder2ExpectedUtility3
+    weakly dominates fpsbBidder2ExpectedUtility3 under truthful play. -/
+theorem vickreyBidder2ExpectedUtility3_truthful_ge_fpsbBidder2_truthful
+    (n : Nat) (s1 s3 : Fin n → Fin n) (v2 : Fin n)
+    (p13 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ p13 v) :
+    vickreyBidder2ExpectedUtility3 n s1 (fun v => v) s3 v2 p13
+    ≥ fpsbBidder2ExpectedUtility3 n s1 (fun v => v) s3 v2 p13 := by
+  rw [fpsb3_bidder2_truthful_expected_utility_zero]
+  unfold vickreyBidder2ExpectedUtility3
+  have h_const_zero : Fin.sumRat (fun _ : Fin (n * n) => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v13
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyBidder2Util3 n v2 (s1 (Fin.first v13)) v2
+                                    (s3 (Fin.second v13))).val
+         : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyBidder2Util3 n v2 (s1 (Fin.first v13)) v2
+                                        (s3 (Fin.second v13))).val
+            : Nat).cast := by rw [Rat.zero_mul]
+    _ ≤ p13 v13
+        * ((vickreyBidder2Util3 n v2 (s1 (Fin.first v13)) v2
+                                      (s3 (Fin.second v13))).val
+          : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v13) h_cast_nn
+
+/-- **Bidder 3 expected (3 bidders)**: vickreyBidder3ExpectedUtility3
+    weakly dominates fpsbBidder3ExpectedUtility3 under truthful play. -/
+theorem vickreyBidder3ExpectedUtility3_truthful_ge_fpsbBidder3_truthful
+    (n : Nat) (s1 s2 : Fin n → Fin n) (v3 : Fin n)
+    (p12 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ p12 v) :
+    vickreyBidder3ExpectedUtility3 n s1 s2 (fun v => v) v3 p12
+    ≥ fpsbBidder3ExpectedUtility3 n s1 s2 (fun v => v) v3 p12 := by
+  rw [fpsb3_bidder3_truthful_expected_utility_zero]
+  unfold vickreyBidder3ExpectedUtility3
+  have h_const_zero : Fin.sumRat (fun _ : Fin (n * n) => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v12
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyBidder3Util3 n v3 (s1 (Fin.first v12))
+                                    (s2 (Fin.second v12)) v3).val
+         : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyBidder3Util3 n v3 (s1 (Fin.first v12))
+                                        (s2 (Fin.second v12)) v3).val
+            : Nat).cast := by rw [Rat.zero_mul]
+    _ ≤ p12 v12
+        * ((vickreyBidder3Util3 n v3 (s1 (Fin.first v12))
+                                      (s2 (Fin.second v12)) v3).val
+          : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v12) h_cast_nn
+
 /-- **Pipeline-level bidder-2 truthful zero utility for fpsbAuction**. -/
 theorem auctionExpectedBidder2Util_fpsbAuction_eq_zero (n : Nat)
     (prior : Fin n → Rat) (v2 : Fin n) :
