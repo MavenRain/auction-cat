@@ -524,4 +524,51 @@ theorem fpsb3Reserve_bidder3_allocated_iff_winner (n : Nat) (r : Fin n)
   · simp [hw3]
   · simp [hw3]
 
+/-- **At reserve `r = 0`, spsbReserve allocation equals spsb allocation
+    at every joint bid**.  Non-binding reserve doesn't change the
+    allocation rule. -/
+theorem spsbReserve_zero_allocation_eq_spsb (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n)) :
+    (Fin.first (Fin.first (spsbReserveFn n ⟨0, hn⟩ i))).val
+    = (Fin.first (Fin.first (spsbFn n i))).val := by
+  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  · have h_r : (Fin.first i).val ≥ (⟨0, hn⟩ : Fin n).val := Nat.zero_le _
+    rw [(spsbReserve_bidder1_allocated_iff_winner n ⟨0, hn⟩ i).mpr ⟨h, h_r⟩,
+        (spsb_bidder1_allocated_iff_higher_bid n i).mpr h]
+  · have h_neg_spsb : (Fin.first (Fin.first (spsbFn n i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((spsb_bidder1_allocated_iff_higher_bid n i).mp hcontra)
+    have h_neg_reserve :
+        (Fin.first (Fin.first (spsbReserveFn n ⟨0, hn⟩ i))).val ≠ 1 := by
+      intro hcontra
+      have ⟨hb, _⟩ := (spsbReserve_bidder1_allocated_iff_winner
+                        n ⟨0, hn⟩ i).mp hcontra
+      exact h hb
+    have hb1 := (Fin.first (Fin.first (spsbFn n i))).isLt
+    have hb2 := (Fin.first (Fin.first (spsbReserveFn n ⟨0, hn⟩ i))).isLt
+    omega
+
+/-- **At reserve `r = 0`, fpsbReserve allocation equals fpsb allocation
+    at every joint bid**. -/
+theorem fpsbReserve_zero_allocation_eq_fpsb (n : Nat) (hn : 0 < n)
+    (i : Fin (n * n)) :
+    (Fin.first (Fin.first (fpsbReserveFn n ⟨0, hn⟩ i))).val
+    = (Fin.first (Fin.first (fpsbFn n i))).val := by
+  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  · have h_r : (Fin.first i).val ≥ (⟨0, hn⟩ : Fin n).val := Nat.zero_le _
+    rw [(fpsbReserve_bidder1_allocated_iff_winner n ⟨0, hn⟩ i).mpr ⟨h, h_r⟩,
+        (fpsb_bidder1_allocated_iff_higher_bid n i).mpr h]
+  · have h_neg_fpsb : (Fin.first (Fin.first (fpsbFn n i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((fpsb_bidder1_allocated_iff_higher_bid n i).mp hcontra)
+    have h_neg_reserve :
+        (Fin.first (Fin.first (fpsbReserveFn n ⟨0, hn⟩ i))).val ≠ 1 := by
+      intro hcontra
+      have ⟨hb, _⟩ := (fpsbReserve_bidder1_allocated_iff_winner
+                        n ⟨0, hn⟩ i).mp hcontra
+      exact h hb
+    have hb1 := (Fin.first (Fin.first (fpsbFn n i))).isLt
+    have hb2 := (Fin.first (Fin.first (fpsbReserveFn n ⟨0, hn⟩ i))).isLt
+    omega
+
 end AuctionCat
