@@ -171,6 +171,22 @@ theorem dutch3_is_revenue_equivalent_fpsb3 (n : Nat)
   the standard "fpsb yields higher revenue than spsb pointwise under
   truthful play" observation. -/
 
+/-- **Revenue invariance under bidder permutation (3 bidders)**:
+    cyclic permutation `(p1, p2, p3) → (p2, p3, p1)` preserves the
+    total revenue, since `outcomeRevenue3` is the sum of three
+    prices.  Captures the bidder-relabeling invariance at three
+    bidders. -/
+theorem outcomeRevenue3_cyclic_symmetric (n : Nat)
+    (i : Fin (((2 * n) * (2 * n)) * (2 * n))) (h_pos : 0 < 2 * n)
+    (h_pos2 : 0 < (2 * n) * (2 * n)) :
+    outcomeRevenue3 n i
+    = outcomeRevenue3 n
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i)) (Fin.second i))
+                   (Fin.first (Fin.first i))) := by
+  unfold outcomeRevenue3
+  simp only [Fin.first_pair, Fin.second_pair h_pos, Fin.second_pair h_pos2]
+  omega
+
 /-- **fpsb3 and spsb3 have IDENTICAL allocation rules**: bidder 1's
     allocation in fpsb3 equals bidder 1's allocation in spsb3 at
     every joint bid (both use `b1 ≥ b2 ∧ b1 ≥ b3` with tiebreak to
