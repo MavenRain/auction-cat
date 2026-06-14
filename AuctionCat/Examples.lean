@@ -451,4 +451,18 @@ example :
   rw [h]
   norm_num
 
+/-- **3-bidder bidder-3 strict-positivity** for vickrey3 at `n = 3`,
+    uniform joint prior `1/9`, `v3 = 2`: vickreyBidder3ExpectedUtility3
+    > 0.  Bidder 3 with top valuation gets positive expected surplus
+    in the 3-bidder Vickrey auction. -/
+example :
+    0 < vickreyBidder3ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) := by
+  have h : vickreyBidder3ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 1 / 3 := by
+    unfold vickreyBidder3ExpectedUtility3 vickreyBidder3Util3
+    native_decide
+  rw [h]
+  norm_num
+
 end AuctionCat
