@@ -3,6 +3,7 @@ import AuctionCat.Revenue
 import AuctionCat.Revenue3
 import AuctionCat.ExpectedRevenueComparison
 import AuctionCat.BayesNashPipeline
+import AuctionCat.Envelope
 
 /-!
 # AuctionCat.Examples
@@ -553,6 +554,40 @@ example :
     vickreyBidder2ExpectedUtility3 3 (fun v => v) (fun v => v)
         (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 5 / 9 := by
   unfold vickreyBidder2ExpectedUtility3 vickreyBidder2Util3
+  native_decide
+
+/-! ## Envelope theorem concrete verification
+
+  Discrete IPV at n=3 uniform: bidder 1's expected allocation,
+  payment, equilibrium utility, and envelope integral all compute
+  cleanly.  Numeric check of `vickrey_envelope` at small n. -/
+
+/-- Vickrey allocation at n=3 uniform, v1=2: P(v2 ≤ 2) = 1. -/
+example :
+    vickreyAllocation 3 (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ = 1 := by
+  unfold vickreyAllocation
+  native_decide
+
+/-- Vickrey expected payment at n=3 uniform, v1=2:
+    Σ_{v2 ≤ 2} (1/3) * v2 = 1. -/
+example :
+    vickreyExpectedPayment 3 (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ = 1 := by
+  unfold vickreyExpectedPayment
+  native_decide
+
+/-- Vickrey equilibrium utility at n=3 uniform, v1=2: same as
+    bidder-1 expected utility we already verified. -/
+example :
+    vickreyEqUtility 3 (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ = 1 := by
+  unfold vickreyEqUtility vickreyUtility
+  native_decide
+
+/-- **Envelope integral concrete check** at n=3 uniform, v1=2:
+    Σ_{t < 2} vickreyAllocation(t) = 1/3 + 2/3 = 1.  Matches the
+    equilibrium utility per the envelope theorem. -/
+example :
+    vickreyEnvelopeIntegral 3 (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ = 1 := by
+  unfold vickreyEnvelopeIntegral vickreyAllocation
   native_decide
 
 /-- **Three-way utility chain at `n = 3`, `v = 2`, uniform joint prior
