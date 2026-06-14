@@ -99,4 +99,43 @@ theorem fpsb3Reserve_utility_truthful_val_eq_zero (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- Bidder 2's truncated utility in a 3-bidder fpsb auction.  Bidder 2
+    wins iff `opp_b1 < my_b2` (strict — tiebreak gives bidder 1
+    priority) AND `my_b2 ≥ opp_b3` (weak — bidder 2 has priority over
+    3); pays own bid on win. -/
+def fpsbBidder2Util3 (n : Nat) (v opp_b1 my_b2 opp_b3 : Fin n) : Fin n :=
+  if opp_b1.val < my_b2.val ∧ my_b2.val ≥ opp_b3.val then
+    ⟨v.val - my_b2.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 2 in 3-bidder fpsb gets zero utility at every
+    valuation profile. -/
+theorem fpsb3_bidder2_utility_truthful_val_eq_zero (n : Nat)
+    (v opp_b1 opp_b3 : Fin n) :
+    (fpsbBidder2Util3 n v opp_b1 v opp_b3).val = 0 := by
+  unfold fpsbBidder2Util3
+  by_cases h : opp_b1.val < v.val ∧ v.val ≥ opp_b3.val
+  · simp [h]
+  · simp [h]
+
+/-- Bidder 3's truncated utility in a 3-bidder fpsb auction.  Bidder 3
+    wins iff both `opp_b1 < my_b3` AND `opp_b2 < my_b3` (strict on
+    both — bidders 1 and 2 win ties).  Pays own bid on win. -/
+def fpsbBidder3Util3 (n : Nat) (v opp_b1 opp_b2 my_b3 : Fin n) : Fin n :=
+  if opp_b1.val < my_b3.val ∧ opp_b2.val < my_b3.val then
+    ⟨v.val - my_b3.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 3 in 3-bidder fpsb gets zero utility at every
+    valuation profile. -/
+theorem fpsb3_bidder3_utility_truthful_val_eq_zero (n : Nat)
+    (v opp_b1 opp_b2 : Fin n) :
+    (fpsbBidder3Util3 n v opp_b1 opp_b2 v).val = 0 := by
+  unfold fpsbBidder3Util3
+  by_cases h : opp_b1.val < v.val ∧ opp_b2.val < v.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
