@@ -84,6 +84,17 @@ def expectedRevenue (n : Nat)
   the lowest.  Hence at every outcome, the first-price revenue is
   weakly greater than the second-price revenue. -/
 
+/-- **Revenue symmetry under bidder swap**: swapping bidder 1 and
+    bidder 2's outcomes preserves the total revenue, since revenue is
+    the sum of both bidders' prices. -/
+theorem outcomeRevenue_swap_symmetric (n : Nat)
+    (i : Fin ((2 * n) * (2 * n))) (h_pos : 0 < 2 * n) :
+    outcomeRevenue n i
+    = outcomeRevenue n (Fin.pair (Fin.second i) (Fin.first i)) := by
+  unfold outcomeRevenue
+  simp only [Fin.first_pair, Fin.second_pair h_pos]
+  omega
+
 /-- **fpsb and spsb have IDENTICAL allocation rules**: bidder 1
     gets the item in fpsb iff bidder 1 gets the item in spsb (both
     formats use `b1 ≥ b2 → bidder 1 wins`).  The two formats differ
