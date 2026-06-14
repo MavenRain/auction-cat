@@ -600,6 +600,66 @@ theorem spsb3Reserve_zero_allocation_eq_spsb3 (n : Nat) (hn : 0 < n)
                   (spsb3ReserveFn n ⟨0, hn⟩ i)))).isLt
     omega
 
+/-- Bidder 2's allocation under fpsb3Reserve equals bidder 2's
+    allocation under spsb3Reserve at every joint bid (3 bidders). -/
+theorem fpsb3Reserve_spsb3Reserve_same_bidder2_allocation (n : Nat) (r : Fin n)
+    (i : Fin ((n * n) * n)) :
+    (Fin.first (Fin.second (Fin.first (fpsb3ReserveFn n r i)))).val
+    = (Fin.first (Fin.second (Fin.first (spsb3ReserveFn n r i)))).val := by
+  by_cases h :
+      ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+        ∧ (Fin.first (Fin.first i)).val ≥ r.val)
+      ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+      ∧ (Fin.second (Fin.first i)).val ≥ r.val
+  · rw [(fpsb3Reserve_bidder2_allocated_iff_winner n r i).mpr h,
+        (spsb3Reserve_bidder2_allocated_iff_winner n r i).mpr h]
+  · have h_neg_fpsb :
+        (Fin.first (Fin.second (Fin.first (fpsb3ReserveFn n r i)))).val
+        ≠ 1 := by
+      intro hcontra
+      exact h ((fpsb3Reserve_bidder2_allocated_iff_winner n r i).mp hcontra)
+    have h_neg_spsb :
+        (Fin.first (Fin.second (Fin.first (spsb3ReserveFn n r i)))).val
+        ≠ 1 := by
+      intro hcontra
+      exact h ((spsb3Reserve_bidder2_allocated_iff_winner n r i).mp hcontra)
+    have hb1 := (Fin.first (Fin.second
+                  (Fin.first (fpsb3ReserveFn n r i)))).isLt
+    have hb2 := (Fin.first (Fin.second
+                  (Fin.first (spsb3ReserveFn n r i)))).isLt
+    omega
+
+/-- Bidder 3's allocation under fpsb3Reserve equals bidder 3's
+    allocation under spsb3Reserve at every joint bid (3 bidders). -/
+theorem fpsb3Reserve_spsb3Reserve_same_bidder3_allocation (n : Nat) (r : Fin n)
+    (i : Fin ((n * n) * n)) :
+    (Fin.first (Fin.second (fpsb3ReserveFn n r i))).val
+    = (Fin.first (Fin.second (spsb3ReserveFn n r i))).val := by
+  by_cases h :
+      ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+        ∧ (Fin.first (Fin.first i)).val ≥ r.val)
+      ∧ ¬(¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+            ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+            ∧ (Fin.first (Fin.first i)).val ≥ r.val)
+          ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+          ∧ (Fin.second (Fin.first i)).val ≥ r.val)
+      ∧ (Fin.second i).val ≥ r.val
+  · rw [(fpsb3Reserve_bidder3_allocated_iff_winner n r i).mpr h,
+        (spsb3Reserve_bidder3_allocated_iff_winner n r i).mpr h]
+  · have h_neg_fpsb :
+        (Fin.first (Fin.second (fpsb3ReserveFn n r i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((fpsb3Reserve_bidder3_allocated_iff_winner n r i).mp hcontra)
+    have h_neg_spsb :
+        (Fin.first (Fin.second (spsb3ReserveFn n r i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((spsb3Reserve_bidder3_allocated_iff_winner n r i).mp hcontra)
+    have hb1 := (Fin.first (Fin.second (fpsb3ReserveFn n r i))).isLt
+    have hb2 := (Fin.first (Fin.second (spsb3ReserveFn n r i))).isLt
+    omega
+
 /-- **At reserve `r = 0`, fpsb3Reserve allocation equals fpsb3
     allocation at every joint bid** (3 bidders). -/
 theorem fpsb3Reserve_zero_allocation_eq_fpsb3 (n : Nat) (hn : 0 < n)
