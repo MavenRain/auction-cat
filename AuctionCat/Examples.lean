@@ -437,4 +437,18 @@ example :
   rw [h_rhs] at h_le
   exact absurd h_le (by norm_num)
 
+/-- **Bidder-2 strict-positivity** for vickrey at `n = 3`, uniform
+    prior `1/3`, `v2 = 2`: vickreyBidder2ExpectedUtility = 1 > 0.
+    By symmetry across bidders, top valuation yields positive
+    expected surplus from either bidder's perspective in Vickrey. -/
+example :
+    0 < vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) := by
+  have h : vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold vickreyBidder2ExpectedUtility vickreyBidder2Util
+    native_decide
+  rw [h]
+  norm_num
+
 end AuctionCat
