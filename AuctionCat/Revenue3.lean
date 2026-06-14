@@ -171,6 +171,29 @@ theorem dutch3_is_revenue_equivalent_fpsb3 (n : Nat)
   the standard "fpsb yields higher revenue than spsb pointwise under
   truthful play" observation. -/
 
+/-- **fpsb3 and spsb3 have IDENTICAL allocation rules**: bidder 1's
+    allocation in fpsb3 equals bidder 1's allocation in spsb3 at
+    every joint bid (both use `b1 ≥ b2 ∧ b1 ≥ b3` with tiebreak to
+    bidder 1).  The two formats differ only in PRICING. -/
+theorem fpsb3_spsb3_same_allocation (n : Nat) (i : Fin (n * n * n)) :
+    (Fin.first (Fin.first (Fin.first (fpsb3Fn n i)))).val
+    = (Fin.first (Fin.first (Fin.first (spsb3Fn n i)))).val := by
+  by_cases h : (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+              ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+  · rw [(fpsb3_bidder1_allocated_iff_winner n i).mpr h,
+        (spsb3_bidder1_allocated_iff_winner n i).mpr h]
+  · have h_fpsb : (Fin.first (Fin.first (Fin.first (fpsb3Fn n i)))).val
+                  ≠ 1 := by
+      intro hcontra
+      exact h ((fpsb3_bidder1_allocated_iff_winner n i).mp hcontra)
+    have h_spsb : (Fin.first (Fin.first (Fin.first (spsb3Fn n i)))).val
+                  ≠ 1 := by
+      intro hcontra
+      exact h ((spsb3_bidder1_allocated_iff_winner n i).mp hcontra)
+    have hb1 := (Fin.first (Fin.first (Fin.first (fpsb3Fn n i)))).isLt
+    have hb2 := (Fin.first (Fin.first (Fin.first (spsb3Fn n i)))).isLt
+    omega
+
 /-- Pointwise revenue comparison at three bidders: first-price ≥
     second-price at every joint-bid input.  Both formats put exactly
     one bidder paying (the winner); for fpsb that is the winner's own
