@@ -133,4 +133,24 @@ theorem fpsb_bidder2_utility_truthful_val_eq_zero (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- Bidder 2's truncated utility in a 2-bidder fpsb-with-reserve
+    auction.  Bidder 2 wins iff `my_bid > opp_bid` (strict tiebreak)
+    AND `my_bid ≥ r`.  On win, utility = `v - my_bid` (Nat monus);
+    else 0. -/
+def fpsbReserveBidder2Util (n : Nat) (r v opp_bid my_bid : Fin n) : Fin n :=
+  if opp_bid.val < my_bid.val ∧ my_bid.val ≥ r.val then
+    ⟨v.val - my_bid.val, by have := v.isLt; omega⟩
+  else
+    ⟨0, by have := v.isLt; omega⟩
+
+/-- Truthful bidder 2 in fpsb-with-reserve gets zero utility at every
+    profile and reserve. -/
+theorem fpsbReserve_bidder2_utility_truthful_val_eq_zero (n : Nat)
+    (r v opp_bid : Fin n) :
+    (fpsbReserveBidder2Util n r v opp_bid v).val = 0 := by
+  unfold fpsbReserveBidder2Util
+  by_cases h : opp_bid.val < v.val ∧ v.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
