@@ -426,6 +426,69 @@ theorem fpsbReserve_any_pair_is_bayes_nash_at_max_reserve (n : Nat)
   ⟨fpsbReserve_any_strategy_best_response_at_max_reserve n hn s1 s2 p,
    fpsbReserve_any_strategy_best_response_at_max_reserve n hn s2 s1 p⟩
 
+/-- Bidder 1's expected utility in a 3-bidder fpsbReserve auction. -/
+def fpsbReserveExpectedUtility3 (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n) (v1 : Fin n)
+    (p23 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v23 : Fin (n * n) =>
+    p23 v23 *
+      ((fpsbReserveUtility3 n r v1 (s1 v1) (s2 (Fin.first v23))
+                                    (s3 (Fin.second v23))).val
+       : Nat).cast)
+
+/-- Strategy `s1` is a *best response* in 3-bidder fpsbReserve. -/
+def IsBestResponseFpsb3Reserve (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n) (p23 : Fin (n * n) → Rat) : Prop :=
+  ∀ (s1' : Fin n → Fin n) (v1 : Fin n),
+    fpsbReserveExpectedUtility3 n r s1 s2 s3 v1 p23
+    ≥ fpsbReserveExpectedUtility3 n r s1' s2 s3 v1 p23
+
+/-- A profile `(s1, s2, s3)` is a *Bayes-Nash equilibrium* in
+    3-bidder fpsbReserve. -/
+def IsBayesNashFpsb3Reserve (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n) (p23 p13 p12 : Fin (n * n) → Rat) : Prop :=
+  IsBestResponseFpsb3Reserve n r s1 s2 s3 p23
+  ∧ IsBestResponseFpsb3Reserve n r s2 s1 s3 p13
+  ∧ IsBestResponseFpsb3Reserve n r s3 s1 s2 p12
+
+/-- **At maximal reserve, every 3-bidder fpsbReserve strategy yields
+    zero expected utility** for bidder 1. -/
+theorem fpsb3Reserve_expected_utility_max_reserve_zero (n : Nat) (hn : 0 < n)
+    (s1 s2 s3 : Fin n → Fin n) (v1 : Fin n) (p23 : Fin (n * n) → Rat) :
+    fpsbReserveExpectedUtility3 n ⟨n - 1, by omega⟩ s1 s2 s3 v1 p23 = 0 := by
+  unfold fpsbReserveExpectedUtility3
+  have h : ∀ v23 : Fin (n * n),
+      p23 v23 * ((fpsbReserveUtility3 n ⟨n - 1, by omega⟩ v1 (s1 v1)
+                                          (s2 (Fin.first v23))
+                                          (s3 (Fin.second v23))).val
+                : Nat).cast = 0 := by
+    intro v23
+    rw [fpsb3Reserve_utility_max_reserve_val_eq_zero n hn]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- **At maximal reserve, every strategy is trivially a best response**
+    in 3-bidder fpsbReserve. -/
+theorem fpsb3Reserve_any_strategy_best_response_at_max_reserve (n : Nat)
+    (hn : 0 < n) (s1 s2 s3 : Fin n → Fin n) (p23 : Fin (n * n) → Rat) :
+    IsBestResponseFpsb3Reserve n ⟨n - 1, by omega⟩ s1 s2 s3 p23 := by
+  intro s1' v1
+  rw [fpsb3Reserve_expected_utility_max_reserve_zero n hn,
+      fpsb3Reserve_expected_utility_max_reserve_zero n hn]
+  exact Rat.le_refl
+
+/-- **Trivial Bayes-Nash at maximal reserve (3 bidders)**: at
+    `r = n - 1`, `(s1, s2, s3)` is a Bayes-Nash equilibrium for ANY
+    strategies and priors. -/
+theorem fpsb3Reserve_any_triple_is_bayes_nash_at_max_reserve (n : Nat)
+    (hn : 0 < n) (s1 s2 s3 : Fin n → Fin n)
+    (p23 p13 p12 : Fin (n * n) → Rat) :
+    IsBayesNashFpsb3Reserve n ⟨n - 1, by omega⟩ s1 s2 s3 p23 p13 p12 :=
+  ⟨fpsb3Reserve_any_strategy_best_response_at_max_reserve n hn s1 s2 s3 p23,
+   fpsb3Reserve_any_strategy_best_response_at_max_reserve n hn s2 s1 s3 p13,
+   fpsb3Reserve_any_strategy_best_response_at_max_reserve n hn s3 s1 s2 p12⟩
+
 /-- Bidder 1's expected utility in a 3-bidder fpsb-with-reserve
     auction. -/
 def fpsbReserveExpectedUtility3 (n : Nat) (r : Fin n)

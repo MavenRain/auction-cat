@@ -99,6 +99,21 @@ theorem fpsb3Reserve_utility_truthful_val_eq_zero (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- **At maximal reserve `r = n - 1`, every fpsb3Reserve strategy
+    yields zero utility for bidder 1** (3 bidders).  Same argument
+    as the 2-bidder case: to win, bidder 1 must bid n - 1; winning
+    yields `v - (n - 1) = 0`. -/
+theorem fpsb3Reserve_utility_max_reserve_val_eq_zero (n : Nat) (hn : 0 < n)
+    (v b1 b2 b3 : Fin n) :
+    (fpsbReserveUtility3 n ⟨n - 1, by omega⟩ v b1 b2 b3).val = 0 := by
+  unfold fpsbReserveUtility3
+  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ b3.val ∧ b1.val ≥ n - 1
+  · simp [h]
+    have hb1 := b1.isLt
+    have hv := v.isLt
+    omega
+  · simp [h]
+
 /-- Bidder 2's truncated utility in a 3-bidder fpsb auction.  Bidder 2
     wins iff `opp_b1 < my_b2` (strict — tiebreak gives bidder 1
     priority) AND `my_b2 ≥ opp_b3` (weak — bidder 2 has priority over
