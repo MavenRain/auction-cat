@@ -211,6 +211,30 @@ theorem fpsb_truthful_not_best_response_n2 :
     h_br (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
   exact absurd h_le (not_le_of_lt fpsb_truthful_strictly_dominated_n2)
 
+/-- **(Truthful, truthful) is NOT a Bayes-Nash equilibrium of fpsb at
+    n=2** under the prior concentrated at `v = 0`.  Bidder 1's
+    expected truthful utility is 0 (by `fpsb_truthful_expected_utility_zero`),
+    while their expected zero-bid deviation utility at `v1 = 1` is 1
+    (winner pays 0 since opponent bids `0` truthfully under this
+    prior).  This breaks the truthful best-response side of the BN
+    conjunction. -/
+theorem fpsb_truthful_truthful_not_bayes_nash_n2 :
+    ¬ IsBayesNashFpsb 2 (fun v => v) (fun v => v)
+        (fun v => if v.val = 0 then 1 else 0) := by
+  intro h_bn
+  have h_br1 := h_bn.1
+  have h_le :=
+    h_br1 (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+  rw [fpsb_truthful_expected_utility_zero] at h_le
+  have h_rhs :
+      fpsbExpectedUtility 2 (fun _ : Fin 2 => ⟨0, by decide⟩)
+        (fun v : Fin 2 => v) ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) = 1 := by
+    unfold fpsbExpectedUtility fpsbUtility
+    native_decide
+  rw [h_rhs] at h_le
+  exact absurd h_le (by norm_num)
+
 /-- Pointwise utility of truthful bidder 1 in fpsb is always zero:
     if `b1 = v` then either the bidder loses (utility = 0) or wins
     and pays own bid = own valuation (utility = `v - v = 0`). -/
