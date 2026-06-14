@@ -342,6 +342,29 @@ theorem expectedRevenue3_spsb3Reserve_zero_eq_spsb3 (n : Nat) (hn : 0 < n)
   intro v
   rw [spsb3Reserve_zero_revenue_eq_spsb3]
 
+/-- **Main allocation format-invariance**: bidder 1's allocation rule
+    is IDENTICAL across the four standard formats {fpsb, spsb} ×
+    {no-reserve, with-reserve} at both bidder counts.  The formats
+    differ only in pricing, not allocation. -/
+theorem allocation_format_invariance_main (n : Nat) (r : Fin n)
+    (i : Fin (n * n)) (i3 : Fin ((n * n) * n)) :
+    -- 2-bidder no-reserve
+    (Fin.first (Fin.first (fpsbFn n i))).val
+      = (Fin.first (Fin.first (spsbFn n i))).val
+    -- 2-bidder with reserve
+    ∧ (Fin.first (Fin.first (fpsbReserveFn n r i))).val
+      = (Fin.first (Fin.first (spsbReserveFn n r i))).val
+    -- 3-bidder no-reserve
+    ∧ (Fin.first (Fin.first (Fin.first (fpsb3Fn n i3)))).val
+      = (Fin.first (Fin.first (Fin.first (spsb3Fn n i3)))).val
+    -- 3-bidder with reserve
+    ∧ (Fin.first (Fin.first (Fin.first (fpsb3ReserveFn n r i3)))).val
+      = (Fin.first (Fin.first (Fin.first (spsb3ReserveFn n r i3)))).val :=
+  ⟨fpsb_spsb_same_allocation n i,
+   fpsbReserve_spsbReserve_same_allocation n r i,
+   fpsb3_spsb3_same_allocation n i3,
+   fpsb3Reserve_spsb3Reserve_same_allocation n r i3⟩
+
 /-! ## Expected-revenue collapse at maximal reserve
 
   At `r = n - 1`, the maximal-reserve pointwise equality
