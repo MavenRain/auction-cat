@@ -418,4 +418,23 @@ example :
   rw [h]
   norm_num
 
+/-- **fpsb (truthful, truthful) is not BN at n=3** under prior
+    concentrated at `v=0`.  Same structure as the n=2 case. -/
+example :
+    ¬ IsBayesNashFpsb 3 (fun v => v) (fun v => v)
+        (fun v => if v.val = 0 then 1 else 0) := by
+  intro h_bn
+  have h_br1 := h_bn.1
+  have h_le :=
+    h_br1 (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+  rw [fpsb_truthful_expected_utility_zero] at h_le
+  have h_rhs :
+      fpsbExpectedUtility 3 (fun _ : Fin 3 => ⟨0, by decide⟩)
+        (fun v : Fin 3 => v) ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) = 1 := by
+    unfold fpsbExpectedUtility fpsbUtility
+    native_decide
+  rw [h_rhs] at h_le
+  exact absurd h_le (by norm_num)
+
 end AuctionCat
