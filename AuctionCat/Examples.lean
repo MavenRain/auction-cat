@@ -515,4 +515,33 @@ example :
   unfold expectedRevenue uniformPrior
   native_decide
 
+/-! ## Bidder-position asymmetry in vickrey3 tiebreak
+
+  At top valuation under uniform joint prior, bidders 1 and 3 face
+  asymmetric expected utility in the 3-bidder Vickrey auction due to
+  the tiebreak structure (bidder 1 wins ties uniformly, bidder 3
+  requires strict outbidding of both opponents).  Bidder 1's
+  advantage shows up as a higher expected surplus. -/
+
+/-- **Bidder-1 vs bidder-3 asymmetry** at `n = 3`, `v = 2`, uniform
+    joint prior `1/9`: bidder 1's expected utility (`1`) strictly
+    exceeds bidder 3's expected utility (`1/3`).  Reason: bidder 1
+    wins all ties uniformly; bidder 3 requires strict outbidding
+    against both opponents. -/
+example :
+    vickreyBidder3ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat))
+    < vickreyExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) := by
+  have h1 : vickreyBidder3ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 1 / 3 := by
+    unfold vickreyBidder3ExpectedUtility3 vickreyBidder3Util3
+    native_decide
+  have h2 : vickreyExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 1 := by
+    unfold vickreyExpectedUtility3 vickreyUtility3
+    native_decide
+  rw [h1, h2]
+  norm_num
+
 end AuctionCat
