@@ -283,4 +283,75 @@ theorem fpsb3Reserve_bidder1_allocated_iff_winner (n : Nat) (r : Fin n)
   · simp [h]
   · simp [h]
 
+/-- **No allocation below reserve** in spsb3Reserve.  When all three
+    bids fall strictly below the reserve, none of the bidders is
+    allocated (a1 = a2 = a3 = 0). -/
+theorem spsb3Reserve_no_allocation_below_reserve (n : Nat) (r : Fin n)
+    (i : Fin ((n * n) * n))
+    (h : (Fin.first (Fin.first i)).val < r.val
+        ∧ (Fin.second (Fin.first i)).val < r.val
+        ∧ (Fin.second i).val < r.val) :
+    (Fin.first (Fin.first (Fin.first (spsb3ReserveFn n r i)))).val = 0
+    ∧ (Fin.first (Fin.second (Fin.first (spsb3ReserveFn n r i)))).val = 0
+    ∧ (Fin.first (Fin.second (spsb3ReserveFn n r i))).val = 0 := by
+  have hnnn : 0 < (n * n) * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold spsb3ReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  obtain ⟨hb1, hb2, hb3⟩ := h
+  have h_neg_w1 : ¬ ((Fin.first (Fin.first i)).val
+                      ≥ (Fin.second (Fin.first i)).val
+                    ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+                    ∧ (Fin.first (Fin.first i)).val ≥ r.val) := by
+    intro ⟨_, _, hr⟩
+    omega
+  have h_neg_w2 : ¬ ((Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+                    ∧ (Fin.second (Fin.first i)).val ≥ r.val) := by
+    intro ⟨_, hr⟩
+    omega
+  have h_neg_w3 : ¬ (Fin.second i).val ≥ r.val := by omega
+  refine ⟨?_, ?_, ?_⟩
+  · simp [h_neg_w1]
+  · simp [h_neg_w1, h_neg_w2]
+  · simp [h_neg_w1, h_neg_w2, h_neg_w3]
+
+/-- **No allocation below reserve** in fpsb3Reserve.  Same as
+    spsb3Reserve. -/
+theorem fpsb3Reserve_no_allocation_below_reserve (n : Nat) (r : Fin n)
+    (i : Fin ((n * n) * n))
+    (h : (Fin.first (Fin.first i)).val < r.val
+        ∧ (Fin.second (Fin.first i)).val < r.val
+        ∧ (Fin.second i).val < r.val) :
+    (Fin.first (Fin.first (Fin.first (fpsb3ReserveFn n r i)))).val = 0
+    ∧ (Fin.first (Fin.second (Fin.first (fpsb3ReserveFn n r i)))).val = 0
+    ∧ (Fin.first (Fin.second (fpsb3ReserveFn n r i))).val = 0 := by
+  have hnnn : 0 < (n * n) * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
+  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
+  have h2  : (0 : Nat) < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold fpsb3ReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  obtain ⟨hb1, hb2, hb3⟩ := h
+  have h_neg_w1 : ¬ ((Fin.first (Fin.first i)).val
+                      ≥ (Fin.second (Fin.first i)).val
+                    ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+                    ∧ (Fin.first (Fin.first i)).val ≥ r.val) := by
+    intro ⟨_, _, hr⟩
+    omega
+  have h_neg_w2 : ¬ ((Fin.second (Fin.first i)).val ≥ (Fin.second i).val
+                    ∧ (Fin.second (Fin.first i)).val ≥ r.val) := by
+    intro ⟨_, hr⟩
+    omega
+  have h_neg_w3 : ¬ (Fin.second i).val ≥ r.val := by omega
+  refine ⟨?_, ?_, ?_⟩
+  · simp [h_neg_w1]
+  · simp [h_neg_w1, h_neg_w2]
+  · simp [h_neg_w1, h_neg_w2, h_neg_w3]
+
 end AuctionCat
