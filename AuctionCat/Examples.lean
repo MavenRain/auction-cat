@@ -372,4 +372,20 @@ example :
   auctionExpectedBidder1Util3_fpsb3Auction_eq_zero 3
     (fun _ => (1/9 : Rat)) ⟨2, by decide⟩
 
+/-- **Kernel-level strict-gap numeric witness** at `n = 3`, uniform
+    prior `1/3`, `v1 = 2`: kernel-level vickreyExpectedUtility yields
+    `1` (the integer-valued sum collapses by the uniform-1/3
+    weighting), while fpsbExpectedUtility yields `0`. -/
+example :
+    vickreyExpectedUtility 3 (fun v => v) (fun v => v) ⟨2, by decide⟩
+      (fun _ => (1/3 : Rat)) = 1 := by
+  unfold vickreyExpectedUtility vickreyUtility
+  native_decide
+
+example :
+    fpsbExpectedUtility 3 (fun v => v) (fun v => v) ⟨2, by decide⟩
+      (fun _ => (1/3 : Rat)) = 0 :=
+  fpsb_truthful_expected_utility_zero 3 (fun v => v) ⟨2, by decide⟩
+    (fun _ => (1/3 : Rat))
+
 end AuctionCat
