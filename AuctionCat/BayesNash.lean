@@ -375,6 +375,21 @@ theorem fpsbReserve_truthful_expected_utility_zero (n : Nat) (r : Fin n)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- Strategy `s1` is a *best response* to `s2` in the 2-bidder fpsb-
+    with-reserve auction at reserve `r` and prior `p`. -/
+def IsBestResponseFpsbReserve (n : Nat) (r : Fin n)
+    (s1 s2 : Fin n → Fin n) (p : Fin n → Rat) : Prop :=
+  ∀ (s1' : Fin n → Fin n) (v1 : Fin n),
+    fpsbReserveExpectedUtility n r s1 s2 v1 p
+    ≥ fpsbReserveExpectedUtility n r s1' s2 v1 p
+
+/-- A pair `(s1, s2)` is a *Bayes-Nash equilibrium* in the 2-bidder
+    fpsbReserve auction at reserve `r` under prior `p`. -/
+def IsBayesNashFpsbReserve (n : Nat) (r : Fin n)
+    (s1 s2 : Fin n → Fin n) (p : Fin n → Rat) : Prop :=
+  IsBestResponseFpsbReserve n r s1 s2 p
+  ∧ IsBestResponseFpsbReserve n r s2 s1 p
+
 /-- Bidder 1's expected utility in a 3-bidder fpsb-with-reserve
     auction. -/
 def fpsbReserveExpectedUtility3 (n : Nat) (r : Fin n)
