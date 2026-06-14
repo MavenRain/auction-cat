@@ -78,6 +78,46 @@ def spsbReserve (n : Nat) (r : Fin n) :
     StochasticMatrix (n * n) ((2 * n) * (2 * n)) :=
   detMatrix (spsbReserveFn n r)
 
+/-- **Allocation rule** of spsbReserve.  Bidder 1 wins iff `b1 ≥ b2`
+    AND `b1 ≥ r` (clears reserve).  Two regimes: standard allocation
+    when reserve clears, no allocation otherwise. -/
+theorem spsbReserve_bidder1_allocated_iff_winner (n : Nat) (r : Fin n)
+    (i : Fin (n * n)) :
+    (Fin.first (Fin.first (spsbReserveFn n r i))).val = 1
+    ↔ (Fin.first i).val ≥ (Fin.second i).val
+      ∧ (Fin.first i).val ≥ r.val := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold spsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+              ∧ (Fin.first i).val ≥ r.val
+  · simp [h]
+  · simp [h]
+
+/-- **Allocation rule** of fpsbReserve.  Same as spsbReserve: bidder 1
+    wins iff `b1 ≥ b2` AND `b1 ≥ r`.  Identical allocation across
+    both reserve formats; they differ only in pricing. -/
+theorem fpsbReserve_bidder1_allocated_iff_winner (n : Nat) (r : Fin n)
+    (i : Fin (n * n)) :
+    (Fin.first (Fin.first (fpsbReserveFn n r i))).val = 1
+    ↔ (Fin.first i).val ≥ (Fin.second i).val
+      ∧ (Fin.first i).val ≥ r.val := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold fpsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+              ∧ (Fin.first i).val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 /-- Underlying allocation+payment function for three-bidder second-price
     sealed-bid with reserve price `r`.  Winner pays
     `max r (second-highest others' bid)`. -/
