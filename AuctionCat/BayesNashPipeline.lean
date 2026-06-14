@@ -2332,4 +2332,56 @@ theorem spsb_ge_fpsb_pipeline_main (n : Nat) (r : Fin n)
    auctionExpectedBidder1Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
      n r prior23 h_nn23 v1⟩
 
+/-- **Comprehensive spsb ≥ fpsb pipeline results**.  Across all ten
+    bidder-position × bidder-count × reserve combinations covered
+    in this file, the spsb pipeline weakly dominates the fpsb
+    pipeline under truthful play and any nonneg prior. -/
+theorem spsb_ge_fpsb_pipeline_full (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) (prior_a prior_b : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ prior v)
+    (h_nn_a : ∀ v, 0 ≤ prior_a v) (h_nn_b : ∀ v, 0 ≤ prior_b v)
+    (v : Fin n) :
+    -- 2-bidder no-reserve
+    auctionExpectedBidder1Util n (spsbAuction n) prior v
+      ≥ auctionExpectedBidder1Util n (fpsbAuction n) prior v
+    ∧ auctionExpectedBidder2Util n (spsbAuction n) prior v
+      ≥ auctionExpectedBidder2Util n (fpsbAuction n) prior v
+    -- 2-bidder with reserve
+    ∧ auctionExpectedBidder1Util n (spsbReserveAuction n r) prior v
+      ≥ auctionExpectedBidder1Util n (fpsbReserveAuction n r) prior v
+    ∧ auctionExpectedBidder2Util n (spsbReserveAuction n r) prior v
+      ≥ auctionExpectedBidder2Util n (fpsbReserveAuction n r) prior v
+    -- 3-bidder no-reserve
+    ∧ auctionExpectedBidder1Util3 n (spsb3Auction n) prior_a v
+      ≥ auctionExpectedBidder1Util3 n (fpsb3Auction n) prior_a v
+    ∧ auctionExpectedBidder2Util3 n (spsb3Auction n) prior_a v
+      ≥ auctionExpectedBidder2Util3 n (fpsb3Auction n) prior_a v
+    ∧ auctionExpectedBidder3Util3 n (spsb3Auction n) prior_b v
+      ≥ auctionExpectedBidder3Util3 n (fpsb3Auction n) prior_b v
+    -- 3-bidder with reserve
+    ∧ auctionExpectedBidder1Util3 n (spsb3ReserveAuction n r) prior_a v
+      ≥ auctionExpectedBidder1Util3 n (fpsb3ReserveAuction n r) prior_a v
+    ∧ auctionExpectedBidder2Util3 n (spsb3ReserveAuction n r) prior_a v
+      ≥ auctionExpectedBidder2Util3 n (fpsb3ReserveAuction n r) prior_a v
+    ∧ auctionExpectedBidder3Util3 n (spsb3ReserveAuction n r) prior_b v
+      ≥ auctionExpectedBidder3Util3 n (fpsb3ReserveAuction n r) prior_b v :=
+  ⟨auctionExpectedBidder1Util_spsbAuction_ge_fpsbAuction n prior h_nn v,
+   auctionExpectedBidder2Util_spsbAuction_ge_fpsbAuction n prior h_nn v,
+   auctionExpectedBidder1Util_spsbReserveAuction_ge_fpsbReserveAuction
+     n r prior h_nn v,
+   auctionExpectedBidder2Util_spsbReserveAuction_ge_fpsbReserveAuction
+     n r prior h_nn v,
+   auctionExpectedBidder1Util3_spsb3Auction_ge_fpsb3Auction
+     n prior_a h_nn_a v,
+   auctionExpectedBidder2Util3_spsb3Auction_ge_fpsb3Auction
+     n prior_a h_nn_a v,
+   auctionExpectedBidder3Util3_spsb3Auction_ge_fpsb3Auction
+     n prior_b h_nn_b v,
+   auctionExpectedBidder1Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
+     n r prior_a h_nn_a v,
+   auctionExpectedBidder2Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
+     n r prior_a h_nn_a v,
+   auctionExpectedBidder3Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
+     n r prior_b h_nn_b v⟩
+
 end AuctionCat
