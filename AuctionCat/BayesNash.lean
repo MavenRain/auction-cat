@@ -446,6 +446,56 @@ theorem fpsbReserve_bidder2_truthful_expected_utility_zero (n : Nat)
   rw [Fin.sumRat_congr h]
   exact Fin.sumRat_const_zero
 
+/-- Bidder 2's expected utility in a 3-bidder fpsb auction. -/
+def fpsbBidder2ExpectedUtility3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (v2 : Fin n) (p13 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v13 : Fin (n * n) =>
+    p13 v13 *
+      ((fpsbBidder2Util3 n v2 (s1 (Fin.first v13)) (s2 v2)
+                              (s3 (Fin.second v13))).val
+       : Nat).cast)
+
+/-- **Bidder 2's truthful expected utility in 3-bidder fpsb is zero
+    under any joint prior and opponent strategies**. -/
+theorem fpsb3_bidder2_truthful_expected_utility_zero (n : Nat)
+    (s1 s3 : Fin n → Fin n) (v2 : Fin n) (p13 : Fin (n * n) → Rat) :
+    fpsbBidder2ExpectedUtility3 n s1 (fun v => v) s3 v2 p13 = 0 := by
+  unfold fpsbBidder2ExpectedUtility3
+  have h : ∀ v13 : Fin (n * n),
+      p13 v13 * ((fpsbBidder2Util3 n v2 (s1 (Fin.first v13)) v2
+                                          (s3 (Fin.second v13))).val
+                : Nat).cast = 0 := by
+    intro v13
+    rw [fpsb3_bidder2_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- Bidder 3's expected utility in a 3-bidder fpsb auction. -/
+def fpsbBidder3ExpectedUtility3 (n : Nat) (s1 s2 s3 : Fin n → Fin n)
+    (v3 : Fin n) (p12 : Fin (n * n) → Rat) : Rat :=
+  Fin.sumRat (fun v12 : Fin (n * n) =>
+    p12 v12 *
+      ((fpsbBidder3Util3 n v3 (s1 (Fin.first v12))
+                              (s2 (Fin.second v12)) (s3 v3)).val
+       : Nat).cast)
+
+/-- **Bidder 3's truthful expected utility in 3-bidder fpsb is zero
+    under any joint prior and opponent strategies**. -/
+theorem fpsb3_bidder3_truthful_expected_utility_zero (n : Nat)
+    (s1 s2 : Fin n → Fin n) (v3 : Fin n) (p12 : Fin (n * n) → Rat) :
+    fpsbBidder3ExpectedUtility3 n s1 s2 (fun v => v) v3 p12 = 0 := by
+  unfold fpsbBidder3ExpectedUtility3
+  have h : ∀ v12 : Fin (n * n),
+      p12 v12 * ((fpsbBidder3Util3 n v3 (s1 (Fin.first v12))
+                                          (s2 (Fin.second v12)) v3).val
+                : Nat).cast = 0 := by
+    intro v12
+    rw [fpsb3_bidder3_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 /-! ## Spsb vs fpsb pointwise utility comparison
 
   Under truthful play, Vickrey utility weakly dominates fpsb utility
