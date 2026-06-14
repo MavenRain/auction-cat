@@ -465,4 +465,28 @@ example :
   rw [h]
   norm_num
 
+/-! ## Reserve monotonicity (spsb at n=3 uniform)
+
+  At `n = 3` under uniform prior, raising the reserve from 0 to
+  1 to 2 strictly increases spsb expected revenue: 5/9 < 1 < 10/9.
+  This is the discrete-IPV illustration of the seller's incentive
+  to raise reserves (subject to the standard cap from the
+  distributional support). -/
+
+/-- spsb revenue at `r = 0` is at most spsb revenue at `r = 1`
+    (n=3 uniform): 5/9 ≤ 1. -/
+example :
+    expectedRevenue 3 (spsbReserve 3 ⟨0, by decide⟩) (uniformPrior 3)
+    ≤ expectedRevenue 3 (spsbReserve 3 ⟨1, by decide⟩) (uniformPrior 3) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- spsb revenue at `r = 1` is at most spsb revenue at `r = 2`
+    (n=3 uniform): 1 ≤ 10/9. -/
+example :
+    expectedRevenue 3 (spsbReserve 3 ⟨1, by decide⟩) (uniformPrior 3)
+    ≤ expectedRevenue 3 (spsbReserve 3 ⟨2, by decide⟩) (uniformPrior 3) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
 end AuctionCat
