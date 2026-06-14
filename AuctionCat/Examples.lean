@@ -404,4 +404,18 @@ example (s1 s2 s3 : Fin 2 → Fin 2) (p23 p13 p12 : Fin (2 * 2) → Rat) :
   fpsb3Reserve_any_triple_is_bayes_nash_at_max_reserve 2 (by decide)
     s1 s2 s3 p23 p13 p12
 
+/-- **Concrete strict-positivity** of spsb truthful expected utility
+    at `n = 3`, uniform prior `1/3`, `v1 = 2`.  Vickrey gives bidder 1
+    a positive expected surplus, in contrast to fpsb's identically
+    zero. -/
+example :
+    0 < vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) := by
+  have h : vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold vickreyExpectedUtility vickreyUtility
+    native_decide
+  rw [h]
+  norm_num
+
 end AuctionCat
