@@ -193,4 +193,36 @@ theorem fpsb3Reserve_bidder3_utility_truthful_val_eq_zero (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- **At maximal reserve, bidder 2's fpsb3Reserve utility is also
+    identically zero**, regardless of strategy (3 bidders). -/
+theorem fpsb3Reserve_bidder2_utility_max_reserve_val_eq_zero (n : Nat)
+    (hn : 0 < n) (v opp_b1 my_b2 opp_b3 : Fin n) :
+    (fpsbReserveBidder2Util3 n ⟨n - 1, by omega⟩ v opp_b1 my_b2
+                              opp_b3).val = 0 := by
+  unfold fpsbReserveBidder2Util3
+  by_cases h :
+      opp_b1.val < my_b2.val ∧ my_b2.val ≥ opp_b3.val
+      ∧ my_b2.val ≥ n - 1
+  · simp [h]
+    have hmb := my_b2.isLt
+    have hv := v.isLt
+    omega
+  · simp [h]
+
+/-- **At maximal reserve, bidder 3's fpsb3Reserve utility is also
+    identically zero**, regardless of strategy (3 bidders). -/
+theorem fpsb3Reserve_bidder3_utility_max_reserve_val_eq_zero (n : Nat)
+    (hn : 0 < n) (v opp_b1 opp_b2 my_b3 : Fin n) :
+    (fpsbReserveBidder3Util3 n ⟨n - 1, by omega⟩ v opp_b1 opp_b2
+                              my_b3).val = 0 := by
+  unfold fpsbReserveBidder3Util3
+  by_cases h :
+      opp_b1.val < my_b3.val ∧ opp_b2.val < my_b3.val
+      ∧ my_b3.val ≥ n - 1
+  · simp [h]
+    have hmb := my_b3.isLt
+    have hv := v.isLt
+    omega
+  · simp [h]
+
 end AuctionCat
