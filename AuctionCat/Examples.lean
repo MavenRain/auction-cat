@@ -489,4 +489,30 @@ example :
   unfold expectedRevenue uniformPrior
   native_decide
 
+/-! ## Reserve non-monotonicity (fpsb at n=3 uniform)
+
+  In contrast to spsb, fpsb revenue is NOT monotonic in the reserve
+  at n=3.  Raising `r = 1 → 2` strictly DECREASES revenue (13/9 →
+  10/9) because the reserve excludes profiles that would otherwise
+  contribute positively (max=1 profiles now extract 0 instead of 1).
+  This is the standard auction-theory observation that fpsb's revenue
+  is at most as monotone as spsb's in the reserve. -/
+
+/-- fpsbReserve revenue at `r = 2` is strictly less than at `r = 0`
+    (n=3 uniform): 10/9 < 13/9. -/
+example :
+    expectedRevenue 3 (fpsbReserve 3 ⟨2, by decide⟩) (uniformPrior 3)
+    < expectedRevenue 3 (fpsbReserve 3 ⟨0, by decide⟩) (uniformPrior 3) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- At `r = 1`, fpsbReserve revenue equals at `r = 0` (n=3 uniform):
+    both give 13/9.  Reserve `r = 1` excludes only the (0, 0)
+    profile which contributed 0 already. -/
+example :
+    expectedRevenue 3 (fpsbReserve 3 ⟨1, by decide⟩) (uniformPrior 3)
+    = expectedRevenue 3 (fpsbReserve 3 ⟨0, by decide⟩) (uniformPrior 3) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
 end AuctionCat
