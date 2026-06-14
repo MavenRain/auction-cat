@@ -118,6 +118,64 @@ theorem fpsbReserve_bidder1_allocated_iff_winner (n : Nat) (r : Fin n)
   · simp [h]
   · simp [h]
 
+/-- **No allocation below reserve** in spsbReserve.  When both bids
+    fall strictly below the reserve, neither bidder is allocated the
+    item (a1 = a2 = 0).  This is the "exclusion regime" of reserve
+    auctions. -/
+theorem spsbReserve_no_allocation_below_reserve (n : Nat) (r : Fin n)
+    (i : Fin (n * n))
+    (h : (Fin.first i).val < r.val ∧ (Fin.second i).val < r.val) :
+    (Fin.first (Fin.first (spsbReserveFn n r i))).val = 0
+    ∧ (Fin.first (Fin.second (spsbReserveFn n r i))).val = 0 := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold spsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  obtain ⟨h1, h2'⟩ := h
+  constructor
+  · have h_neg : ¬ ((Fin.first i).val ≥ (Fin.second i).val
+                   ∧ (Fin.first i).val ≥ r.val) := by
+      intro ⟨_, hr⟩
+      omega
+    simp [h_neg]
+  · have h_neg1 : ¬ ((Fin.first i).val ≥ (Fin.second i).val
+                    ∧ (Fin.first i).val ≥ r.val) := by
+      intro ⟨_, hr⟩
+      omega
+    have h_neg2 : ¬ (Fin.second i).val ≥ r.val := by omega
+    simp [h_neg1, h_neg2]
+
+/-- **No allocation below reserve** in fpsbReserve.  Same as
+    spsbReserve. -/
+theorem fpsbReserve_no_allocation_below_reserve (n : Nat) (r : Fin n)
+    (i : Fin (n * n))
+    (h : (Fin.first i).val < r.val ∧ (Fin.second i).val < r.val) :
+    (Fin.first (Fin.first (fpsbReserveFn n r i))).val = 0
+    ∧ (Fin.first (Fin.second (fpsbReserveFn n r i))).val = 0 := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold fpsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val]
+  obtain ⟨h1, h2'⟩ := h
+  constructor
+  · have h_neg : ¬ ((Fin.first i).val ≥ (Fin.second i).val
+                   ∧ (Fin.first i).val ≥ r.val) := by
+      intro ⟨_, hr⟩
+      omega
+    simp [h_neg]
+  · have h_neg1 : ¬ ((Fin.first i).val ≥ (Fin.second i).val
+                    ∧ (Fin.first i).val ≥ r.val) := by
+      intro ⟨_, hr⟩
+      omega
+    have h_neg2 : ¬ (Fin.second i).val ≥ r.val := by omega
+    simp [h_neg1, h_neg2]
+
 /-- Underlying allocation+payment function for three-bidder second-price
     sealed-bid with reserve price `r`.  Winner pays
     `max r (second-highest others' bid)`. -/
