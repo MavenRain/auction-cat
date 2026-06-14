@@ -1955,6 +1955,30 @@ theorem auctionExpectedBidder1Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
   under truthful play in fpsbAuction, bidder 2's expected pipeline
   utility is also zero (same reason — constant zero output). -/
 
+/-- **Bidder 2 expected (2 bidders)**: vickreyBidder2ExpectedUtility
+    under truthful play weakly dominates fpsbBidder2ExpectedUtility
+    under truthful play for any nonneg prior and opponent strategy. -/
+theorem vickreyBidder2ExpectedUtility_truthful_ge_fpsbBidder2_truthful
+    (n : Nat) (s1 : Fin n → Fin n) (v2 : Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) :
+    vickreyBidder2ExpectedUtility n s1 (fun v => v) v2 p
+    ≥ fpsbBidder2ExpectedUtility n s1 (fun v => v) v2 p := by
+  rw [fpsb_bidder2_truthful_expected_utility_zero]
+  unfold vickreyBidder2ExpectedUtility
+  have h_const_zero : Fin.sumRat (fun _ : Fin n => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v1
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyBidder2Util n v2 (s1 v1) v2).val : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyBidder2Util n v2 (s1 v1) v2).val : Nat).cast := by
+        rw [Rat.zero_mul]
+    _ ≤ p v1 * ((vickreyBidder2Util n v2 (s1 v1) v2).val : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v1) h_cast_nn
+
 /-- **Pipeline-level bidder-2 truthful zero utility for fpsbAuction**. -/
 theorem auctionExpectedBidder2Util_fpsbAuction_eq_zero (n : Nat)
     (prior : Fin n → Rat) (v2 : Fin n) :

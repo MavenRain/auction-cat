@@ -622,4 +622,5 @@ theorem vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
           : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v23) h_cast_nn
 
+
 end AuctionCat
