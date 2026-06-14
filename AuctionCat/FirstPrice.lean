@@ -169,4 +169,19 @@ theorem fpsbReserve_bidder2_utility_truthful_val_eq_zero (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- **At maximal reserve, bidder 2's fpsbReserve utility is also
+    identically zero**, regardless of strategy.  Same argument as
+    bidder 1: winning requires `my_bid ≥ r = n - 1`, so `my_bid =
+    n - 1`; pay `n - 1`; util `v - (n - 1) = 0`. -/
+theorem fpsbReserve_bidder2_utility_max_reserve_val_eq_zero (n : Nat)
+    (hn : 0 < n) (v opp_bid my_bid : Fin n) :
+    (fpsbReserveBidder2Util n ⟨n - 1, by omega⟩ v opp_bid my_bid).val = 0 := by
+  unfold fpsbReserveBidder2Util
+  by_cases h : opp_bid.val < my_bid.val ∧ my_bid.val ≥ n - 1
+  · simp [h]
+    have hmb := my_bid.isLt
+    have hv := v.isLt
+    omega
+  · simp [h]
+
 end AuctionCat
