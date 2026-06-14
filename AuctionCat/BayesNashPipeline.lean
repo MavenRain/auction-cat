@@ -2276,6 +2276,38 @@ theorem auctionExpectedBidder3Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
   exact auctionExpectedBidder3Util3_spsb3ReserveAuction_nonneg
     n r prior12 h_nn v3
 
+/-- **Main pipeline zero-utility results for fpsb variants**.  Under
+    truthful play, every fpsb pipeline (with or without reserve, at
+    2 or 3 bidders, for any bidder position) yields zero expected
+    utility regardless of prior. -/
+theorem fpsb_pipeline_zero_main (n : Nat) (r : Fin n)
+    (prior : Fin n → Rat) (prior_a prior_b : Fin (n * n) → Rat)
+    (v : Fin n) :
+    -- 2-bidder no-reserve
+    auctionExpectedBidder1Util n (fpsbAuction n) prior v = 0
+    ∧ auctionExpectedBidder2Util n (fpsbAuction n) prior v = 0
+    -- 2-bidder with reserve
+    ∧ auctionExpectedBidder1Util n (fpsbReserveAuction n r) prior v = 0
+    ∧ auctionExpectedBidder2Util n (fpsbReserveAuction n r) prior v = 0
+    -- 3-bidder no-reserve
+    ∧ auctionExpectedBidder1Util3 n (fpsb3Auction n) prior_a v = 0
+    ∧ auctionExpectedBidder2Util3 n (fpsb3Auction n) prior_a v = 0
+    ∧ auctionExpectedBidder3Util3 n (fpsb3Auction n) prior_b v = 0
+    -- 3-bidder with reserve
+    ∧ auctionExpectedBidder1Util3 n (fpsb3ReserveAuction n r) prior_a v = 0
+    ∧ auctionExpectedBidder2Util3 n (fpsb3ReserveAuction n r) prior_a v = 0
+    ∧ auctionExpectedBidder3Util3 n (fpsb3ReserveAuction n r) prior_b v = 0 :=
+  ⟨auctionExpectedBidder1Util_fpsbAuction_eq_zero n prior v,
+   auctionExpectedBidder2Util_fpsbAuction_eq_zero n prior v,
+   auctionExpectedBidder1Util_fpsbReserveAuction_eq_zero n r prior v,
+   auctionExpectedBidder2Util_fpsbReserveAuction_eq_zero n r prior v,
+   auctionExpectedBidder1Util3_fpsb3Auction_eq_zero n prior_a v,
+   auctionExpectedBidder2Util3_fpsb3Auction_eq_zero n prior_a v,
+   auctionExpectedBidder3Util3_fpsb3Auction_eq_zero n prior_b v,
+   auctionExpectedBidder1Util3_fpsb3ReserveAuction_eq_zero n r prior_a v,
+   auctionExpectedBidder2Util3_fpsb3ReserveAuction_eq_zero n r prior_a v,
+   auctionExpectedBidder3Util3_fpsb3ReserveAuction_eq_zero n r prior_b v⟩
+
 /-- **Main four-way spsb ≥ fpsb pipeline results**.  Under truthful
     play at any nonneg prior, spsb's pipeline expected bidder-1
     utility weakly dominates fpsb's across all four standard
