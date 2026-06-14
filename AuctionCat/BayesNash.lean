@@ -390,6 +390,42 @@ def IsBayesNashFpsbReserve (n : Nat) (r : Fin n)
   IsBestResponseFpsbReserve n r s1 s2 p
   ∧ IsBestResponseFpsbReserve n r s2 s1 p
 
+/-- **Expected utility is zero for any strategy at maximal reserve**
+    (2 bidders).  Direct lift of `fpsbReserve_utility_max_reserve_val_eq_zero`
+    to expected utility. -/
+theorem fpsbReserve_expected_utility_max_reserve_zero (n : Nat) (hn : 0 < n)
+    (s1 s2 : Fin n → Fin n) (v1 : Fin n) (p : Fin n → Rat) :
+    fpsbReserveExpectedUtility n ⟨n - 1, by omega⟩ s1 s2 v1 p = 0 := by
+  unfold fpsbReserveExpectedUtility
+  have h : ∀ v2 : Fin n,
+      p v2 * ((fpsbReserveUtility n ⟨n - 1, by omega⟩ v1 (s1 v1) (s2 v2)).val
+              : Nat).cast = 0 := by
+    intro v2
+    rw [fpsbReserve_utility_max_reserve_val_eq_zero n hn]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
+/-- **At maximal reserve, every strategy is trivially a best response
+    in fpsbReserve**.  Since every strategy yields zero expected
+    utility, no deviation can do better. -/
+theorem fpsbReserve_any_strategy_best_response_at_max_reserve (n : Nat)
+    (hn : 0 < n) (s1 s2 : Fin n → Fin n) (p : Fin n → Rat) :
+    IsBestResponseFpsbReserve n ⟨n - 1, by omega⟩ s1 s2 p := by
+  intro s1' v1
+  rw [fpsbReserve_expected_utility_max_reserve_zero n hn,
+      fpsbReserve_expected_utility_max_reserve_zero n hn]
+  exact Rat.le_refl
+
+/-- **Trivial Bayes-Nash at maximal reserve**: at `r = n - 1`,
+    `(s1, s2)` is a Bayes-Nash equilibrium for ANY strategies and
+    prior, since every strategy yields zero expected utility. -/
+theorem fpsbReserve_any_pair_is_bayes_nash_at_max_reserve (n : Nat)
+    (hn : 0 < n) (s1 s2 : Fin n → Fin n) (p : Fin n → Rat) :
+    IsBayesNashFpsbReserve n ⟨n - 1, by omega⟩ s1 s2 p :=
+  ⟨fpsbReserve_any_strategy_best_response_at_max_reserve n hn s1 s2 p,
+   fpsbReserve_any_strategy_best_response_at_max_reserve n hn s2 s1 p⟩
+
 /-- Bidder 1's expected utility in a 3-bidder fpsb-with-reserve
     auction. -/
 def fpsbReserveExpectedUtility3 (n : Nat) (r : Fin n)

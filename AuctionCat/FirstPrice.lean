@@ -112,6 +112,22 @@ theorem fpsbReserve_utility_truthful_val_eq_zero (n : Nat) (r v b2 : Fin n) :
   · simp [h]
   · simp [h]
 
+/-- **At maximal reserve `r = n - 1`, every fpsbReserve strategy
+    yields zero utility for bidder 1**.  Reason: to win, bidder 1
+    must bid ≥ n - 1, forcing `b1 = n - 1` (since bids live in
+    `Fin n`); winning then yields `v - (n - 1) = 0` (Nat monus,
+    since `v ≤ n - 1`).  Losing yields 0. -/
+theorem fpsbReserve_utility_max_reserve_val_eq_zero (n : Nat) (hn : 0 < n)
+    (v b1 b2 : Fin n) :
+    (fpsbReserveUtility n ⟨n - 1, by omega⟩ v b1 b2).val = 0 := by
+  unfold fpsbReserveUtility
+  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ n - 1
+  · simp [h]
+    have hb1 := b1.isLt
+    have hv := v.isLt
+    omega
+  · simp [h]
+
 /-- Bidder 2's truncated utility in a 2-bidder first-price sealed-bid
     auction, given valuation `v`, opponent's bid `opp_bid`, and own
     bid `my_bid`.  Bidder 2 wins iff `my_bid > opp_bid` (strict — ties
