@@ -354,4 +354,51 @@ theorem fpsb3Reserve_no_allocation_below_reserve (n : Nat) (r : Fin n)
   · simp [h_neg_w1, h_neg_w2]
   · simp [h_neg_w1, h_neg_w2, h_neg_w3]
 
+/-- **fpsbReserve and spsbReserve have IDENTICAL allocation rules**:
+    bidder 1's allocation under fpsbReserveFn equals bidder 1's
+    allocation under spsbReserveFn at every joint bid.  Same as the
+    no-reserve case (both formats differ only in pricing). -/
+theorem fpsbReserve_spsbReserve_same_allocation (n : Nat) (r : Fin n)
+    (i : Fin (n * n)) :
+    (Fin.first (Fin.first (fpsbReserveFn n r i))).val
+    = (Fin.first (Fin.first (spsbReserveFn n r i))).val := by
+  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+              ∧ (Fin.first i).val ≥ r.val
+  · rw [(fpsbReserve_bidder1_allocated_iff_winner n r i).mpr h,
+        (spsbReserve_bidder1_allocated_iff_winner n r i).mpr h]
+  · have h_fpsb : (Fin.first (Fin.first (fpsbReserveFn n r i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((fpsbReserve_bidder1_allocated_iff_winner n r i).mp hcontra)
+    have h_spsb : (Fin.first (Fin.first (spsbReserveFn n r i))).val ≠ 1 := by
+      intro hcontra
+      exact h ((spsbReserve_bidder1_allocated_iff_winner n r i).mp hcontra)
+    have hb1 := (Fin.first (Fin.first (fpsbReserveFn n r i))).isLt
+    have hb2 := (Fin.first (Fin.first (spsbReserveFn n r i))).isLt
+    omega
+
+/-- **fpsb3Reserve and spsb3Reserve have IDENTICAL allocation rules**.
+    Same as the 2-bidder reserve case. -/
+theorem fpsb3Reserve_spsb3Reserve_same_allocation (n : Nat) (r : Fin n)
+    (i : Fin ((n * n) * n)) :
+    (Fin.first (Fin.first (Fin.first (fpsb3ReserveFn n r i)))).val
+    = (Fin.first (Fin.first (Fin.first (spsb3ReserveFn n r i)))).val := by
+  by_cases h : (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
+              ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
+              ∧ (Fin.first (Fin.first i)).val ≥ r.val
+  · rw [(fpsb3Reserve_bidder1_allocated_iff_winner n r i).mpr h,
+        (spsb3Reserve_bidder1_allocated_iff_winner n r i).mpr h]
+  · have h_fpsb : (Fin.first (Fin.first (Fin.first
+                  (fpsb3ReserveFn n r i)))).val ≠ 1 := by
+      intro hcontra
+      exact h ((fpsb3Reserve_bidder1_allocated_iff_winner n r i).mp hcontra)
+    have h_spsb : (Fin.first (Fin.first (Fin.first
+                  (spsb3ReserveFn n r i)))).val ≠ 1 := by
+      intro hcontra
+      exact h ((spsb3Reserve_bidder1_allocated_iff_winner n r i).mp hcontra)
+    have hb1 := (Fin.first (Fin.first (Fin.first
+                  (fpsb3ReserveFn n r i)))).isLt
+    have hb2 := (Fin.first (Fin.first (Fin.first
+                  (spsb3ReserveFn n r i)))).isLt
+    omega
+
 end AuctionCat
