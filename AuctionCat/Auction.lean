@@ -116,6 +116,20 @@ def fpsbAuctionDeviator2 (n : Nat) (bid : Fin n → Fin n) :
     StochasticMatrix (tensorObj n n) (tensorObj n n) :=
   auctionScoreDeviator2 n bid (firstPriceSealedBid n)
 
+/-- First-price auction with reserve `r` where bidder 1 uses strategy
+    `bid` and bidder 2 is truthful. -/
+def fpsbReserveAuctionDeviator1 (n : Nat) (r : Fin n)
+    (bid : Fin n → Fin n) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  auctionScoreDeviator1 n bid (fpsbReserve n r)
+
+/-- First-price auction with reserve `r` where bidder 1 is truthful
+    and bidder 2 uses strategy `bid`. -/
+def fpsbReserveAuctionDeviator2 (n : Nat) (r : Fin n)
+    (bid : Fin n → Fin n) :
+    StochasticMatrix (tensorObj n n) (tensorObj n n) :=
+  auctionScoreDeviator2 n bid (fpsbReserve n r)
+
 /-- Second-price-sealed-bid (Vickrey) auction with reserve price `r`
     and two truthful bidders. -/
 def spsbReserveAuction (n : Nat) (r : Fin n) :
