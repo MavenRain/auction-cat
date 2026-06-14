@@ -611,4 +611,28 @@ example :
     native_decide
   rw [h_fpsb, h_vickrey]
 
+/-- **Utility-RET FAILS at bidder 2** at `n = 3`, `v = 2`, uniform.
+    fpsb half-shaded bidder-2 expected utility (`= 2/3`) is strictly
+    LESS than Vickrey truthful bidder-2 expected utility (`= 1`).
+    This is consistent with revenue-RET holding at this case: total
+    revenue equals, but individual bidder-2 utility differs because
+    of the asymmetric tiebreak (bidder 2 loses ties strictly under
+    both formats, and loses more in fpsb due to bid shading by
+    bidder 1). -/
+example :
+    fpsbBidder2ExpectedUtility 3 (halfShading 3) (halfShading 3)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat))
+    < vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) := by
+  have h_fpsb : fpsbBidder2ExpectedUtility 3 (halfShading 3) (halfShading 3)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 2 / 3 := by
+    unfold fpsbBidder2ExpectedUtility fpsbBidder2Util halfShading
+    native_decide
+  have h_vickrey : vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold vickreyBidder2ExpectedUtility vickreyBidder2Util
+    native_decide
+  rw [h_fpsb, h_vickrey]
+  norm_num
+
 end AuctionCat
