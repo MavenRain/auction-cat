@@ -2572,4 +2572,29 @@ theorem vickreyReserveExpectedUtility3_truthful_ge_fpsbReserveExpectedUtility3_t
           : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v23) h_cast_nn
 
+/-- **Vickrey-reserve truthful expected utility is nonneg** (2
+    bidders).  Corollary of the vickreyReserve ≥ fpsbReserve
+    comparison and fpsbReserve truthful = 0. -/
+theorem vickreyReserveExpectedUtility_truthful_nonneg (n : Nat) (r : Fin n)
+    (s2 : Fin n → Fin n) (v1 : Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) :
+    0 ≤ vickreyReserveExpectedUtility n r (fun v => v) s2 v1 p := by
+  have h :=
+    vickreyReserveExpectedUtility_truthful_ge_fpsbReserveExpectedUtility_truthful
+      n r s2 v1 p h_nn
+  rw [fpsbReserve_truthful_expected_utility_zero] at h
+  exact h
+
+/-- **Vickrey-reserve3 truthful expected utility is nonneg** (3
+    bidders). -/
+theorem vickreyReserveExpectedUtility3_truthful_nonneg (n : Nat) (r : Fin n)
+    (s2 s3 : Fin n → Fin n) (v1 : Fin n) (p23 : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ p23 v) :
+    0 ≤ vickreyReserveExpectedUtility3 n r (fun v => v) s2 s3 v1 p23 := by
+  have h :=
+    vickreyReserveExpectedUtility3_truthful_ge_fpsbReserveExpectedUtility3_truthful
+      n r s2 s3 v1 p23 h_nn
+  rw [fpsb3Reserve_truthful_expected_utility_zero] at h
+  exact h
+
 end AuctionCat
