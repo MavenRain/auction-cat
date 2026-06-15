@@ -221,4 +221,18 @@ example :
   rw [h]
   native_decide
 
+/-- vickrey3 bidder-2 strict-positive utility witness at `n = 3`
+    uniform joint prior `1/9`, `v2 = 2`: bidder 2 wins iff opp_b1 < 2
+    AND 2 ≥ opp_b3 (weak — bidder 2 has priority over 3); pays
+    max(opp_b1, opp_b3) on win.  Expected utility = `5/9 > 0`. -/
+example :
+    0 < vickreyBidder2ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) := by
+  have h : vickreyBidder2ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 5 / 9 := by
+    unfold vickreyBidder2ExpectedUtility3 vickreyBidder2Util3
+    native_decide
+  rw [h]
+  native_decide
+
 end AuctionCat
