@@ -2498,4 +2498,14 @@ theorem spsb_ge_fpsb_pipeline_full (n : Nat) (r : Fin n)
    auctionExpectedBidder3Util3_spsb3ReserveAuction_ge_fpsb3ReserveAuction
      n r prior_b h_nn_b v⟩
 
+/-- **Pointwise vickreyReserve ≥ fpsbReserve under truthful** (2
+    bidders).  Vickrey-with-reserve's nonneg val dominates
+    fpsbReserve's identically-zero val under truthful play. -/
+theorem vickreyReserveUtility_truthful_ge_fpsbReserveUtility_truthful
+    (n : Nat) (r v b2 : Fin n) :
+    (vickreyReserveUtility n v v b2 r).val
+    ≥ (fpsbReserveUtility n r v v b2).val := by
+  rw [fpsbReserve_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
 end AuctionCat
