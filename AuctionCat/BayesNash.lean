@@ -199,6 +199,31 @@ theorem fpsb_truthful_strictly_dominated_n2 :
   unfold fpsbExpectedUtility fpsbUtility
   native_decide
 
+/-- **fpsb truthful is NOT a best response against constant-zero
+    opponent under the prior concentrated at `v = 0`** (concrete
+    `n = 2`).  Direct lift of `fpsb_truthful_strictly_dominated_n2`
+    via the `IsBestResponseFpsb` definition.  Concrete-value tactic:
+    expand both sides to numeric Rats, then `decide` on the resulting
+    `0 ≥ 1`. -/
+theorem fpsb_truthful_not_best_response_n2 :
+    ¬ IsBestResponseFpsb 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
+        (fun v => if v.val = 0 then 1 else 0) := by
+  intro h_br
+  have h_ge := h_br (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+  have h_truth :
+      fpsbExpectedUtility 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
+        ⟨1, by decide⟩ (fun v => if v.val = 0 then 1 else 0) = 0 := by
+    unfold fpsbExpectedUtility fpsbUtility
+    native_decide
+  have h_dev :
+      fpsbExpectedUtility 2 (fun _ : Fin 2 => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) = 1 := by
+    unfold fpsbExpectedUtility fpsbUtility
+    native_decide
+  rw [h_truth, h_dev] at h_ge
+  exact absurd h_ge (by decide)
+
 
 /-- Pointwise utility of truthful bidder 1 in fpsb is always zero:
     if `b1 = v` then either the bidder loses (utility = 0) or wins
