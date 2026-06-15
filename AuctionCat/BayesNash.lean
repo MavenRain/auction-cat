@@ -306,6 +306,31 @@ theorem fpsb3_truthful_strictly_dominated_n2 :
   unfold fpsbExpectedUtility3 fpsbUtility3
   native_decide
 
+/-- **3-bidder fpsb truthful is NOT a best response** against
+    constant-zero opponents under a prior concentrated at v=0
+    (concrete n=2). -/
+theorem fpsb3_truthful_not_best_response_n2 :
+    ¬ IsBestResponseFpsb3 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩)
+        (fun v => if v.val = 0 then 1 else 0) := by
+  intro h_br
+  have h_ge := h_br (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+  have h_truth :
+      fpsbExpectedUtility3 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) = 0 := by
+    unfold fpsbExpectedUtility3 fpsbUtility3
+    native_decide
+  have h_dev :
+      fpsbExpectedUtility3 2 (fun _ : Fin 2 => ⟨0, by decide⟩)
+        (fun _ => ⟨0, by decide⟩) (fun _ => ⟨0, by decide⟩)
+        ⟨1, by decide⟩
+        (fun v => if v.val = 0 then 1 else 0) = 1 := by
+    unfold fpsbExpectedUtility3 fpsbUtility3
+    native_decide
+  rw [h_truth, h_dev] at h_ge
+  exact absurd h_ge (by decide)
+
 
 /-- Bidder 1's expected utility in a 2-bidder fpsb-with-reserve
     auction. -/
