@@ -2037,6 +2037,38 @@ theorem vickreyBidder3ExpectedUtility3_truthful_ge_fpsbBidder3_truthful
           : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v12) h_cast_nn
 
+/-- **Bidder-2 vickrey truthful expected utility is nonneg** (2 bidders).
+    Corollary of the bidder-2 vickrey ≥ fpsb comparison and fpsb
+    bidder-2 truthful = 0. -/
+theorem vickreyBidder2ExpectedUtility_truthful_nonneg (n : Nat)
+    (s1 : Fin n → Fin n) (v2 : Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) :
+    0 ≤ vickreyBidder2ExpectedUtility n s1 (fun v => v) v2 p := by
+  have h := vickreyBidder2ExpectedUtility_truthful_ge_fpsbBidder2_truthful
+    n s1 v2 p h_nn
+  rw [fpsb_bidder2_truthful_expected_utility_zero] at h
+  exact h
+
+/-- **Bidder-2 vickrey3 truthful expected utility is nonneg** (3 bidders). -/
+theorem vickreyBidder2ExpectedUtility3_truthful_nonneg (n : Nat)
+    (s1 s3 : Fin n → Fin n) (v2 : Fin n) (p13 : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ p13 v) :
+    0 ≤ vickreyBidder2ExpectedUtility3 n s1 (fun v => v) s3 v2 p13 := by
+  have h := vickreyBidder2ExpectedUtility3_truthful_ge_fpsbBidder2_truthful
+    n s1 s3 v2 p13 h_nn
+  rw [fpsb3_bidder2_truthful_expected_utility_zero] at h
+  exact h
+
+/-- **Bidder-3 vickrey3 truthful expected utility is nonneg** (3 bidders). -/
+theorem vickreyBidder3ExpectedUtility3_truthful_nonneg (n : Nat)
+    (s1 s2 : Fin n → Fin n) (v3 : Fin n) (p12 : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ p12 v) :
+    0 ≤ vickreyBidder3ExpectedUtility3 n s1 s2 (fun v => v) v3 p12 := by
+  have h := vickreyBidder3ExpectedUtility3_truthful_ge_fpsbBidder3_truthful
+    n s1 s2 v3 p12 h_nn
+  rw [fpsb3_bidder3_truthful_expected_utility_zero] at h
+  exact h
+
 /-- **Pipeline-level bidder-2 truthful zero utility for fpsbAuction**. -/
 theorem auctionExpectedBidder2Util_fpsbAuction_eq_zero (n : Nat)
     (prior : Fin n → Rat) (v2 : Fin n) :
