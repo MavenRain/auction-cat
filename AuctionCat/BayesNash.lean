@@ -644,5 +644,27 @@ theorem vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
           : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v23) h_cast_nn
 
+/-- **vickrey truthful expected utility is nonneg** under any nonneg
+    prior and opponent strategy.  Corollary of the vickrey ≥ fpsb
+    comparison and fpsb truthful = 0. -/
+theorem vickreyExpectedUtility_truthful_nonneg (n : Nat)
+    (s2 : Fin n → Fin n) (v1 : Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) :
+    0 ≤ vickreyExpectedUtility n (fun v => v) s2 v1 p := by
+  have h := vickreyExpectedUtility_truthful_ge_fpsbExpectedUtility_truthful
+    n s2 v1 p h_nn
+  rw [fpsb_truthful_expected_utility_zero] at h
+  exact h
+
+/-- **3-bidder vickrey truthful expected utility is nonneg** under any
+    nonneg joint prior and opponent strategies. -/
+theorem vickreyExpectedUtility3_truthful_nonneg (n : Nat)
+    (s2 s3 : Fin n → Fin n) (v1 : Fin n) (p23 : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ p23 v) :
+    0 ≤ vickreyExpectedUtility3 n (fun v => v) s2 s3 v1 p23 := by
+  have h := vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
+    n s2 s3 v1 p23 h_nn
+  rw [fpsb3_truthful_expected_utility_zero] at h
+  exact h
 
 end AuctionCat
