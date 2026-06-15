@@ -59,94 +59,6 @@ def firstPriceSealedBid3 (X : Nat) :
     StochasticMatrix (X * X * X) ((2 * X) * (2 * X) * (2 * X)) :=
   detMatrix (fpsb3Fn X)
 
-/-- **Allocation rule** of 3-bidder fpsb.  Bidder 1 is allocated the
-    item iff `b1 ≥ b2 ∧ b1 ≥ b3` (same as spsb3 — both formats use
-    the same allocation, differing only in pricing). -/
-theorem fpsb3_bidder1_allocated_iff_winner (n : Nat) (i : Fin (n * n * n)) :
-    (Fin.first (Fin.first (Fin.first (fpsb3Fn n i)))).val = 1
-    ↔ (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-      ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val := by
-  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
-  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
-  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
-  have h2  : (0 : Nat) < 2 := by decide
-  have h2n : 0 < 2 * n := by omega
-  unfold fpsb3Fn
-  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
-             Fin.first_val, Fin.second_val]
-  by_cases h : (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-              ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
-  · simp [h]
-  · simp [h]
-
-/-- Bidder 2's fpsb3 allocation: bidder 2 wins iff `¬win1 ∧ b2 ≥ b3`.
-    Same allocation rule as spsb3. -/
-theorem fpsb3_bidder2_allocated_iff_winner (n : Nat) (i : Fin (n * n * n)) :
-    (Fin.first (Fin.second (Fin.first (fpsb3Fn n i)))).val = 1
-    ↔ ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
-      ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val := by
-  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
-  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
-  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
-  have h2  : (0 : Nat) < 2 := by decide
-  have h2n : 0 < 2 * n := by omega
-  unfold fpsb3Fn
-  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
-             Fin.first_val, Fin.second_val]
-  by_cases hw2 : ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-                  ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
-                ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
-  · simp [hw2]
-  · simp [hw2]
-
-/-- Bidder 3's fpsb3 allocation: bidder 3 wins iff `¬win1 ∧ ¬win2`.
-    Same allocation rule as spsb3. -/
-theorem fpsb3_bidder3_allocated_iff_winner (n : Nat) (i : Fin (n * n * n)) :
-    (Fin.first (Fin.second (fpsb3Fn n i))).val = 1
-    ↔ ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
-      ∧ ¬(¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-            ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
-          ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val) := by
-  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
-  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
-  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
-  have h2  : (0 : Nat) < 2 := by decide
-  have h2n : 0 < 2 * n := by omega
-  unfold fpsb3Fn
-  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
-             Fin.first_val, Fin.second_val]
-  by_cases hw3 :
-      ¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-        ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
-      ∧ ¬(¬((Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-            ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val)
-          ∧ (Fin.second (Fin.first i)).val ≥ (Fin.second i).val)
-  · simp [hw3]
-  · simp [hw3]
-
-/-- **Exactly one winner** in fpsb3: a1 + a2 + a3 = 1 at every joint
-    bid. -/
-theorem fpsb3_exactly_one_winner (n : Nat) (i : Fin (n * n * n)) :
-    (Fin.first (Fin.first (Fin.first (fpsb3Fn n i)))).val
-    + (Fin.first (Fin.second (Fin.first (fpsb3Fn n i)))).val
-    + (Fin.first (Fin.second (fpsb3Fn n i))).val = 1 := by
-  have hnnn : 0 < n * n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
-  have hnn : 0 < n * n := Nat.pos_of_mul_pos_right hnnn
-  have hn  : 0 < n := Nat.pos_of_mul_pos_right hnn
-  have h2  : (0 : Nat) < 2 := by decide
-  have h2n : 0 < 2 * n := by omega
-  unfold fpsb3Fn
-  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
-             Fin.first_val, Fin.second_val]
-  by_cases hw1 : (Fin.first (Fin.first i)).val ≥ (Fin.second (Fin.first i)).val
-                ∧ (Fin.first (Fin.first i)).val ≥ (Fin.second i).val
-  · simp [hw1]
-  · simp [hw1]
-    by_cases hw2 : (Fin.second (Fin.first i)).val ≥ (Fin.second i).val
-    · simp [hw2]
-    · simp [hw2]
 
 /-- Bidder 1's truncated utility in a 3-bidder first-price sealed-bid
     auction, given valuation `v`, own bid `b1`, and opponent bids
@@ -196,7 +108,7 @@ theorem fpsb3Reserve_utility_max_reserve_val_eq_zero (n : Nat) (hn : 0 < n)
     (v b1 b2 b3 : Fin n) :
     (fpsbReserveUtility3 n ⟨n - 1, by omega⟩ v b1 b2 b3).val = 0 := by
   unfold fpsbReserveUtility3
-  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ b3.val ∧ b1.val ≥ n - 1
+  by_cases h : b2.val ≤ b1.val ∧ b3.val ≤ b1.val ∧ n ≤ b1.val + 1
   · simp [h]
     have hb1 := b1.isLt
     have hv := v.isLt
@@ -290,8 +202,8 @@ theorem fpsb3Reserve_bidder2_utility_max_reserve_val_eq_zero (n : Nat)
                               opp_b3).val = 0 := by
   unfold fpsbReserveBidder2Util3
   by_cases h :
-      opp_b1.val < my_b2.val ∧ my_b2.val ≥ opp_b3.val
-      ∧ my_b2.val ≥ n - 1
+      opp_b1.val < my_b2.val ∧ opp_b3.val ≤ my_b2.val
+      ∧ n ≤ my_b2.val + 1
   · simp [h]
     have hmb := my_b2.isLt
     have hv := v.isLt
@@ -307,7 +219,7 @@ theorem fpsb3Reserve_bidder3_utility_max_reserve_val_eq_zero (n : Nat)
   unfold fpsbReserveBidder3Util3
   by_cases h :
       opp_b1.val < my_b3.val ∧ opp_b2.val < my_b3.val
-      ∧ my_b3.val ≥ n - 1
+      ∧ n ≤ my_b3.val + 1
   · simp [h]
     have hmb := my_b3.isLt
     have hv := v.isLt

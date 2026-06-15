@@ -62,12 +62,12 @@ theorem spsb_bidder1_allocated_iff_higher_bid (n : Nat) (i : Fin (n * n)) :
     ↔ (Fin.first i).val ≥ (Fin.second i).val := by
   have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
   have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
-  have h2  : 0 < 2 := by decide
+  have h2  : (0 : Nat) < 2 := by decide
   have h2n : 0 < 2 * n := by omega
   unfold spsbFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
              Fin.first_val, Fin.second_val]
-  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  by_cases h : i.val / n ≤ i.val % n
   · simp [h]
   · simp [h]
 
@@ -79,13 +79,13 @@ theorem spsb_bidder2_allocated_iff_strict_higher_bid (n : Nat)
     ↔ (Fin.first i).val < (Fin.second i).val := by
   have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
   have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
-  have h2  : 0 < 2 := by decide
+  have h2  : (0 : Nat) < 2 := by decide
   have h2n : 0 < 2 * n := by omega
   unfold spsbFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
              Fin.first_val, Fin.second_val]
-  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
-  · simp [h]; omega
+  by_cases h : i.val / n ≤ i.val % n
+  · simp [h]
   · simp [h]; omega
 
 /-- **Exactly one winner** in spsb: bidder 1's allocation and
@@ -96,12 +96,12 @@ theorem spsb_exactly_one_winner (n : Nat) (i : Fin (n * n)) :
     + (Fin.first (Fin.second (spsbFn n i))).val = 1 := by
   have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
   have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
-  have h2  : 0 < 2 := by decide
+  have h2  : (0 : Nat) < 2 := by decide
   have h2n : 0 < 2 * n := by omega
   unfold spsbFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
              Fin.first_val, Fin.second_val]
-  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  by_cases h : i.val / n ≤ i.val % n
   · simp [h]
   · simp [h]
 

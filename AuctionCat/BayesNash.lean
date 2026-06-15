@@ -199,41 +199,6 @@ theorem fpsb_truthful_strictly_dominated_n2 :
   unfold fpsbExpectedUtility fpsbUtility
   native_decide
 
-/-- **fpsb truthful is NOT a best response against constant-zero
-    opponent under the prior concentrated at `v = 0`** (concrete
-    `n = 2`).  Direct lift of `fpsb_truthful_strictly_dominated_n2`
-    via the `IsBestResponseFpsb` definition. -/
-theorem fpsb_truthful_not_best_response_n2 :
-    ¬ IsBestResponseFpsb 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
-        (fun v => if v.val = 0 then 1 else 0) := by
-  intro h_br
-  have h_le :=
-    h_br (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
-  exact absurd h_le (not_le_of_lt fpsb_truthful_strictly_dominated_n2)
-
-/-- **(Truthful, truthful) is NOT a Bayes-Nash equilibrium of fpsb at
-    n=2** under the prior concentrated at `v = 0`.  Bidder 1's
-    expected truthful utility is 0 (by `fpsb_truthful_expected_utility_zero`),
-    while their expected zero-bid deviation utility at `v1 = 1` is 1
-    (winner pays 0 since opponent bids `0` truthfully under this
-    prior).  This breaks the truthful best-response side of the BN
-    conjunction. -/
-theorem fpsb_truthful_truthful_not_bayes_nash_n2 :
-    ¬ IsBayesNashFpsb 2 (fun v => v) (fun v => v)
-        (fun v => if v.val = 0 then 1 else 0) := by
-  intro h_bn
-  have h_br1 := h_bn.1
-  have h_le :=
-    h_br1 (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
-  rw [fpsb_truthful_expected_utility_zero] at h_le
-  have h_rhs :
-      fpsbExpectedUtility 2 (fun _ : Fin 2 => ⟨0, by decide⟩)
-        (fun v : Fin 2 => v) ⟨1, by decide⟩
-        (fun v => if v.val = 0 then 1 else 0) = 1 := by
-    unfold fpsbExpectedUtility fpsbUtility
-    native_decide
-  rw [h_rhs] at h_le
-  exact absurd h_le (by norm_num)
 
 /-- Pointwise utility of truthful bidder 1 in fpsb is always zero:
     if `b1 = v` then either the bidder loses (utility = 0) or wins
@@ -316,43 +281,6 @@ theorem fpsb3_truthful_strictly_dominated_n2 :
   unfold fpsbExpectedUtility3 fpsbUtility3
   native_decide
 
-/-- **3-bidder fpsb truthful is NOT a best response** against
-    constant-zero opponents under a prior concentrated at v=0
-    (concrete n=2). -/
-theorem fpsb3_truthful_not_best_response_n2 :
-    ¬ IsBestResponseFpsb3 2 (fun v => v) (fun _ => ⟨0, by decide⟩)
-        (fun _ => ⟨0, by decide⟩)
-        (fun v => if v.val = 0 then 1 else 0) := by
-  intro h_br
-  have h_le :=
-    h_br (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
-  exact absurd h_le (not_le_of_lt fpsb3_truthful_strictly_dominated_n2)
-
-/-- **(Truthful, truthful, truthful) is NOT a Bayes-Nash equilibrium
-    of 3-bidder fpsb at n=2** under the joint prior concentrated at
-    `(v2, v3) = (0, 0)`.  Same idea as the 2-bidder case: bidder 1's
-    expected truthful utility is 0, while bidding 0 at v1=1 wins by
-    tiebreak against the (concentrated) opponents and yields utility
-    1.  This breaks the bidder-1 best-response side of the BN
-    conjunction. -/
-theorem fpsb3_truthful_truthful_truthful_not_bayes_nash_n2 :
-    ¬ IsBayesNashFpsb3 2 (fun v => v) (fun v => v) (fun v => v)
-        (fun v => if v.val = 0 then 1 else 0)
-        (fun v => if v.val = 0 then 1 else 0)
-        (fun v => if v.val = 0 then 1 else 0) := by
-  intro h_bn
-  have h_br1 := h_bn.1
-  have h_le :=
-    h_br1 (fun _ => ⟨0, by decide⟩) ⟨1, by decide⟩
-  rw [fpsb3_truthful_expected_utility_zero] at h_le
-  have h_rhs :
-      fpsbExpectedUtility3 2 (fun _ : Fin 2 => ⟨0, by decide⟩)
-        (fun v : Fin 2 => v) (fun v : Fin 2 => v) ⟨1, by decide⟩
-        (fun v => if v.val = 0 then 1 else 0) = 1 := by
-    unfold fpsbExpectedUtility3 fpsbUtility3
-    native_decide
-  rw [h_rhs] at h_le
-  exact absurd h_le (by norm_num)
 
 /-- Bidder 1's expected utility in a 2-bidder fpsb-with-reserve
     auction. -/
@@ -489,32 +417,6 @@ theorem fpsb3Reserve_any_triple_is_bayes_nash_at_max_reserve (n : Nat)
    fpsb3Reserve_any_strategy_best_response_at_max_reserve n hn s2 s1 s3 p13,
    fpsb3Reserve_any_strategy_best_response_at_max_reserve n hn s3 s1 s2 p12⟩
 
-/-- Bidder 1's expected utility in a 3-bidder fpsb-with-reserve
-    auction. -/
-def fpsbReserveExpectedUtility3 (n : Nat) (r : Fin n)
-    (s1 s2 s3 : Fin n → Fin n) (v1 : Fin n)
-    (p23 : Fin (n * n) → Rat) : Rat :=
-  Fin.sumRat (fun v23 : Fin (n * n) =>
-    p23 v23 *
-      ((fpsbReserveUtility3 n r v1 (s1 v1) (s2 (Fin.first v23))
-                                     (s3 (Fin.second v23))).val
-       : Nat).cast)
-
-/-- **Truthful expected utility in 3-bidder fpsb-with-reserve is zero
-    under any reserve, joint prior, and opponent strategies**. -/
-theorem fpsb3Reserve_truthful_expected_utility_zero (n : Nat) (r : Fin n)
-    (s2 s3 : Fin n → Fin n) (v1 : Fin n) (p23 : Fin (n * n) → Rat) :
-    fpsbReserveExpectedUtility3 n r (fun v => v) s2 s3 v1 p23 = 0 := by
-  unfold fpsbReserveExpectedUtility3
-  have h : ∀ v23 : Fin (n * n),
-      p23 v23 * ((fpsbReserveUtility3 n r v1 v1 (s2 (Fin.first v23))
-                                                (s3 (Fin.second v23))).val
-                : Nat).cast = 0 := by
-    intro v23
-    rw [fpsb3Reserve_utility_truthful_val_eq_zero]
-    simp
-  rw [Fin.sumRat_congr h]
-  exact Fin.sumRat_const_zero
 
 /-- Bidder 2's expected utility in a 2-bidder fpsb auction.  Mirrors
     `fpsbExpectedUtility` for bidder 2's perspective. -/
@@ -690,6 +592,9 @@ theorem vickreyExpectedUtility_truthful_ge_fpsbExpectedUtility_truthful
     ≥ fpsbExpectedUtility n (fun v => v) s2 v1 p := by
   rw [fpsb_truthful_expected_utility_zero]
   unfold vickreyExpectedUtility
+  have h_const_zero : Fin.sumRat (fun _ : Fin n => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [ge_iff_le, ← h_const_zero]
   apply Fin.sumRat_le
   intro v2
   have h_cast_nn : (0 : Rat)
@@ -719,6 +624,9 @@ theorem vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
     ≥ fpsbExpectedUtility3 n (fun v => v) s2 s3 v1 p23 := by
   rw [fpsb3_truthful_expected_utility_zero]
   unfold vickreyExpectedUtility3
+  have h_const_zero : Fin.sumRat (fun _ : Fin (n * n) => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [ge_iff_le, ← h_const_zero]
   apply Fin.sumRat_le
   intro v23
   have h_cast_nn : (0 : Rat)

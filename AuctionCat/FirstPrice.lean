@@ -62,12 +62,12 @@ theorem fpsb_bidder1_allocated_iff_higher_bid (n : Nat) (i : Fin (n * n)) :
     ↔ (Fin.first i).val ≥ (Fin.second i).val := by
   have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
   have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
-  have h2  : 0 < 2 := by decide
+  have h2  : (0 : Nat) < 2 := by decide
   have h2n : 0 < 2 * n := by omega
   unfold fpsbFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
              Fin.first_val, Fin.second_val]
-  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  by_cases h : i.val / n ≤ i.val % n
   · simp [h]
   · simp [h]
 
@@ -79,13 +79,13 @@ theorem fpsb_bidder2_allocated_iff_strict_higher_bid (n : Nat)
     ↔ (Fin.first i).val < (Fin.second i).val := by
   have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
   have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
-  have h2  : 0 < 2 := by decide
+  have h2  : (0 : Nat) < 2 := by decide
   have h2n : 0 < 2 * n := by omega
   unfold fpsbFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
              Fin.first_val, Fin.second_val]
-  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
-  · simp [h]; omega
+  by_cases h : i.val / n ≤ i.val % n
+  · simp [h]
   · simp [h]; omega
 
 /-- **Exactly one winner** in fpsb: bidder 1's allocation and
@@ -96,12 +96,12 @@ theorem fpsb_exactly_one_winner (n : Nat) (i : Fin (n * n)) :
     + (Fin.first (Fin.second (fpsbFn n i))).val = 1 := by
   have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
   have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
-  have h2  : 0 < 2 := by decide
+  have h2  : (0 : Nat) < 2 := by decide
   have h2n : 0 < 2 * n := by omega
   unfold fpsbFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
              Fin.first_val, Fin.second_val]
-  by_cases h : (Fin.first i).val ≥ (Fin.second i).val
+  by_cases h : i.val / n ≤ i.val % n
   · simp [h]
   · simp [h]
 
@@ -174,7 +174,7 @@ theorem fpsbReserve_utility_max_reserve_val_eq_zero (n : Nat) (hn : 0 < n)
     (v b1 b2 : Fin n) :
     (fpsbReserveUtility n ⟨n - 1, by omega⟩ v b1 b2).val = 0 := by
   unfold fpsbReserveUtility
-  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ n - 1
+  by_cases h : b2.val ≤ b1.val ∧ n ≤ b1.val + 1
   · simp [h]
     have hb1 := b1.isLt
     have hv := v.isLt
@@ -230,7 +230,7 @@ theorem fpsbReserve_bidder2_utility_max_reserve_val_eq_zero (n : Nat)
     (hn : 0 < n) (v opp_bid my_bid : Fin n) :
     (fpsbReserveBidder2Util n ⟨n - 1, by omega⟩ v opp_bid my_bid).val = 0 := by
   unfold fpsbReserveBidder2Util
-  by_cases h : opp_bid.val < my_bid.val ∧ my_bid.val ≥ n - 1
+  by_cases h : opp_bid.val < my_bid.val ∧ n ≤ my_bid.val + 1
   · simp [h]
     have hmb := my_bid.isLt
     have hv := v.isLt
