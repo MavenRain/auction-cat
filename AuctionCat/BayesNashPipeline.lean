@@ -2717,6 +2717,58 @@ theorem vickreyReserveBidder3ExpectedUtility3_truthful_nonneg (n : Nat)
   rw [fpsb3Reserve_bidder3_truthful_expected_utility_zero] at h
   exact h
 
+/-- **Comprehensive vickrey ≥ fpsb expected utility comparison
+    results**.  Across all ten bidder-position × bidder-count ×
+    reserve combinations, under truthful play Vickrey's expected
+    bidder utility weakly dominates fpsb's. -/
+theorem vickrey_ge_fpsb_expected_utility_main (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n)
+    (p : Fin n → Rat) (p_a p_b : Fin (n * n) → Rat)
+    (h_nn : ∀ v, 0 ≤ p v)
+    (h_nn_a : ∀ v, 0 ≤ p_a v) (h_nn_b : ∀ v, 0 ≤ p_b v) (v : Fin n) :
+    -- 2-bidder no-reserve
+    vickreyExpectedUtility n (fun v => v) s2 v p
+      ≥ fpsbExpectedUtility n (fun v => v) s2 v p
+    ∧ vickreyBidder2ExpectedUtility n s1 (fun v => v) v p
+      ≥ fpsbBidder2ExpectedUtility n s1 (fun v => v) v p
+    -- 2-bidder with reserve
+    ∧ vickreyReserveExpectedUtility n r (fun v => v) s2 v p
+      ≥ fpsbReserveExpectedUtility n r (fun v => v) s2 v p
+    ∧ vickreyReserveBidder2ExpectedUtility n r s1 (fun v => v) v p
+      ≥ fpsbReserveBidder2ExpectedUtility n r s1 (fun v => v) v p
+    -- 3-bidder no-reserve
+    ∧ vickreyExpectedUtility3 n (fun v => v) s2 s3 v p_a
+      ≥ fpsbExpectedUtility3 n (fun v => v) s2 s3 v p_a
+    ∧ vickreyBidder2ExpectedUtility3 n s1 (fun v => v) s3 v p_a
+      ≥ fpsbBidder2ExpectedUtility3 n s1 (fun v => v) s3 v p_a
+    ∧ vickreyBidder3ExpectedUtility3 n s1 s2 (fun v => v) v p_b
+      ≥ fpsbBidder3ExpectedUtility3 n s1 s2 (fun v => v) v p_b
+    -- 3-bidder with reserve
+    ∧ vickreyReserveExpectedUtility3 n r (fun v => v) s2 s3 v p_a
+      ≥ fpsbReserveExpectedUtility3 n r (fun v => v) s2 s3 v p_a
+    ∧ vickreyReserveBidder2ExpectedUtility3 n r s1 (fun v => v) s3 v p_a
+      ≥ fpsbReserveBidder2ExpectedUtility3 n r s1 (fun v => v) s3 v p_a
+    ∧ vickreyReserveBidder3ExpectedUtility3 n r s1 s2 (fun v => v) v p_b
+      ≥ fpsbReserveBidder3ExpectedUtility3 n r s1 s2 (fun v => v) v p_b :=
+  ⟨vickreyExpectedUtility_truthful_ge_fpsbExpectedUtility_truthful n s2 v p h_nn,
+   vickreyBidder2ExpectedUtility_truthful_ge_fpsbBidder2_truthful n s1 v p h_nn,
+   vickreyReserveExpectedUtility_truthful_ge_fpsbReserveExpectedUtility_truthful
+     n r s2 v p h_nn,
+   vickreyReserveBidder2ExpectedUtility_truthful_ge_fpsbReserveBidder2_truthful
+     n r s1 v p h_nn,
+   vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
+     n s2 s3 v p_a h_nn_a,
+   vickreyBidder2ExpectedUtility3_truthful_ge_fpsbBidder2_truthful
+     n s1 s3 v p_a h_nn_a,
+   vickreyBidder3ExpectedUtility3_truthful_ge_fpsbBidder3_truthful
+     n s1 s2 v p_b h_nn_b,
+   vickreyReserveExpectedUtility3_truthful_ge_fpsbReserveExpectedUtility3_truthful
+     n r s2 s3 v p_a h_nn_a,
+   vickreyReserveBidder2ExpectedUtility3_truthful_ge_fpsbReserveBidder2_truthful
+     n r s1 s3 v p_a h_nn_a,
+   vickreyReserveBidder3ExpectedUtility3_truthful_ge_fpsbReserveBidder3_truthful
+     n r s1 s2 v p_b h_nn_b⟩
+
 /-- **Comprehensive vickrey truthful expected utility nonneg results**.
     Across all ten bidder-position × bidder-count × reserve
     combinations covered above, Vickrey truthful play yields nonneg
