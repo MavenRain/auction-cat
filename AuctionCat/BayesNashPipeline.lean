@@ -2517,4 +2517,29 @@ theorem vickreyReserveUtility3_truthful_ge_fpsbReserveUtility3_truthful
   rw [fpsb3Reserve_utility_truthful_val_eq_zero]
   exact Nat.zero_le _
 
+/-- **Expected vickreyReserve ≥ fpsbReserve under truthful** (2
+    bidders).  RHS is zero (by fpsbReserve_truthful_expected_utility_zero);
+    LHS is nonneg termwise. -/
+theorem vickreyReserveExpectedUtility_truthful_ge_fpsbReserveExpectedUtility_truthful
+    (n : Nat) (r : Fin n) (s2 : Fin n → Fin n) (v1 : Fin n)
+    (p : Fin n → Rat) (h_nn : ∀ v, 0 ≤ p v) :
+    vickreyReserveExpectedUtility n r (fun v => v) s2 v1 p
+    ≥ fpsbReserveExpectedUtility n r (fun v => v) s2 v1 p := by
+  rw [fpsbReserve_truthful_expected_utility_zero]
+  unfold vickreyReserveExpectedUtility
+  have h_const_zero : Fin.sumRat (fun _ : Fin n => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v2
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyReserveUtility n v1 v1 (s2 v2) r).val : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyReserveUtility n v1 v1 (s2 v2) r).val : Nat).cast := by
+        rw [Rat.zero_mul]
+    _ ≤ p v2
+        * ((vickreyReserveUtility n v1 v1 (s2 v2) r).val : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v2) h_cast_nn
+
 end AuctionCat
