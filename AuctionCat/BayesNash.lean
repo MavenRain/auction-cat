@@ -770,4 +770,14 @@ theorem vickreyExpectedUtility3_truthful_nonneg (n : Nat)
   rw [fpsb3_truthful_expected_utility_zero] at h
   exact h
 
+/-- **Bidder-2 pointwise vickrey ≥ fpsb under truthful** (2 bidders).
+    Under truthful bidder 2 play, vickreyBidder2Util's nonneg val
+    dominates fpsbBidder2Util's identically-zero val. -/
+theorem vickreyBidder2Util_truthful_ge_fpsbBidder2Util_truthful (n : Nat)
+    (v opp_bid : Fin n) :
+    (vickreyBidder2Util n v opp_bid v).val
+    ≥ (fpsbBidder2Util n v opp_bid v).val := by
+  rw [fpsb_bidder2_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
 end AuctionCat
