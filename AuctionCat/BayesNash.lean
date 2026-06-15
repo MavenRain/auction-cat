@@ -780,4 +780,20 @@ theorem vickreyBidder2Util_truthful_ge_fpsbBidder2Util_truthful (n : Nat)
   rw [fpsb_bidder2_utility_truthful_val_eq_zero]
   exact Nat.zero_le _
 
+/-- **Bidder-2 pointwise vickrey3 ≥ fpsb3 under truthful** (3 bidders). -/
+theorem vickreyBidder2Util3_truthful_ge_fpsbBidder2Util3_truthful (n : Nat)
+    (v opp_b1 opp_b3 : Fin n) :
+    (vickreyBidder2Util3 n v opp_b1 v opp_b3).val
+    ≥ (fpsbBidder2Util3 n v opp_b1 v opp_b3).val := by
+  rw [fpsb3_bidder2_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
+/-- **Bidder-3 pointwise vickrey3 ≥ fpsb3 under truthful** (3 bidders). -/
+theorem vickreyBidder3Util3_truthful_ge_fpsbBidder3Util3_truthful (n : Nat)
+    (v opp_b1 opp_b2 : Fin n) :
+    (vickreyBidder3Util3 n v opp_b1 opp_b2 v).val
+    ≥ (fpsbBidder3Util3 n v opp_b1 opp_b2 v).val := by
+  rw [fpsb3_bidder3_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
 end AuctionCat
