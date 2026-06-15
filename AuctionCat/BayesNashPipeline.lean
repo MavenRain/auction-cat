@@ -2508,4 +2508,13 @@ theorem vickreyReserveUtility_truthful_ge_fpsbReserveUtility_truthful
   rw [fpsbReserve_utility_truthful_val_eq_zero]
   exact Nat.zero_le _
 
+/-- **Pointwise vickreyReserve3 ≥ fpsbReserve3 under truthful** (3
+    bidders).  Same argument as the 2-bidder case. -/
+theorem vickreyReserveUtility3_truthful_ge_fpsbReserveUtility3_truthful
+    (n : Nat) (r v b2 b3 : Fin n) :
+    (vickreyReserveUtility3 n v v b2 b3 r).val
+    ≥ (fpsbReserveUtility3 n r v v b2 b3).val := by
+  rw [fpsb3Reserve_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
 end AuctionCat
