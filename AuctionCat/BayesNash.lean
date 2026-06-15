@@ -831,4 +831,36 @@ theorem vickrey_ge_fpsb_pointwise_main (n : Nat) (v b2 b3 opp_bid : Fin n) :
    vickreyBidder2Util3_truthful_ge_fpsbBidder2Util3_truthful n v opp_bid b3,
    vickreyBidder3Util3_truthful_ge_fpsbBidder3Util3_truthful n v opp_bid b2⟩
 
+/-- **Comprehensive fpsb truthful expected utility = 0 results**.
+    Across all ten bidder-position × bidder-count × reserve
+    combinations, truthful play in fpsb yields zero expected
+    utility regardless of opponent strategy and prior. -/
+theorem fpsb_truthful_expected_utility_zero_main (n : Nat) (r : Fin n)
+    (s1 s2 s3 : Fin n → Fin n)
+    (p : Fin n → Rat) (p_a p_b : Fin (n * n) → Rat) (v : Fin n) :
+    -- 2-bidder no-reserve
+    fpsbExpectedUtility n (fun v => v) s2 v p = 0
+    ∧ fpsbBidder2ExpectedUtility n s1 (fun v => v) v p = 0
+    -- 2-bidder with reserve
+    ∧ fpsbReserveExpectedUtility n r (fun v => v) s2 v p = 0
+    ∧ fpsbReserveBidder2ExpectedUtility n r s1 (fun v => v) v p = 0
+    -- 3-bidder no-reserve
+    ∧ fpsbExpectedUtility3 n (fun v => v) s2 s3 v p_a = 0
+    ∧ fpsbBidder2ExpectedUtility3 n s1 (fun v => v) s3 v p_a = 0
+    ∧ fpsbBidder3ExpectedUtility3 n s1 s2 (fun v => v) v p_b = 0
+    -- 3-bidder with reserve
+    ∧ fpsbReserveExpectedUtility3 n r (fun v => v) s2 s3 v p_a = 0
+    ∧ fpsbReserveBidder2ExpectedUtility3 n r s1 (fun v => v) s3 v p_a = 0
+    ∧ fpsbReserveBidder3ExpectedUtility3 n r s1 s2 (fun v => v) v p_b = 0 :=
+  ⟨fpsb_truthful_expected_utility_zero n s2 v p,
+   fpsb_bidder2_truthful_expected_utility_zero n s1 v p,
+   fpsbReserve_truthful_expected_utility_zero n r s2 v p,
+   fpsbReserve_bidder2_truthful_expected_utility_zero n r s1 v p,
+   fpsb3_truthful_expected_utility_zero n s2 s3 v p_a,
+   fpsb3_bidder2_truthful_expected_utility_zero n s1 s3 v p_a,
+   fpsb3_bidder3_truthful_expected_utility_zero n s1 s2 v p_b,
+   fpsb3Reserve_truthful_expected_utility_zero n r s2 s3 v p_a,
+   fpsb3Reserve_bidder2_truthful_expected_utility_zero n r s1 s3 v p_a,
+   fpsb3Reserve_bidder3_truthful_expected_utility_zero n r s1 s2 v p_b⟩
+
 end AuctionCat
