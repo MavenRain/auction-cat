@@ -235,4 +235,12 @@ example :
   rw [h]
   native_decide
 
+/-- **Concrete fpsb3 truthful = 0** at `n = 3`, uniform joint prior
+    `1/9`, `v1 = 2`. -/
+example :
+    fpsbExpectedUtility3 3 (fun v => v) (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 0 :=
+  fpsb3_truthful_expected_utility_zero 3 (fun v => v) (fun v => v)
+    ⟨2, by decide⟩ (fun _ => (1/9 : Rat))
+
 end AuctionCat
