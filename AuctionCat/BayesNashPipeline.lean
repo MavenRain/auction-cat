@@ -2622,4 +2622,17 @@ theorem vickreyReserveBidder2ExpectedUtility_truthful_ge_fpsbReserveBidder2_trut
           : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v1) h_cast_nn
 
+/-- **Bidder-2 vickreyReserve truthful expected utility is nonneg**
+    (2 bidders).  Corollary of the bidder-2 reserve comparison and
+    fpsbReserve bidder-2 truthful = 0. -/
+theorem vickreyReserveBidder2ExpectedUtility_truthful_nonneg (n : Nat)
+    (r : Fin n) (s1 : Fin n → Fin n) (v2 : Fin n) (p : Fin n → Rat)
+    (h_nn : ∀ v, 0 ≤ p v) :
+    0 ≤ vickreyReserveBidder2ExpectedUtility n r s1 (fun v => v) v2 p := by
+  have h :=
+    vickreyReserveBidder2ExpectedUtility_truthful_ge_fpsbReserveBidder2_truthful
+      n r s1 v2 p h_nn
+  rw [fpsbReserve_bidder2_truthful_expected_utility_zero] at h
+  exact h
+
 end AuctionCat
