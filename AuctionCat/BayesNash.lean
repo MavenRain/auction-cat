@@ -796,4 +796,23 @@ theorem vickreyBidder3Util3_truthful_ge_fpsbBidder3Util3_truthful (n : Nat)
   rw [fpsb3_bidder3_utility_truthful_val_eq_zero]
   exact Nat.zero_le _
 
+/-- **Bundled pointwise vickrey ≥ fpsb under truthful** across all
+    bidder positions at 2 and 3 bidders. -/
+theorem vickrey_ge_fpsb_pointwise_main (n : Nat) (v b2 b3 opp_bid : Fin n) :
+    -- 2-bidder
+    (vickreyUtility n v v b2).val ≥ (fpsbUtility n v v b2).val
+    ∧ (vickreyBidder2Util n v opp_bid v).val
+      ≥ (fpsbBidder2Util n v opp_bid v).val
+    -- 3-bidder
+    ∧ (vickreyUtility3 n v v b2 b3).val ≥ (fpsbUtility3 n v v b2 b3).val
+    ∧ (vickreyBidder2Util3 n v opp_bid v b3).val
+      ≥ (fpsbBidder2Util3 n v opp_bid v b3).val
+    ∧ (vickreyBidder3Util3 n v opp_bid b2 v).val
+      ≥ (fpsbBidder3Util3 n v opp_bid b2 v).val :=
+  ⟨vickreyUtility_truthful_ge_fpsbUtility_truthful n v b2,
+   vickreyBidder2Util_truthful_ge_fpsbBidder2Util_truthful n v opp_bid,
+   vickreyUtility3_truthful_ge_fpsbUtility3_truthful n v b2 b3,
+   vickreyBidder2Util3_truthful_ge_fpsbBidder2Util3_truthful n v opp_bid b3,
+   vickreyBidder3Util3_truthful_ge_fpsbBidder3Util3_truthful n v opp_bid b2⟩
+
 end AuctionCat
