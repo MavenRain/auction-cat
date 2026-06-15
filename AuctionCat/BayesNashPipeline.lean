@@ -2597,4 +2597,29 @@ theorem vickreyReserveExpectedUtility3_truthful_nonneg (n : Nat) (r : Fin n)
   rw [fpsb3Reserve_truthful_expected_utility_zero] at h
   exact h
 
+/-- **Bidder-2 expected vickreyReserve ≥ fpsbReserve under truthful**
+    (2 bidders).  Same proof pattern as the bidder-1 reserve version. -/
+theorem vickreyReserveBidder2ExpectedUtility_truthful_ge_fpsbReserveBidder2_truthful
+    (n : Nat) (r : Fin n) (s1 : Fin n → Fin n) (v2 : Fin n)
+    (p : Fin n → Rat) (h_nn : ∀ v, 0 ≤ p v) :
+    vickreyReserveBidder2ExpectedUtility n r s1 (fun v => v) v2 p
+    ≥ fpsbReserveBidder2ExpectedUtility n r s1 (fun v => v) v2 p := by
+  rw [fpsbReserve_bidder2_truthful_expected_utility_zero]
+  unfold vickreyReserveBidder2ExpectedUtility
+  have h_const_zero : Fin.sumRat (fun _ : Fin n => (0 : Rat)) = 0 :=
+    Fin.sumRat_const_zero
+  rw [← h_const_zero]
+  apply Fin.sumRat_le_local
+  intro v1
+  have h_cast_nn : (0 : Rat)
+      ≤ ((vickreyReserveBidder2Util n v2 (s1 v1) v2 r).val : Nat).cast := by
+    exact_mod_cast Nat.zero_le _
+  calc (0 : Rat)
+      = 0 * ((vickreyReserveBidder2Util n v2 (s1 v1) v2 r).val
+            : Nat).cast := by rw [Rat.zero_mul]
+    _ ≤ p v1
+        * ((vickreyReserveBidder2Util n v2 (s1 v1) v2 r).val
+          : Nat).cast :=
+        Rat.mul_le_mul_of_nonneg_right (h_nn v1) h_cast_nn
+
 end AuctionCat
