@@ -176,4 +176,22 @@ example :
   unfold expectedRevenue3 uniformPrior3
   native_decide
 
+/-- vickrey bidder-1 truthful expected utility at `n = 3` uniform
+    prior `1/3`, `v1 = 2` is nonneg. -/
+example :
+    0 ≤ vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) := by
+  apply vickreyExpectedUtility_truthful_nonneg
+  intro _
+  native_decide
+
+/-- vickrey3 bidder-1 truthful expected utility at `n = 3` uniform
+    joint prior `1/9`, `v1 = 2` is nonneg. -/
+example :
+    0 ≤ vickreyExpectedUtility3 3 (fun v => v) (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) := by
+  apply vickreyExpectedUtility3_truthful_nonneg
+  intro _
+  native_decide
+
 end AuctionCat
