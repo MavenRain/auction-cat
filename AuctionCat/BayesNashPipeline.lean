@@ -2693,4 +2693,28 @@ theorem vickreyReserveBidder3ExpectedUtility3_truthful_ge_fpsbReserveBidder3_tru
           : Nat).cast :=
         Rat.mul_le_mul_of_nonneg_right (h_nn v12) h_cast_nn
 
+/-- **Bidder-2 vickreyReserve3 truthful expected utility is nonneg**
+    (3 bidders). -/
+theorem vickreyReserveBidder2ExpectedUtility3_truthful_nonneg (n : Nat)
+    (r : Fin n) (s1 s3 : Fin n → Fin n) (v2 : Fin n)
+    (p13 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ p13 v) :
+    0 ≤ vickreyReserveBidder2ExpectedUtility3 n r s1 (fun v => v) s3 v2 p13 := by
+  have h :=
+    vickreyReserveBidder2ExpectedUtility3_truthful_ge_fpsbReserveBidder2_truthful
+      n r s1 s3 v2 p13 h_nn
+  rw [fpsb3Reserve_bidder2_truthful_expected_utility_zero] at h
+  exact h
+
+/-- **Bidder-3 vickreyReserve3 truthful expected utility is nonneg**
+    (3 bidders). -/
+theorem vickreyReserveBidder3ExpectedUtility3_truthful_nonneg (n : Nat)
+    (r : Fin n) (s1 s2 : Fin n → Fin n) (v3 : Fin n)
+    (p12 : Fin (n * n) → Rat) (h_nn : ∀ v, 0 ≤ p12 v) :
+    0 ≤ vickreyReserveBidder3ExpectedUtility3 n r s1 s2 (fun v => v) v3 p12 := by
+  have h :=
+    vickreyReserveBidder3ExpectedUtility3_truthful_ge_fpsbReserveBidder3_truthful
+      n r s1 s2 v3 p12 h_nn
+  rw [fpsb3Reserve_bidder3_truthful_expected_utility_zero] at h
+  exact h
+
 end AuctionCat
