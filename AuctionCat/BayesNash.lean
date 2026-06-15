@@ -482,6 +482,22 @@ def IsBayesNashFpsb3Reserve (n : Nat) (r : Fin n)
   ∧ IsBestResponseFpsb3Reserve n r s2 s1 s3 p13
   ∧ IsBestResponseFpsb3Reserve n r s3 s1 s2 p12
 
+/-- **Truthful expected utility in 3-bidder fpsbReserve is zero
+    under any reserve, joint prior, and opponent strategies**. -/
+theorem fpsb3Reserve_truthful_expected_utility_zero (n : Nat) (r : Fin n)
+    (s2 s3 : Fin n → Fin n) (v1 : Fin n) (p23 : Fin (n * n) → Rat) :
+    fpsbReserveExpectedUtility3 n r (fun v => v) s2 s3 v1 p23 = 0 := by
+  unfold fpsbReserveExpectedUtility3
+  have h : ∀ v23 : Fin (n * n),
+      p23 v23 * ((fpsbReserveUtility3 n r v1 v1 (s2 (Fin.first v23))
+                                                (s3 (Fin.second v23))).val
+                : Nat).cast = 0 := by
+    intro v23
+    rw [fpsb3Reserve_utility_truthful_val_eq_zero]
+    simp
+  rw [Fin.sumRat_congr h]
+  exact Fin.sumRat_const_zero
+
 /-- **At maximal reserve, every 3-bidder fpsbReserve strategy yields
     zero expected utility** for bidder 1. -/
 theorem fpsb3Reserve_expected_utility_max_reserve_zero (n : Nat) (hn : 0 < n)
