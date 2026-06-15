@@ -261,4 +261,22 @@ example :
   rw [h_fpsb, h_vk]
   native_decide
 
+/-- **Strict bidder-1 vickrey > fpsb gap** at `n = 3`, uniform 1/3,
+    `v1 = 2`: `1 > 0`. -/
+example :
+    fpsbExpectedUtility 3 (fun v => v) (fun v => v) ⟨2, by decide⟩
+        (fun _ => (1/3 : Rat))
+    < vickreyExpectedUtility 3 (fun v => v) (fun v => v) ⟨2, by decide⟩
+        (fun _ => (1/3 : Rat)) := by
+  have h_fpsb : fpsbExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 0 :=
+    fpsb_truthful_expected_utility_zero 3 (fun v => v) ⟨2, by decide⟩
+      (fun _ => (1/3 : Rat))
+  have h_vk : vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold vickreyExpectedUtility vickreyUtility
+    native_decide
+  rw [h_fpsb, h_vk]
+  native_decide
+
 end AuctionCat
