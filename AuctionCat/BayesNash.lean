@@ -859,6 +859,22 @@ theorem vickreyBidder3Util3_truthful_val_nonneg (n : Nat)
     0 ≤ (vickreyBidder3Util3 n v opp_b1 opp_b2 v).val :=
   Nat.zero_le _
 
+/-- **Bundled pointwise vickrey truthful nonneg utility vals** across
+    all five bidder-position × bidder-count combinations. -/
+theorem vickrey_truthful_val_nonneg_main (n : Nat) (v b2 b3 opp_bid : Fin n) :
+    -- 2-bidder
+    0 ≤ (vickreyUtility n v v b2).val
+    ∧ 0 ≤ (vickreyBidder2Util n v opp_bid v).val
+    -- 3-bidder
+    ∧ 0 ≤ (vickreyUtility3 n v v b2 b3).val
+    ∧ 0 ≤ (vickreyBidder2Util3 n v opp_bid v b3).val
+    ∧ 0 ≤ (vickreyBidder3Util3 n v opp_bid b2 v).val :=
+  ⟨vickreyUtility_truthful_val_nonneg n v b2,
+   vickreyBidder2Util_truthful_val_nonneg n v opp_bid,
+   vickreyUtility3_truthful_val_nonneg n v b2 b3,
+   vickreyBidder2Util3_truthful_val_nonneg n v opp_bid b3,
+   vickreyBidder3Util3_truthful_val_nonneg n v opp_bid b2⟩
+
 /-- **Comprehensive fpsb truthful expected utility = 0 results**.
     Across all ten bidder-position × bidder-count × reserve
     combinations, truthful play in fpsb yields zero expected
