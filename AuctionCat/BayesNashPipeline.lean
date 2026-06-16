@@ -2823,4 +2823,36 @@ theorem vickreyReserveUtility3_val_le_valuation (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- **Pointwise bound**: vickreyReserve bidder-2 utility is at most
+    the valuation. -/
+theorem vickreyReserveBidder2Util_val_le_valuation (n : Nat)
+    (v opp_bid my_bid r : Fin n) :
+    (vickreyReserveBidder2Util n v opp_bid my_bid r).val ≤ v.val := by
+  unfold vickreyReserveBidder2Util
+  by_cases h : opp_bid.val < my_bid.val ∧ my_bid.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
+/-- **Pointwise bound**: vickreyReserve3 bidder-2 utility is at most
+    the valuation. -/
+theorem vickreyReserveBidder2Util3_val_le_valuation (n : Nat)
+    (v opp_b1 my_b2 opp_b3 r : Fin n) :
+    (vickreyReserveBidder2Util3 n v opp_b1 my_b2 opp_b3 r).val ≤ v.val := by
+  unfold vickreyReserveBidder2Util3
+  by_cases h :
+      opp_b1.val < my_b2.val ∧ my_b2.val ≥ opp_b3.val ∧ my_b2.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
+/-- **Pointwise bound**: vickreyReserve3 bidder-3 utility is at most
+    the valuation. -/
+theorem vickreyReserveBidder3Util3_val_le_valuation (n : Nat)
+    (v opp_b1 opp_b2 my_b3 r : Fin n) :
+    (vickreyReserveBidder3Util3 n v opp_b1 opp_b2 my_b3 r).val ≤ v.val := by
+  unfold vickreyReserveBidder3Util3
+  by_cases h :
+      opp_b1.val < my_b3.val ∧ opp_b2.val < my_b3.val ∧ my_b3.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
