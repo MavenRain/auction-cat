@@ -428,4 +428,12 @@ example (v b2 : Fin 3) :
     0 ≤ (vickreyUtility 3 v v b2).val :=
   (vickrey_truthful_val_nonneg_main 3 v b2 ⟨0, by decide⟩ ⟨0, by decide⟩).1
 
+/-- **Concrete vickrey expected utility at n=2** uniform prior `1/2`,
+    `v1 = 1` evaluates to `1/2`. -/
+example :
+    vickreyExpectedUtility 2 (fun v => v) (fun v => v) ⟨1, by decide⟩
+        (fun _ => (1/2 : Rat)) = 1 / 2 := by
+  unfold vickreyExpectedUtility vickreyUtility
+  native_decide
+
 end AuctionCat
