@@ -480,4 +480,20 @@ example :
     native_decide
   rw [h1, h2]
 
+/-- **fpsb3 bidder-2 truthful = 0** at `n = 3`, uniform joint prior
+    `1/9`, `v2 = 2`. -/
+example :
+    fpsbBidder2ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 0 :=
+  fpsb3_bidder2_truthful_expected_utility_zero 3 (fun v => v)
+    (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat))
+
+/-- **fpsb3 bidder-3 truthful = 0** at `n = 3`, uniform joint prior
+    `1/9`, `v3 = 2`. -/
+example :
+    fpsbBidder3ExpectedUtility3 3 (fun v => v) (fun v => v)
+        (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) = 0 :=
+  fpsb3_bidder3_truthful_expected_utility_zero 3 (fun v => v)
+    (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat))
+
 end AuctionCat
