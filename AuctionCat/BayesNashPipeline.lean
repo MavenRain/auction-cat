@@ -2803,4 +2803,24 @@ theorem vickrey_truthful_expected_utility_nonneg_main (n : Nat) (r : Fin n)
    vickreyReserveBidder2ExpectedUtility3_truthful_nonneg n r s1 s3 v p_a h_nn_a,
    vickreyReserveBidder3ExpectedUtility3_truthful_nonneg n r s1 s2 v p_b h_nn_b⟩
 
+/-- **Pointwise bound**: vickreyReserve utility is at most the
+    valuation.  When winning, utility = `v - max(r, b2) ≤ v`; when
+    losing, utility = 0 ≤ v. -/
+theorem vickreyReserveUtility_val_le_valuation (n : Nat) (v b1 b2 r : Fin n) :
+    (vickreyReserveUtility n v b1 b2 r).val ≤ v.val := by
+  unfold vickreyReserveUtility
+  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
+/-- **Pointwise bound**: vickreyReserve3 utility is at most the
+    valuation. -/
+theorem vickreyReserveUtility3_val_le_valuation (n : Nat)
+    (v b1 b2 b3 r : Fin n) :
+    (vickreyReserveUtility3 n v b1 b2 b3 r).val ≤ v.val := by
+  unfold vickreyReserveUtility3
+  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ b3.val ∧ b1.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 end AuctionCat
