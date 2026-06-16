@@ -421,4 +421,11 @@ example :
   intro _
   native_decide
 
+/-- **Bidder-1 vickrey truthful val nonneg via the bundle** at
+    concrete arbitrary inputs.  Direct projection of the first
+    component of `vickrey_truthful_val_nonneg_main`. -/
+example (v b2 : Fin 3) :
+    0 ≤ (vickreyUtility 3 v v b2).val :=
+  (vickrey_truthful_val_nonneg_main 3 v b2 ⟨0, by decide⟩ ⟨0, by decide⟩).1
+
 end AuctionCat
