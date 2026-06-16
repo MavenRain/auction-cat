@@ -319,4 +319,15 @@ example :
   intro _
   native_decide
 
+/-- **Pipeline-level spsbAuction ≥ fpsbAuction via the dominance
+    theorem** at `n = 3`, uniform prior `1/3`, `v1 = 2`. -/
+example :
+    auctionExpectedBidder1Util 3 (spsbAuction 3)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+    ≥ auctionExpectedBidder1Util 3 (fpsbAuction 3)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ := by
+  apply auctionExpectedBidder1Util_spsbAuction_ge_fpsbAuction
+  intro _
+  native_decide
+
 end AuctionCat
