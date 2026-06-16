@@ -853,6 +853,44 @@ theorem fpsbUtility_val_le_valuation (n : Nat) (v b1 b2 : Fin n) :
   · simp [h]
   · simp [h]
 
+/-- **Pointwise bound**: vickrey bidder-2 utility is at most the
+    valuation. -/
+theorem vickreyBidder2Util_val_le_valuation (n : Nat)
+    (v opp_bid my_bid : Fin n) :
+    (vickreyBidder2Util n v opp_bid my_bid).val ≤ v.val := by
+  unfold vickreyBidder2Util
+  by_cases h : opp_bid.val < my_bid.val
+  · simp [h]
+  · simp [h]
+
+/-- **Pointwise bound**: fpsb bidder-2 utility is at most the
+    valuation. -/
+theorem fpsbBidder2Util_val_le_valuation (n : Nat)
+    (v opp_bid my_bid : Fin n) :
+    (fpsbBidder2Util n v opp_bid my_bid).val ≤ v.val := by
+  unfold fpsbBidder2Util
+  by_cases h : opp_bid.val < my_bid.val
+  · simp [h]
+  · simp [h]
+
+/-- **Pointwise bound**: vickrey3 bidder-1 utility is at most the
+    valuation. -/
+theorem vickreyUtility3_val_le_valuation (n : Nat) (v b1 b2 b3 : Fin n) :
+    (vickreyUtility3 n v b1 b2 b3).val ≤ v.val := by
+  unfold vickreyUtility3
+  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ b3.val
+  · simp [h]
+  · simp [h]
+
+/-- **Pointwise bound**: fpsb3 bidder-1 utility is at most the
+    valuation. -/
+theorem fpsbUtility3_val_le_valuation (n : Nat) (v b1 b2 b3 : Fin n) :
+    (fpsbUtility3 n v b1 b2 b3).val ≤ v.val := by
+  unfold fpsbUtility3
+  by_cases h : b1.val ≥ b2.val ∧ b1.val ≥ b3.val
+  · simp [h]
+  · simp [h]
+
 /-- **Pointwise nonneg of vickrey bidder-2 truthful utility val** (2 bidders). -/
 theorem vickreyBidder2Util_truthful_val_nonneg (n : Nat)
     (v opp_bid : Fin n) :
