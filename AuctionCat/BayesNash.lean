@@ -959,6 +959,28 @@ theorem fpsbReserveUtility3_val_le_valuation (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- **Pointwise bound**: fpsbReserve3 bidder-2 utility is at most the
+    valuation. -/
+theorem fpsbReserveBidder2Util3_val_le_valuation (n : Nat)
+    (r v opp_b1 my_b2 opp_b3 : Fin n) :
+    (fpsbReserveBidder2Util3 n r v opp_b1 my_b2 opp_b3).val ≤ v.val := by
+  unfold fpsbReserveBidder2Util3
+  by_cases h :
+      opp_b1.val < my_b2.val ∧ my_b2.val ≥ opp_b3.val ∧ my_b2.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
+/-- **Pointwise bound**: fpsbReserve3 bidder-3 utility is at most the
+    valuation. -/
+theorem fpsbReserveBidder3Util3_val_le_valuation (n : Nat)
+    (r v opp_b1 opp_b2 my_b3 : Fin n) :
+    (fpsbReserveBidder3Util3 n r v opp_b1 opp_b2 my_b3).val ≤ v.val := by
+  unfold fpsbReserveBidder3Util3
+  by_cases h :
+      opp_b1.val < my_b3.val ∧ opp_b2.val < my_b3.val ∧ my_b3.val ≥ r.val
+  · simp [h]
+  · simp [h]
+
 /-- **Bundled pointwise utility ≤ valuation bounds** across all ten
     {vickrey, fpsb} × {bidder 1, 2, 3} × {2-bidder, 3-bidder}
     combinations. -/
