@@ -385,4 +385,29 @@ example :
   intro _
   native_decide
 
+/-- **4-way pipeline dominance bundle via main summary** at `n = 3`,
+    `r = 1`, uniform priors.  Extracts all four bidder-1 dominance
+    inequalities from one application of
+    `spsb_ge_fpsb_pipeline_main`. -/
+example :
+    auctionExpectedBidder1Util 3 (spsbAuction 3)
+        (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+      ≥ auctionExpectedBidder1Util 3 (fpsbAuction 3)
+        (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+    ∧ auctionExpectedBidder1Util 3 (spsbReserveAuction 3 ⟨1, by decide⟩)
+        (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+      ≥ auctionExpectedBidder1Util 3 (fpsbReserveAuction 3 ⟨1, by decide⟩)
+        (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+    ∧ auctionExpectedBidder1Util3 3 (spsb3Auction 3)
+        (fun _ => (1/9 : Rat)) ⟨2, by decide⟩
+      ≥ auctionExpectedBidder1Util3 3 (fpsb3Auction 3)
+        (fun _ => (1/9 : Rat)) ⟨2, by decide⟩
+    ∧ auctionExpectedBidder1Util3 3 (spsb3ReserveAuction 3 ⟨1, by decide⟩)
+        (fun _ => (1/9 : Rat)) ⟨2, by decide⟩
+      ≥ auctionExpectedBidder1Util3 3 (fpsb3ReserveAuction 3 ⟨1, by decide⟩)
+        (fun _ => (1/9 : Rat)) ⟨2, by decide⟩ := by
+  apply spsb_ge_fpsb_pipeline_main
+  · intro _; native_decide
+  · intro _; native_decide
+
 end AuctionCat
