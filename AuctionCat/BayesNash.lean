@@ -845,6 +845,14 @@ theorem vickreyUtility_val_le_valuation (n : Nat) (v b1 b2 : Fin n) :
   · simp [h]
   · simp [h]
 
+/-- **Pointwise bound**: fpsb utility is at most the valuation. -/
+theorem fpsbUtility_val_le_valuation (n : Nat) (v b1 b2 : Fin n) :
+    (fpsbUtility n v b1 b2).val ≤ v.val := by
+  unfold fpsbUtility
+  by_cases h : b1.val ≥ b2.val
+  · simp [h]
+  · simp [h]
+
 /-- **Pointwise nonneg of vickrey bidder-2 truthful utility val** (2 bidders). -/
 theorem vickreyBidder2Util_truthful_val_nonneg (n : Nat)
     (v opp_bid : Fin n) :
