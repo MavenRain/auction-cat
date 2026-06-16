@@ -831,6 +831,23 @@ theorem vickrey_ge_fpsb_pointwise_main (n : Nat) (v b2 b3 opp_bid : Fin n) :
    vickreyBidder2Util3_truthful_ge_fpsbBidder2Util3_truthful n v opp_bid b3,
    vickreyBidder3Util3_truthful_ge_fpsbBidder3Util3_truthful n v opp_bid b2⟩
 
+/-- **Pointwise nonneg of vickrey3 bidder-1 truthful utility val**. -/
+theorem vickreyUtility3_truthful_val_nonneg (n : Nat) (v b2 b3 : Fin n) :
+    0 ≤ (vickreyUtility3 n v v b2 b3).val :=
+  Nat.zero_le _
+
+/-- **Pointwise nonneg of vickrey3 bidder-2 truthful utility val**. -/
+theorem vickreyBidder2Util3_truthful_val_nonneg (n : Nat)
+    (v opp_b1 opp_b3 : Fin n) :
+    0 ≤ (vickreyBidder2Util3 n v opp_b1 v opp_b3).val :=
+  Nat.zero_le _
+
+/-- **Pointwise nonneg of vickrey3 bidder-3 truthful utility val**. -/
+theorem vickreyBidder3Util3_truthful_val_nonneg (n : Nat)
+    (v opp_b1 opp_b2 : Fin n) :
+    0 ≤ (vickreyBidder3Util3 n v opp_b1 opp_b2 v).val :=
+  Nat.zero_le _
+
 /-- **Comprehensive fpsb truthful expected utility = 0 results**.
     Across all ten bidder-position × bidder-count × reserve
     combinations, truthful play in fpsb yields zero expected
