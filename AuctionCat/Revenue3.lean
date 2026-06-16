@@ -227,4 +227,18 @@ theorem outcomeRevenue3_swap_23_symmetric (n : Nat)
   simp only [Fin.first_pair, Fin.second_pair h_pos, Fin.second_pair h_pos2]
   omega
 
+/-- **Swap bidder 1 ↔ bidder 2 revenue symmetry**: exchanging the
+    bidder 1 and bidder 2 outcomes preserves total revenue. -/
+theorem outcomeRevenue3_swap_12_symmetric (n : Nat)
+    (i : Fin (((2 * n) * (2 * n)) * (2 * n))) (h_pos : 0 < 2 * n)
+    (h_pos2 : 0 < (2 * n) * (2 * n)) :
+    outcomeRevenue3 n i
+    = outcomeRevenue3 n
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i))
+                             (Fin.first (Fin.first i)))
+                   (Fin.second i)) := by
+  unfold outcomeRevenue3
+  simp only [Fin.first_pair, Fin.second_pair h_pos, Fin.second_pair h_pos2]
+  omega
+
 end AuctionCat
