@@ -363,4 +363,15 @@ example :
   intro _
   native_decide
 
+/-- **Bidder-2 pipeline-level spsbAuction ≥ fpsbAuction** at `n = 3`,
+    uniform prior `1/3`, `v2 = 2`. -/
+example :
+    auctionExpectedBidder2Util 3 (spsbAuction 3)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩
+    ≥ auctionExpectedBidder2Util 3 (fpsbAuction 3)
+      (fun _ => (1/3 : Rat)) ⟨2, by decide⟩ := by
+  apply auctionExpectedBidder2Util_spsbAuction_ge_fpsbAuction
+  intro _
+  native_decide
+
 end AuctionCat
