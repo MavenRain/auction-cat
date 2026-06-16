@@ -462,4 +462,22 @@ example :
   rw [h_fpsb, h_vk]
   native_decide
 
+/-- **Concrete vickrey bidder-1 utility = bidder-2 utility at n=3**
+    uniform `1/3`, `v = 2`: both perspectives give `1`.  Reflects
+    the symmetric configuration. -/
+example :
+    vickreyExpectedUtility 3 (fun v => v) (fun v => v) ⟨2, by decide⟩
+        (fun _ => (1/3 : Rat))
+    = vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) := by
+  have h1 : vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold vickreyExpectedUtility vickreyUtility
+    native_decide
+  have h2 : vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+    unfold vickreyBidder2ExpectedUtility vickreyBidder2Util
+    native_decide
+  rw [h1, h2]
+
 end AuctionCat
