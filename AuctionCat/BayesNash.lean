@@ -836,6 +836,15 @@ theorem vickreyUtility_truthful_val_nonneg (n : Nat) (v b2 : Fin n) :
     0 ≤ (vickreyUtility n v v b2).val :=
   Nat.zero_le _
 
+/-- **Pointwise bound**: vickrey utility is at most the valuation.
+    Captures that winners can't profit more than their valuation. -/
+theorem vickreyUtility_val_le_valuation (n : Nat) (v b1 b2 : Fin n) :
+    (vickreyUtility n v b1 b2).val ≤ v.val := by
+  unfold vickreyUtility
+  by_cases h : b1.val ≥ b2.val
+  · simp [h]
+  · simp [h]
+
 /-- **Pointwise nonneg of vickrey bidder-2 truthful utility val** (2 bidders). -/
 theorem vickreyBidder2Util_truthful_val_nonneg (n : Nat)
     (v opp_bid : Fin n) :
