@@ -273,4 +273,13 @@ theorem dutch_is_revenue_equivalent_fpsb (n : Nat)
     IsRevenueEquivalent n (dutchAuction n) (firstPriceSealedBid n) prior :=
   rfl
 
+/-- **Pointwise Dutch ≥ English revenue** under truthful play.
+    Combines the strategic-equivalence rfls (Dutch = FPSB, English =
+    SPSB at the kernel level) with the pointwise FPSB ≥ SPSB revenue
+    dominance.  Dutch extracts max bid, English extracts min bid, so
+    Dutch ≥ English pointwise. -/
+theorem dutch_revenue_ge_english (n : Nat) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbFn n i) ≥ outcomeRevenue n (spsbFn n i) :=
+  fpsb_revenue_ge_spsb n i
+
 end AuctionCat
