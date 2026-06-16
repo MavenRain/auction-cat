@@ -2855,4 +2855,32 @@ theorem vickreyReserveBidder3Util3_val_le_valuation (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- **Bundled vickrey/fpsb reserve utility ≤ valuation bounds**
+    across all ten {vickrey, fpsb} × {bidder 1, 2, 3} × {2-bidder,
+    3-bidder} × {with reserve} combinations. -/
+theorem reserve_utility_val_le_valuation_main (n : Nat)
+    (v b1 b2 b3 opp_bid r : Fin n) :
+    -- 2-bidder reserve
+    (vickreyReserveUtility n v b1 b2 r).val ≤ v.val
+    ∧ (fpsbReserveUtility n r v b1 b2).val ≤ v.val
+    ∧ (vickreyReserveBidder2Util n v opp_bid b1 r).val ≤ v.val
+    ∧ (fpsbReserveBidder2Util n r v opp_bid b1).val ≤ v.val
+    -- 3-bidder reserve
+    ∧ (vickreyReserveUtility3 n v b1 b2 b3 r).val ≤ v.val
+    ∧ (fpsbReserveUtility3 n r v b1 b2 b3).val ≤ v.val
+    ∧ (vickreyReserveBidder2Util3 n v opp_bid b1 b3 r).val ≤ v.val
+    ∧ (fpsbReserveBidder2Util3 n r v opp_bid b1 b3).val ≤ v.val
+    ∧ (vickreyReserveBidder3Util3 n v opp_bid b2 b1 r).val ≤ v.val
+    ∧ (fpsbReserveBidder3Util3 n r v opp_bid b2 b1).val ≤ v.val :=
+  ⟨vickreyReserveUtility_val_le_valuation n v b1 b2 r,
+   fpsbReserveUtility_val_le_valuation n r v b1 b2,
+   vickreyReserveBidder2Util_val_le_valuation n v opp_bid b1 r,
+   fpsbReserveBidder2Util_val_le_valuation n r v opp_bid b1,
+   vickreyReserveUtility3_val_le_valuation n v b1 b2 b3 r,
+   fpsbReserveUtility3_val_le_valuation n r v b1 b2 b3,
+   vickreyReserveBidder2Util3_val_le_valuation n v opp_bid b1 b3 r,
+   fpsbReserveBidder2Util3_val_le_valuation n r v opp_bid b1 b3,
+   vickreyReserveBidder3Util3_val_le_valuation n v opp_bid b2 b1 r,
+   fpsbReserveBidder3Util3_val_le_valuation n r v opp_bid b2 b1⟩
+
 end AuctionCat
