@@ -330,4 +330,15 @@ example :
   intro _
   native_decide
 
+/-- **Pipeline-level spsb3Auction ≥ fpsb3Auction via the dominance
+    theorem** at `n = 3`, uniform joint prior `1/9`, `v1 = 2`. -/
+example :
+    auctionExpectedBidder1Util3 3 (spsb3Auction 3)
+      (fun _ => (1/9 : Rat)) ⟨2, by decide⟩
+    ≥ auctionExpectedBidder1Util3 3 (fpsb3Auction 3)
+      (fun _ => (1/9 : Rat)) ⟨2, by decide⟩ := by
+  apply auctionExpectedBidder1Util3_spsb3Auction_ge_fpsb3Auction
+  intro _
+  native_decide
+
 end AuctionCat
