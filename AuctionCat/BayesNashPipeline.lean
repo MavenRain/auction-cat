@@ -2883,4 +2883,31 @@ theorem reserve_utility_val_le_valuation_main (n : Nat)
    vickreyReserveBidder3Util3_val_le_valuation n v opp_bid b2 b1 r,
    fpsbReserveBidder3Util3_val_le_valuation n r v opp_bid b2 b1⟩
 
+/-- **Bidder-2 pointwise vickreyReserve ≥ fpsbReserve under truthful**
+    (2 bidders). -/
+theorem vickreyReserveBidder2Util_truthful_ge_fpsbReserveBidder2Util_truthful
+    (n : Nat) (r v opp_bid : Fin n) :
+    (vickreyReserveBidder2Util n v opp_bid v r).val
+    ≥ (fpsbReserveBidder2Util n r v opp_bid v).val := by
+  rw [fpsbReserve_bidder2_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
+/-- **Bidder-2 pointwise vickreyReserve3 ≥ fpsbReserve3 under truthful**
+    (3 bidders). -/
+theorem vickreyReserveBidder2Util3_truthful_ge_fpsbReserveBidder2Util3_truthful
+    (n : Nat) (r v opp_b1 opp_b3 : Fin n) :
+    (vickreyReserveBidder2Util3 n v opp_b1 v opp_b3 r).val
+    ≥ (fpsbReserveBidder2Util3 n r v opp_b1 v opp_b3).val := by
+  rw [fpsb3Reserve_bidder2_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
+/-- **Bidder-3 pointwise vickreyReserve3 ≥ fpsbReserve3 under truthful**
+    (3 bidders). -/
+theorem vickreyReserveBidder3Util3_truthful_ge_fpsbReserveBidder3Util3_truthful
+    (n : Nat) (r v opp_b1 opp_b2 : Fin n) :
+    (vickreyReserveBidder3Util3 n v opp_b1 opp_b2 v r).val
+    ≥ (fpsbReserveBidder3Util3 n r v opp_b1 opp_b2 v).val := by
+  rw [fpsb3Reserve_bidder3_utility_truthful_val_eq_zero]
+  exact Nat.zero_le _
+
 end AuctionCat
