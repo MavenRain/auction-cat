@@ -187,4 +187,18 @@ theorem outcomeRevenue3_cyclic_symmetric (n : Nat)
   simp only [Fin.first_pair, Fin.second_pair h_pos, Fin.second_pair h_pos2]
   omega
 
+/-- **Inverse cyclic permutation symmetry**: `(p1, p2, p3) → (p3, p1, p2)`
+    also preserves revenue.  Three iterations of the cyclic
+    permutation return to identity, so this is the other "rotation". -/
+theorem outcomeRevenue3_inverse_cyclic_symmetric (n : Nat)
+    (i : Fin (((2 * n) * (2 * n)) * (2 * n))) (h_pos : 0 < 2 * n)
+    (h_pos2 : 0 < (2 * n) * (2 * n)) :
+    outcomeRevenue3 n i
+    = outcomeRevenue3 n
+        (Fin.pair (Fin.pair (Fin.second i) (Fin.first (Fin.first i)))
+                   (Fin.second (Fin.first i))) := by
+  unfold outcomeRevenue3
+  simp only [Fin.first_pair, Fin.second_pair h_pos, Fin.second_pair h_pos2]
+  omega
+
 end AuctionCat
