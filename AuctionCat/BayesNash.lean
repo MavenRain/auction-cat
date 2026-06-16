@@ -931,6 +931,33 @@ theorem fpsbBidder3Util3_val_le_valuation (n : Nat)
   · simp [h]
   · simp [h]
 
+/-- **Bundled pointwise utility ≤ valuation bounds** across all ten
+    {vickrey, fpsb} × {bidder 1, 2, 3} × {2-bidder, 3-bidder}
+    combinations. -/
+theorem utility_val_le_valuation_main (n : Nat) (v b1 b2 b3 opp_bid : Fin n) :
+    -- 2-bidder
+    (vickreyUtility n v b1 b2).val ≤ v.val
+    ∧ (fpsbUtility n v b1 b2).val ≤ v.val
+    ∧ (vickreyBidder2Util n v opp_bid b1).val ≤ v.val
+    ∧ (fpsbBidder2Util n v opp_bid b1).val ≤ v.val
+    -- 3-bidder
+    ∧ (vickreyUtility3 n v b1 b2 b3).val ≤ v.val
+    ∧ (fpsbUtility3 n v b1 b2 b3).val ≤ v.val
+    ∧ (vickreyBidder2Util3 n v opp_bid b1 b3).val ≤ v.val
+    ∧ (fpsbBidder2Util3 n v opp_bid b1 b3).val ≤ v.val
+    ∧ (vickreyBidder3Util3 n v opp_bid b2 b1).val ≤ v.val
+    ∧ (fpsbBidder3Util3 n v opp_bid b2 b1).val ≤ v.val :=
+  ⟨vickreyUtility_val_le_valuation n v b1 b2,
+   fpsbUtility_val_le_valuation n v b1 b2,
+   vickreyBidder2Util_val_le_valuation n v opp_bid b1,
+   fpsbBidder2Util_val_le_valuation n v opp_bid b1,
+   vickreyUtility3_val_le_valuation n v b1 b2 b3,
+   fpsbUtility3_val_le_valuation n v b1 b2 b3,
+   vickreyBidder2Util3_val_le_valuation n v opp_bid b1 b3,
+   fpsbBidder2Util3_val_le_valuation n v opp_bid b1 b3,
+   vickreyBidder3Util3_val_le_valuation n v opp_bid b2 b1,
+   fpsbBidder3Util3_val_le_valuation n v opp_bid b2 b1⟩
+
 /-- **Pointwise nonneg of vickrey bidder-2 truthful utility val** (2 bidders). -/
 theorem vickreyBidder2Util_truthful_val_nonneg (n : Nat)
     (v opp_bid : Fin n) :
