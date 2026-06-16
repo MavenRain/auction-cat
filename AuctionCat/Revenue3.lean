@@ -241,4 +241,28 @@ theorem outcomeRevenue3_swap_12_symmetric (n : Nat)
   simp only [Fin.first_pair, Fin.second_pair h_pos, Fin.second_pair h_pos2]
   omega
 
+/-- **Bundle of three adjacent transpositions**: the three
+    transposition generators of S3 (12, 23, 13) all preserve total
+    revenue.  Together they generate the full S3 permutation group
+    acting on the bidder outcomes. -/
+theorem outcomeRevenue3_three_transpositions (n : Nat)
+    (i : Fin (((2 * n) * (2 * n)) * (2 * n))) (h_pos : 0 < 2 * n)
+    (h_pos2 : 0 < (2 * n) * (2 * n)) :
+    outcomeRevenue3 n i
+      = outcomeRevenue3 n
+          (Fin.pair (Fin.pair (Fin.second (Fin.first i))
+                               (Fin.first (Fin.first i)))
+                     (Fin.second i))
+    ∧ outcomeRevenue3 n i
+      = outcomeRevenue3 n
+          (Fin.pair (Fin.pair (Fin.first (Fin.first i)) (Fin.second i))
+                     (Fin.second (Fin.first i)))
+    ∧ outcomeRevenue3 n i
+      = outcomeRevenue3 n
+          (Fin.pair (Fin.pair (Fin.second i) (Fin.second (Fin.first i)))
+                     (Fin.first (Fin.first i))) :=
+  ⟨outcomeRevenue3_swap_12_symmetric n i h_pos h_pos2,
+   outcomeRevenue3_swap_23_symmetric n i h_pos h_pos2,
+   outcomeRevenue3_swap_13_symmetric n i h_pos h_pos2⟩
+
 end AuctionCat
