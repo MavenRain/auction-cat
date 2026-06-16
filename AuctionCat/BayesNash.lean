@@ -831,6 +831,17 @@ theorem vickrey_ge_fpsb_pointwise_main (n : Nat) (v b2 b3 opp_bid : Fin n) :
    vickreyBidder2Util3_truthful_ge_fpsbBidder2Util3_truthful n v opp_bid b3,
    vickreyBidder3Util3_truthful_ge_fpsbBidder3Util3_truthful n v opp_bid b2⟩
 
+/-- **Pointwise nonneg of vickrey bidder-1 truthful utility val** (2 bidders). -/
+theorem vickreyUtility_truthful_val_nonneg (n : Nat) (v b2 : Fin n) :
+    0 ≤ (vickreyUtility n v v b2).val :=
+  Nat.zero_le _
+
+/-- **Pointwise nonneg of vickrey bidder-2 truthful utility val** (2 bidders). -/
+theorem vickreyBidder2Util_truthful_val_nonneg (n : Nat)
+    (v opp_bid : Fin n) :
+    0 ≤ (vickreyBidder2Util n v opp_bid v).val :=
+  Nat.zero_le _
+
 /-- **Pointwise nonneg of vickrey3 bidder-1 truthful utility val**. -/
 theorem vickreyUtility3_truthful_val_nonneg (n : Nat) (v b2 b3 : Fin n) :
     0 ≤ (vickreyUtility3 n v v b2 b3).val :=
