@@ -436,4 +436,30 @@ example :
   unfold vickreyExpectedUtility vickreyUtility
   native_decide
 
+/-- **Concrete fpsb expected utility at n=2** uniform prior `1/2`,
+    `v1 = 1` evaluates to `0` (truthful play always gives zero). -/
+example :
+    fpsbExpectedUtility 2 (fun v => v) (fun v => v) ⟨1, by decide⟩
+        (fun _ => (1/2 : Rat)) = 0 :=
+  fpsb_truthful_expected_utility_zero 2 (fun v => v) ⟨1, by decide⟩
+    (fun _ => (1/2 : Rat))
+
+/-- **2-bidder strict vickrey > fpsb gap** at `n = 2`, uniform `1/2`,
+    `v1 = 1`: `1/2 > 0`. -/
+example :
+    fpsbExpectedUtility 2 (fun v => v) (fun v => v) ⟨1, by decide⟩
+        (fun _ => (1/2 : Rat))
+    < vickreyExpectedUtility 2 (fun v => v) (fun v => v) ⟨1, by decide⟩
+        (fun _ => (1/2 : Rat)) := by
+  have h_fpsb : fpsbExpectedUtility 2 (fun v => v) (fun v => v)
+        ⟨1, by decide⟩ (fun _ => (1/2 : Rat)) = 0 :=
+    fpsb_truthful_expected_utility_zero 2 (fun v => v) ⟨1, by decide⟩
+      (fun _ => (1/2 : Rat))
+  have h_vk : vickreyExpectedUtility 2 (fun v => v) (fun v => v)
+        ⟨1, by decide⟩ (fun _ => (1/2 : Rat)) = 1 / 2 := by
+    unfold vickreyExpectedUtility vickreyUtility
+    native_decide
+  rw [h_fpsb, h_vk]
+  native_decide
+
 end AuctionCat

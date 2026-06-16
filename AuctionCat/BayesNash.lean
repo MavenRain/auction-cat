@@ -891,6 +891,24 @@ theorem fpsb_truthful_val_eq_zero_main (n : Nat) (v b2 b3 opp_bid : Fin n) :
    fpsb3_bidder2_utility_truthful_val_eq_zero n v opp_bid b3,
    fpsb3_bidder3_utility_truthful_val_eq_zero n v opp_bid b2⟩
 
+/-- **Bundled pointwise fpsbReserve truthful utility val = 0** across
+    all five reserve combinations.  Reserve mirror of
+    `fpsb_truthful_val_eq_zero_main`. -/
+theorem fpsbReserve_truthful_val_eq_zero_main (n : Nat) (r : Fin n)
+    (v b2 b3 opp_bid : Fin n) :
+    -- 2-bidder reserve
+    (fpsbReserveUtility n r v v b2).val = 0
+    ∧ (fpsbReserveBidder2Util n r v opp_bid v).val = 0
+    -- 3-bidder reserve
+    ∧ (fpsbReserveUtility3 n r v v b2 b3).val = 0
+    ∧ (fpsbReserveBidder2Util3 n r v opp_bid v b3).val = 0
+    ∧ (fpsbReserveBidder3Util3 n r v opp_bid b2 v).val = 0 :=
+  ⟨fpsbReserve_utility_truthful_val_eq_zero n r v b2,
+   fpsbReserve_bidder2_utility_truthful_val_eq_zero n r v opp_bid,
+   fpsb3Reserve_utility_truthful_val_eq_zero n r v b2 b3,
+   fpsb3Reserve_bidder2_utility_truthful_val_eq_zero n r v opp_bid b3,
+   fpsb3Reserve_bidder3_utility_truthful_val_eq_zero n r v opp_bid b2⟩
+
 /-- **Comprehensive fpsb truthful expected utility = 0 results**.
     Across all ten bidder-position × bidder-count × reserve
     combinations, truthful play in fpsb yields zero expected
