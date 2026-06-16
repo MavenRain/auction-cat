@@ -308,4 +308,15 @@ example :
   intro _
   native_decide
 
+/-- **Weak vickrey3 ≥ fpsb3 comparison via the theorem** at `n = 3`,
+    uniform joint prior `1/9`, `v1 = 2` (bidder 1). -/
+example :
+    vickreyExpectedUtility3 3 (fun v => v) (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/9 : Rat))
+    ≥ fpsbExpectedUtility3 3 (fun v => v) (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/9 : Rat)) := by
+  apply vickreyExpectedUtility3_truthful_ge_fpsbExpectedUtility3_truthful
+  intro _
+  native_decide
+
 end AuctionCat
