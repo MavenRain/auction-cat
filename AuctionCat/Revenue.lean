@@ -282,4 +282,76 @@ theorem dutch_revenue_ge_english (n : Nat) (i : Fin (n * n)) :
     outcomeRevenue n (fpsbFn n i) ≥ outcomeRevenue n (spsbFn n i) :=
   fpsb_revenue_ge_spsb n i
 
+/-! ## Reserve-price revenue closed forms
+
+  The two-bidder formats with a reserve price `r` (`fpsbReserveFn`,
+  `spsbReserveFn`) extend the `max`/`min` revenue closed forms with a
+  *no-sale* region: when both bids fall below `r` the item is withheld
+  and revenue is `0`.  Above the reserve the winner is the high bidder,
+  so first-price revenue is still the top bid, while second-price
+  revenue is `max(r, low bid)` — the reserve lifts the winner's payment
+  from the loser's bid up to `r`.  These restore the reserve revenue
+  layer to parity with the no-reserve `fpsb_revenue_eq_max` /
+  `spsb_revenue_eq_min` / `fpsb_revenue_ge_spsb` trio. -/
+
+/-- **Closed-form fpsb-with-reserve revenue.**  At joint bid `i` with
+    reserve `r`, first-price revenue is the higher bid when it clears
+    the reserve, and `0` otherwise (the item goes unsold). -/
+theorem fpsbReserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n r i)
+    = if r.val ≤ max (Fin.first i).val (Fin.second i).val
+      then max (Fin.first i).val (Fin.second i).val else 0 := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue fpsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val, apply_ite Fin.val, ge_iff_le]
+  (repeat' split) <;> omega
+
+/-- **Closed-form spsb-with-reserve revenue.**  At joint bid `i` with
+    reserve `r`, second-price revenue is `max(r, low bid)` when the high
+    bid clears the reserve, and `0` otherwise.  The reserve raises the
+    winner's payment from the losing bid up to the reserve floor. -/
+theorem spsbReserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (spsbReserveFn n r i)
+    = if r.val ≤ max (Fin.first i).val (Fin.second i).val
+      then max r.val (min (Fin.first i).val (Fin.second i).val) else 0 := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  have h2  : 0 < 2 := by decide
+  have h2n : 0 < 2 * n := by omega
+  unfold outcomeRevenue spsbReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
+             Fin.first_val, Fin.second_val, apply_ite Fin.val, ge_iff_le]
+  (repeat' split) <;> omega
+
+/-- **Reserve revenue dominance.**  First-price-with-reserve weakly
+    dominates second-price-with-reserve in revenue at every joint bid:
+    above the reserve the gap is `max - max(r, min)`, and below it both
+    raise `0`.  Reserve analogue of `fpsb_revenue_ge_spsb`. -/
+theorem fpsbReserve_revenue_ge_spsbReserve (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n r i) ≥ outcomeRevenue n (spsbReserveFn n r i) := by
+  rw [fpsbReserve_revenue_eq, spsbReserve_revenue_eq]
+  (repeat' split) <;> omega
+
+/-- **The reserve guarantee.**  Whenever a sale occurs — the high bid
+    clears the reserve — the second-price-with-reserve format pays the
+    seller at least the reserve `r`.  This is the defining purpose of a
+    reserve price: a floor on any completed sale. -/
+theorem spsbReserve_revenue_ge_reserve_of_sale (n : Nat) (r : Fin n) (i : Fin (n * n))
+    (h : r.val ≤ max (Fin.first i).val (Fin.second i).val) :
+    outcomeRevenue n (spsbReserveFn n r i) ≥ r.val := by
+  rw [spsbReserve_revenue_eq, if_pos h]
+  omega
+
+/-- **No sale below the reserve.**  When both bids fall strictly below
+    the reserve `r`, the first-price-with-reserve format withholds the
+    item and raises `0` revenue. -/
+theorem fpsbReserve_revenue_eq_zero_of_below_reserve (n : Nat) (r : Fin n) (i : Fin (n * n))
+    (h : max (Fin.first i).val (Fin.second i).val < r.val) :
+    outcomeRevenue n (fpsbReserveFn n r i) = 0 := by
+  rw [fpsbReserve_revenue_eq, if_neg (by omega)]
+
 end AuctionCat
