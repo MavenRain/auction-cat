@@ -91,6 +91,38 @@ example :
   unfold expectedRevenue3 uniformPrior3
   native_decide
 
+/-! ## Reserve prices strictly raise Vickrey revenue (3 bidders)
+
+  A binding reserve at `r = 1` over binary valuations `Fin 2` turns the
+  three-bidder second-price mechanism from "always sell to the winner
+  at the second-highest bid" into "sell only if some bid clears the
+  reserve, at price `max r (second-highest bid)`".  Under the uniform
+  prior this raises the seller's expected revenue from `1 / 2` (spsb3:
+  the item always sells and is priced at the second-highest bid, which
+  is `1` only when at least two bidders value it at `1`) to `7 / 8`
+  (spsb3Reserve: the item sells whenever any bidder values it at `1`
+  and is then always priced at the reserve).  This is the central point
+  of a reserve price: here it strictly dominates the no-reserve Vickrey
+  auction in expectation. -/
+
+/-- Three-bidder Vickrey with a binding reserve `r = 1`, `X = 2`,
+    uniform prior, truthful bidding: expected revenue = 7/8. -/
+theorem spsb3Reserve_revenue_eq_uniform :
+    expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2))
+      (uniformPrior3 2) = 7 / 8 := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- A binding reserve strictly raises three-bidder Vickrey expected
+    revenue over the no-reserve auction (`7 / 8 > 1 / 2`) at `X = 2`
+    under the uniform prior with truthful bidding. -/
+theorem spsb3Reserve_revenue_gt_spsb3_uniform :
+    expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2))
+      (uniformPrior3 2)
+    > expectedRevenue3 2 (secondPriceSealedBid3 2) (uniformPrior3 2) := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
 /-- Trivially, every three-bidder mechanism is revenue equivalent to
     itself under any prior. -/
 example (n : Nat)
