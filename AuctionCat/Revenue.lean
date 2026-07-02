@@ -354,4 +354,51 @@ theorem fpsbReserve_revenue_eq_zero_of_below_reserve (n : Nat) (r : Fin n) (i : 
     outcomeRevenue n (fpsbReserveFn n r i) = 0 := by
   rw [fpsbReserve_revenue_eq, if_neg (by omega)]
 
+/-- **The reserve guarantee, first-price side.**  Whenever a sale occurs
+    (the high bid clears the reserve), the first-price-with-reserve format
+    also pays the seller at least the reserve `r`.  The winner pays the
+    full top bid, and that bid clears `r`, so the floor is immediate.
+    First-price twin of `spsbReserve_revenue_ge_reserve_of_sale`. -/
+theorem fpsbReserve_revenue_ge_reserve_of_sale (n : Nat) (r : Fin n) (i : Fin (n * n))
+    (h : r.val ≤ max (Fin.first i).val (Fin.second i).val) :
+    outcomeRevenue n (fpsbReserveFn n r i) ≥ r.val := by
+  rw [fpsbReserve_revenue_eq, if_pos h]
+  omega
+
+/-- **No sale below the reserve, second-price side.**  When both bids fall
+    strictly below the reserve `r`, the second-price-with-reserve format
+    withholds the item and raises `0` revenue.  Second-price twin of
+    `fpsbReserve_revenue_eq_zero_of_below_reserve`. -/
+theorem spsbReserve_revenue_eq_zero_of_below_reserve (n : Nat) (r : Fin n) (i : Fin (n * n))
+    (h : max (Fin.first i).val (Fin.second i).val < r.val) :
+    outcomeRevenue n (spsbReserveFn n r i) = 0 := by
+  rw [spsbReserve_revenue_eq, if_neg (by omega)]
+
+/-- **Strict reserve revenue dominance.**  When the two bids differ and the
+    high bid strictly exceeds the reserve, first-price-with-reserve extracts
+    strictly more revenue than second-price-with-reserve: the gap is
+    `max - max(r, min) > 0`.  Reserve analogue of `fpsb_revenue_gt_spsb_of_ne`,
+    strengthening the weak dominance `fpsbReserve_revenue_ge_spsbReserve`. -/
+theorem fpsbReserve_revenue_gt_spsbReserve_of_ne (n : Nat) (r : Fin n) (i : Fin (n * n))
+    (h_ne : (Fin.first i).val ≠ (Fin.second i).val)
+    (h_r : r.val < max (Fin.first i).val (Fin.second i).val) :
+    outcomeRevenue n (fpsbReserveFn n r i) > outcomeRevenue n (spsbReserveFn n r i) := by
+  rw [fpsbReserve_revenue_eq, spsbReserve_revenue_eq, if_pos (by omega), if_pos (by omega)]
+  omega
+
+/-- **Pointwise reserve revenue gap.**  First-price-with-reserve revenue
+    equals second-price-with-reserve revenue plus the surplus the reserve
+    format leaves above its floor: `max - max(r, min)` when a sale occurs,
+    and `0` in the no-sale region where both formats withhold the item.
+    Reserve analogue of `fpsb_minus_spsb_revenue`. -/
+theorem fpsbReserve_minus_spsbReserve_revenue (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n r i)
+    = outcomeRevenue n (spsbReserveFn n r i)
+      + (if r.val ≤ max (Fin.first i).val (Fin.second i).val
+        then max (Fin.first i).val (Fin.second i).val
+          - max r.val (min (Fin.first i).val (Fin.second i).val)
+        else 0) := by
+  rw [fpsbReserve_revenue_eq, spsbReserve_revenue_eq]
+  (repeat' split) <;> omega
+
 end AuctionCat
