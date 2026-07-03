@@ -401,4 +401,31 @@ theorem fpsbReserve_minus_spsbReserve_revenue (n : Nat) (r : Fin n) (i : Fin (n 
   rw [fpsbReserve_revenue_eq, spsbReserve_revenue_eq]
   (repeat' split) <;> omega
 
+/-- **Bidder-anonymity of fpsb-with-reserve revenue.**  Swapping the two
+    bidders' bids leaves first-price-with-reserve revenue unchanged: the
+    format prices off `max` of the bids, symmetric in the bidders.  This is
+    the bid-input analogue of `outcomeRevenue_swap_symmetric` (which swaps
+    the outcome components) specialised to the reserve mechanism. -/
+theorem fpsbReserve_revenue_bid_swap (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (fpsbReserveFn n r (Fin.pair (Fin.second i) (Fin.first i)))
+    = outcomeRevenue n (fpsbReserveFn n r i) := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  rw [fpsbReserve_revenue_eq, fpsbReserve_revenue_eq,
+      Fin.first_pair, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
+/-- **Bidder-anonymity of spsb-with-reserve revenue.**  Swapping the two
+    bidders' bids leaves second-price-with-reserve revenue unchanged; the
+    winner still pays `max(r, low bid)` whenever the high bid clears the
+    reserve.  Reserve second-price twin of `fpsbReserve_revenue_bid_swap`. -/
+theorem spsbReserve_revenue_bid_swap (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    outcomeRevenue n (spsbReserveFn n r (Fin.pair (Fin.second i) (Fin.first i)))
+    = outcomeRevenue n (spsbReserveFn n r i) := by
+  have hnn : 0 < n * n := Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left hnn
+  rw [spsbReserve_revenue_eq, spsbReserve_revenue_eq,
+      Fin.first_pair, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
 end AuctionCat
