@@ -496,4 +496,61 @@ example :
   fpsb3_bidder3_truthful_expected_utility_zero 3 (fun v => v)
     (fun v => v) ⟨2, by decide⟩ (fun _ => (1/9 : Rat))
 
+/-! ## Reserve prices and expected revenue
+
+  Concrete expected-revenue witnesses for the reserve-price mechanisms
+  under the uniform prior, the numeric companions to the reserve
+  revenue closed forms in `Revenue.lean` and `Revenue3.lean`.  With a
+  binding reserve `r = 1` over binary valuations `Fin 2`:
+
+    2 bidders:  spsbReserve  = 3/4,  fpsbReserve  = 3/4
+    3 bidders:  spsb3Reserve = 7/8,  fpsb3Reserve = 7/8
+
+  (the no-reserve baselines are spsb = 1/4, fpsb = 3/4 at two bidders).
+  So a binding reserve strictly raises second-price expected revenue,
+  from 1/4 to 3/4 at two bidders, while leaving first-price unchanged
+  (first-price already extracts the top bid, which clears the reserve
+  whenever the item sells), and at these binary valuations the two
+  reserve formats coincide. -/
+
+/-- Two-bidder Vickrey with a binding reserve `r = 1`, `X = 2`, uniform
+    prior, truthful bidding: expected revenue = 3/4. -/
+theorem spsbReserve_revenue_eq_uniform :
+    expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2))
+      (uniformPrior 2) = 3 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- A binding reserve strictly raises two-bidder Vickrey expected
+    revenue over the no-reserve auction (`3/4 > 1/4`) at `X = 2` under
+    the uniform prior with truthful bidding.  Two-bidder analogue of
+    `spsb3Reserve_revenue_gt_spsb3_uniform`. -/
+theorem spsbReserve_revenue_gt_spsb_uniform :
+    expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2))
+      (uniformPrior 2)
+    > expectedRevenue 2 (secondPriceSealedBid 2) (uniformPrior 2) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- Two-bidder first-price with a binding reserve `r = 1`, `X = 2`,
+    uniform prior, truthful bidding: expected revenue = 3/4.  Equal to
+    both the reserve second-price revenue and the no-reserve first-price
+    revenue, since at binary valuations the winning bid already equals
+    the reserve-clearing price. -/
+theorem fpsbReserve_revenue_eq_uniform :
+    expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2))
+      (uniformPrior 2) = 3 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- Three-bidder first-price with a binding reserve `r = 1`, `X = 2`,
+    uniform prior, truthful bidding: expected revenue = 7/8.  Companion
+    to `spsb3Reserve_revenue_eq_uniform` (Revenue3.lean), completing the
+    recorded reserve expected-revenue values at three bidders. -/
+theorem fpsb3Reserve_revenue_eq_uniform :
+    expectedRevenue3 2 (fpsb3Reserve 2 (⟨1, by decide⟩ : Fin 2))
+      (uniformPrior3 2) = 7 / 8 := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
 end AuctionCat
