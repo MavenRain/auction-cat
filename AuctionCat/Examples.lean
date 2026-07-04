@@ -194,6 +194,27 @@ example :
   intro _
   native_decide
 
+/-- **Named closed form: vickrey bidder-1 truthful expected utility
+    = 1** at `n = 3`, uniform prior `1/3`, `v1 = 2`.  This value was
+    previously proven inline inside `have`s of the vickrey > fpsb
+    gap and the bidder-1 = bidder-2 symmetry examples below, which
+    now cite this theorem instead. -/
+theorem vickreyExpectedUtility_truthful_eq_one_uniform :
+    vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
+  unfold vickreyExpectedUtility vickreyUtility
+  native_decide
+
+/-- **Strict-positivity witness for bidder-1 vickrey truthful
+    expected utility** at `n = 3`, uniform prior `1/3`, `v1 = 2`:
+    the value is `1 > 0`, so the weak bound
+    `vickreyExpectedUtility_truthful_nonneg` is not vacuous. -/
+theorem vickreyExpectedUtility_truthful_strict_pos_uniform :
+    0 < vickreyExpectedUtility 3 (fun v => v) (fun v => v)
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) := by
+  rw [vickreyExpectedUtility_truthful_eq_one_uniform]
+  decide
+
 /-- vickrey bidder-2 strict-positive utility witness at `n = 3`
     uniform prior `1/3`, `v2 = 2`: value = `(2 + 1 + 0)/3 = 1 > 0`. -/
 example :
@@ -273,9 +294,8 @@ example :
     fpsb_truthful_expected_utility_zero 3 (fun v => v) ⟨2, by decide⟩
       (fun _ => (1/3 : Rat))
   have h_vk : vickreyExpectedUtility 3 (fun v => v) (fun v => v)
-        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
-    unfold vickreyExpectedUtility vickreyUtility
-    native_decide
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 :=
+    vickreyExpectedUtility_truthful_eq_one_uniform
   rw [h_fpsb, h_vk]
   native_decide
 
@@ -471,9 +491,8 @@ example :
     = vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
         ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) := by
   have h1 : vickreyExpectedUtility 3 (fun v => v) (fun v => v)
-        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
-    unfold vickreyExpectedUtility vickreyUtility
-    native_decide
+        ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 :=
+    vickreyExpectedUtility_truthful_eq_one_uniform
   have h2 : vickreyBidder2ExpectedUtility 3 (fun v => v) (fun v => v)
         ⟨2, by decide⟩ (fun _ => (1/3 : Rat)) = 1 := by
     unfold vickreyBidder2ExpectedUtility vickreyBidder2Util
