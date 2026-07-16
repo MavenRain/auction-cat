@@ -572,4 +572,34 @@ theorem fpsb3Reserve_revenue_eq_uniform :
   unfold expectedRevenue3 uniformPrior3
   native_decide
 
+/-- **First-price reserve neutrality (two bidders).**  At binary valuations
+    a binding reserve `r = 1` leaves two-bidder first-price expected revenue
+    unchanged: `fpsbReserve` earns exactly what the no-reserve `fpsb` earns
+    (both `3/4`).  The winning bid already equals the reserve-clearing price,
+    so the reserve floor never binds above it.  First-price counterpoint to
+    `spsbReserve_revenue_gt_spsb_uniform`, where the same reserve strictly
+    raises second-price revenue.  Repackages the reserve value pinned by
+    `fpsbReserve_revenue_eq_uniform` as an equality against the no-reserve
+    baseline. -/
+theorem fpsbReserve_revenue_eq_fpsb_uniform :
+    expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
+    = expectedRevenue 2 (firstPriceSealedBid 2) (uniformPrior 2) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- **First-price reserve neutrality (three bidders).**  At binary
+    valuations a binding reserve `r = 1` leaves three-bidder first-price
+    expected revenue unchanged: `fpsb3Reserve` earns exactly what the
+    no-reserve `fpsb3` earns (both `7/8`).  Three-bidder analogue of
+    `fpsbReserve_revenue_eq_fpsb_uniform`, and the first-price counterpoint
+    to `spsb3Reserve_revenue_gt_spsb3_uniform` (where the reserve strictly
+    raises second-price revenue).  Repackages the reserve value pinned by
+    `fpsb3Reserve_revenue_eq_uniform` as an equality against the no-reserve
+    baseline. -/
+theorem fpsb3Reserve_revenue_eq_fpsb3_uniform :
+    expectedRevenue3 2 (fpsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2)
+    = expectedRevenue3 2 (firstPriceSealedBid3 2) (uniformPrior3 2) := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
 end AuctionCat
