@@ -297,4 +297,203 @@ theorem outcomeRevenue3_three_transpositions (n : Nat)
    outcomeRevenue3_swap_23_symmetric n i h_pos h_pos2,
    outcomeRevenue3_swap_13_symmetric n i h_pos h_pos2⟩
 
+/-! ## Reserve-price revenue closed forms (three bidders)
+
+  Closed forms for the two three-bidder reserve mechanisms.  Writing `M`
+  for the highest of the three bids, a sale occurs exactly when `M` clears
+  the reserve `r`.  On a sale the first-price format collects the winning
+  (highest) bid `M`, while the second-price format collects `max r s`,
+  where `s` is the second-highest bid; below the reserve both formats
+  withhold the item and raise `0`.  Three-bidder analogues of the
+  two-bidder `fpsbReserve_revenue_eq` / `spsbReserve_revenue_eq`. -/
+
+/-- **Closed-form three-bidder fpsb-with-reserve revenue.**  First-price
+    revenue is the highest of the three bids when it clears the reserve
+    `r`, and `0` otherwise (the item goes unsold). -/
+theorem fpsb3Reserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    = if r.val ≤ max (Fin.first (Fin.first i)).val
+                     (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+      then max (Fin.first (Fin.first i)).val
+               (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+      else 0 := by
+  have hn   : 0 < n :=
+    Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have h2   : 0 < 2 := by decide
+  have h2n  : 0 < 2 * n := by omega
+  have h2n2 : 0 < (2 * n) * (2 * n) := Nat.mul_pos h2n h2n
+  unfold outcomeRevenue3 fpsb3ReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n2, Fin.second_pair h2n,
+             Fin.second_pair h2, Fin.first_val, Fin.second_val,
+             apply_ite Fin.val, ge_iff_le]
+  (repeat' split) <;> omega
+
+/-- **Closed-form three-bidder spsb-with-reserve revenue.**  Second-price
+    revenue is `max r s` (the reserve floor or the second-highest bid `s`,
+    whichever is larger) when the highest bid clears the reserve, and `0`
+    otherwise.  The second-highest of three bids is the largest of their
+    three pairwise minima. -/
+theorem spsb3Reserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (spsb3ReserveFn n r i)
+    = if r.val ≤ max (Fin.first (Fin.first i)).val
+                     (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+      then max r.val
+               (max (min (Fin.first (Fin.first i)).val (Fin.second (Fin.first i)).val)
+                    (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                         (min (Fin.second (Fin.first i)).val (Fin.second i).val)))
+      else 0 := by
+  have hn   : 0 < n :=
+    Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have h2   : 0 < 2 := by decide
+  have h2n  : 0 < 2 * n := by omega
+  have h2n2 : 0 < (2 * n) * (2 * n) := Nat.mul_pos h2n h2n
+  unfold outcomeRevenue3 spsb3ReserveFn
+  simp only [Fin.first_pair, Fin.second_pair h2n2, Fin.second_pair h2n,
+             Fin.second_pair h2, Fin.first_val, Fin.second_val,
+             apply_ite Fin.val, ge_iff_le]
+  (repeat' split) <;> omega
+
+/-- **Three-bidder reserve revenue dominance.**  First-price-with-reserve
+    weakly dominates second-price-with-reserve in revenue at every joint
+    bid and reserve: above the reserve the first-price winner pays the full
+    top bid, while the second-price winner pays only `max r s` (the reserve
+    or the second-highest bid); below the reserve both raise `0`.
+    Three-bidder analogue of `fpsbReserve_revenue_ge_spsbReserve`. -/
+theorem fpsb3Reserve_revenue_ge_spsb3Reserve (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i) ≥ outcomeRevenue3 n (spsb3ReserveFn n r i) := by
+  rw [fpsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  (repeat' split) <;> omega
+
+/-- **The reserve guarantee (three bidders).**  Whenever a sale occurs (the
+    highest of the three bids clears the reserve), the three-bidder
+    second-price-with-reserve format pays the seller at least the reserve
+    `r`: a floor on any completed sale.  Three-bidder analogue of
+    `spsbReserve_revenue_ge_reserve_of_sale`. -/
+theorem spsb3Reserve_revenue_ge_reserve_of_sale (n : Nat) (r : Fin n) (i : Fin ((n * n) * n))
+    (h : r.val ≤ max (Fin.first (Fin.first i)).val
+                     (max (Fin.second (Fin.first i)).val (Fin.second i).val)) :
+    outcomeRevenue3 n (spsb3ReserveFn n r i) ≥ r.val := by
+  rw [spsb3Reserve_revenue_eq, if_pos h]
+  omega
+
+/-- **The reserve guarantee, first-price side (three bidders).**  Whenever a
+    sale occurs (the highest bid clears the reserve), the three-bidder
+    first-price-with-reserve format also pays the seller at least the
+    reserve `r`: the winner pays the full top bid, which clears `r`.
+    First-price twin of `spsb3Reserve_revenue_ge_reserve_of_sale`. -/
+theorem fpsb3Reserve_revenue_ge_reserve_of_sale (n : Nat) (r : Fin n) (i : Fin ((n * n) * n))
+    (h : r.val ≤ max (Fin.first (Fin.first i)).val
+                     (max (Fin.second (Fin.first i)).val (Fin.second i).val)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i) ≥ r.val := by
+  rw [fpsb3Reserve_revenue_eq, if_pos h]
+  omega
+
+/-- **No sale below the reserve (three bidders).**  When all three bids fall
+    strictly below the reserve `r`, the first-price-with-reserve format
+    withholds the item and raises `0` revenue.  Three-bidder analogue of
+    `fpsbReserve_revenue_eq_zero_of_below_reserve`. -/
+theorem fpsb3Reserve_revenue_eq_zero_of_below_reserve (n : Nat) (r : Fin n) (i : Fin ((n * n) * n))
+    (h : max (Fin.first (Fin.first i)).val
+             (max (Fin.second (Fin.first i)).val (Fin.second i).val) < r.val) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i) = 0 := by
+  rw [fpsb3Reserve_revenue_eq, if_neg (by omega)]
+
+/-- **No sale below the reserve, second-price side (three bidders).**  When
+    all three bids fall strictly below the reserve `r`, the
+    second-price-with-reserve format withholds the item and raises `0`
+    revenue.  Second-price twin of
+    `fpsb3Reserve_revenue_eq_zero_of_below_reserve`. -/
+theorem spsb3Reserve_revenue_eq_zero_of_below_reserve (n : Nat) (r : Fin n) (i : Fin ((n * n) * n))
+    (h : max (Fin.first (Fin.first i)).val
+             (max (Fin.second (Fin.first i)).val (Fin.second i).val) < r.val) :
+    outcomeRevenue3 n (spsb3ReserveFn n r i) = 0 := by
+  rw [spsb3Reserve_revenue_eq, if_neg (by omega)]
+
+/-- **Strict reserve revenue dominance (three bidders).**  When the highest
+    bid is unique (the second-highest bid falls strictly below it) and the
+    reserve `r` sits strictly below the top bid, first-price-with-reserve
+    extracts strictly more revenue than second-price-with-reserve: the top
+    bidder pays their full winning bid rather than `max r s`.  Three-bidder
+    analogue of `fpsbReserve_revenue_gt_spsbReserve_of_ne`, strengthening
+    the weak dominance `fpsb3Reserve_revenue_ge_spsb3Reserve`. -/
+theorem fpsb3Reserve_revenue_gt_spsb3Reserve_of_unique_top (n : Nat) (r : Fin n) (i : Fin ((n * n) * n))
+    (h_top : max (min (Fin.first (Fin.first i)).val (Fin.second (Fin.first i)).val)
+                 (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                      (min (Fin.second (Fin.first i)).val (Fin.second i).val))
+             < max (Fin.first (Fin.first i)).val
+                   (max (Fin.second (Fin.first i)).val (Fin.second i).val))
+    (h_r : r.val < max (Fin.first (Fin.first i)).val
+                       (max (Fin.second (Fin.first i)).val (Fin.second i).val)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i) > outcomeRevenue3 n (spsb3ReserveFn n r i) := by
+  rw [fpsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq, if_pos (by omega), if_pos (by omega)]
+  omega
+
+/-- **Pointwise reserve revenue gap (three bidders).**  First-price-with-
+    reserve revenue equals second-price-with-reserve revenue plus the
+    surplus the reserve format leaves above its floor: `M - max r s` (top
+    bid minus the second-price price) when a sale occurs, and `0` in the
+    no-sale region where both formats withhold the item.  Three-bidder
+    analogue of `fpsbReserve_minus_spsbReserve_revenue`. -/
+theorem fpsb3Reserve_minus_spsb3Reserve_revenue (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    = outcomeRevenue3 n (spsb3ReserveFn n r i)
+      + (if r.val ≤ max (Fin.first (Fin.first i)).val
+                        (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+        then max (Fin.first (Fin.first i)).val
+                 (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+          - max r.val
+                (max (min (Fin.first (Fin.first i)).val (Fin.second (Fin.first i)).val)
+                     (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                          (min (Fin.second (Fin.first i)).val (Fin.second i).val)))
+        else 0) := by
+  rw [fpsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  (repeat' split) <;> omega
+
+/-- **Main three-bidder reserve-price revenue results.**  The unconditional
+    core of the three-bidder reserve-revenue layer, bundled into one citable
+    node: both closed forms (first-price = the top of the three bids when it
+    clears `r`, else `0`; second-price = `max r s` on a sale, else `0`), the
+    pointwise weak revenue dominance `fpsb3Reserve ≥ spsb3Reserve`, and the
+    exact revenue gap between the two formats.  Three-bidder analogue of the
+    unconditional core of `reserveRevenue_main` (the two-bidder bundle also
+    carries bidder-anonymity conjuncts with no three-bidder counterpart yet).
+    The strict dominance
+    `fpsb3Reserve_revenue_gt_spsb3Reserve_of_unique_top` is a separate node: it needs
+    the extra unique-top and strict-clearance hypotheses, so it is
+    intentionally not bundled here. -/
+theorem reserveRevenue3_main (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    -- closed forms
+    outcomeRevenue3 n (fpsb3ReserveFn n r i)
+      = (if r.val ≤ max (Fin.first (Fin.first i)).val
+                        (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+         then max (Fin.first (Fin.first i)).val
+                  (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+         else 0)
+    ∧ outcomeRevenue3 n (spsb3ReserveFn n r i)
+      = (if r.val ≤ max (Fin.first (Fin.first i)).val
+                        (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+         then max r.val
+                  (max (min (Fin.first (Fin.first i)).val (Fin.second (Fin.first i)).val)
+                       (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                            (min (Fin.second (Fin.first i)).val (Fin.second i).val)))
+         else 0)
+    -- weak revenue dominance
+    ∧ outcomeRevenue3 n (fpsb3ReserveFn n r i) ≥ outcomeRevenue3 n (spsb3ReserveFn n r i)
+    -- exact revenue gap
+    ∧ outcomeRevenue3 n (fpsb3ReserveFn n r i)
+      = outcomeRevenue3 n (spsb3ReserveFn n r i)
+        + (if r.val ≤ max (Fin.first (Fin.first i)).val
+                          (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+          then max (Fin.first (Fin.first i)).val
+                   (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+            - max r.val
+                  (max (min (Fin.first (Fin.first i)).val (Fin.second (Fin.first i)).val)
+                       (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
+                            (min (Fin.second (Fin.first i)).val (Fin.second i).val)))
+          else 0) :=
+  ⟨fpsb3Reserve_revenue_eq n r i,
+   spsb3Reserve_revenue_eq n r i,
+   fpsb3Reserve_revenue_ge_spsb3Reserve n r i,
+   fpsb3Reserve_minus_spsb3Reserve_revenue n r i⟩
+
 end AuctionCat
