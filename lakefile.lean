@@ -5,11 +5,11 @@ package «auction-cat» where
   leanOptions := #[⟨`autoImplicit, false⟩]
 
 require «kan-tactics» from git
-  "https://github.com/MavenRain/kan-tactics.git" @ "9006885"
+  "https://github.com/MavenRain/kan-tactics.git" @ "3317f7a"
 
 meta if get_config? env = some "dev" then
 require «doc-gen4» from git
-  "https://github.com/leanprover/doc-gen4" @ "main"
+  "https://github.com/leanprover/doc-gen4" @ "498457dedc5b"
 
 /-- Markov category foundation: symmetric monoidal categories with
     commutative comonoid structure and total morphisms.  Hosts the

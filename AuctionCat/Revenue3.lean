@@ -325,7 +325,7 @@ theorem fpsb3Reserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
   unfold outcomeRevenue3 fpsb3ReserveFn
   simp only [Fin.first_pair, Fin.second_pair h2n2, Fin.second_pair h2n,
              Fin.second_pair h2, Fin.first_val, Fin.second_val,
-             apply_ite Fin.val, ge_iff_le]
+             apply_ite Fin.val, ge_iff_le, Nat.max_def]
   (repeat' split) <;> omega
 
 /-- **Closed-form three-bidder spsb-with-reserve revenue.**  Second-price
@@ -347,11 +347,20 @@ theorem spsb3Reserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
   have h2   : 0 < 2 := by decide
   have h2n  : 0 < 2 * n := by omega
   have h2n2 : 0 < (2 * n) * (2 * n) := Nat.mul_pos h2n h2n
-  unfold outcomeRevenue3 spsb3ReserveFn
-  simp only [Fin.first_pair, Fin.second_pair h2n2, Fin.second_pair h2n,
-             Fin.second_pair h2, Fin.first_val, Fin.second_val,
-             apply_ite Fin.val, ge_iff_le]
-  (repeat' split) <;> omega
+  -- Lean 4.33's `split` no longer reduces `Decidable (r ≤ max ..)`, so resolve the
+  -- single `max`-guarded reserve `if` by hand; the remaining `max`/`min` then live in
+  -- goal/hypothesis positions that `omega` handles, and `split` only meets the plain
+  -- payment guards (as in the two-bidder proof).
+  by_cases hr : r.val ≤ max (Fin.first (Fin.first i)).val
+                            (max (Fin.second (Fin.first i)).val (Fin.second i).val)
+  all_goals
+    first
+      | rw [if_pos hr] | rw [if_neg hr]
+    unfold outcomeRevenue3 spsb3ReserveFn
+    simp only [Fin.first_pair, Fin.second_pair h2n2, Fin.second_pair h2n,
+               Fin.second_pair h2, Fin.first_val, Fin.second_val,
+               apply_ite Fin.val, ge_iff_le] at hr ⊢
+    (repeat' split) <;> omega
 
 /-- **Three-bidder reserve revenue dominance.**  First-price-with-reserve
     weakly dominates second-price-with-reserve in revenue at every joint

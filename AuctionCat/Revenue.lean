@@ -307,7 +307,8 @@ theorem fpsbReserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin (n * n)) :
   have h2n : 0 < 2 * n := by omega
   unfold outcomeRevenue fpsbReserveFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
-             Fin.first_val, Fin.second_val, apply_ite Fin.val, ge_iff_le]
+             Fin.first_val, Fin.second_val, apply_ite Fin.val, ge_iff_le,
+             Nat.max_def]
   (repeat' split) <;> omega
 
 /-- **Closed-form spsb-with-reserve revenue.**  At joint bid `i` with
@@ -324,7 +325,8 @@ theorem spsbReserve_revenue_eq (n : Nat) (r : Fin n) (i : Fin (n * n)) :
   have h2n : 0 < 2 * n := by omega
   unfold outcomeRevenue spsbReserveFn
   simp only [Fin.first_pair, Fin.second_pair h2n, Fin.second_pair h2,
-             Fin.first_val, Fin.second_val, apply_ite Fin.val, ge_iff_le]
+             Fin.first_val, Fin.second_val, apply_ite Fin.val, ge_iff_le,
+             Nat.max_def, Nat.min_def]
   (repeat' split) <;> omega
 
 /-- **Reserve revenue dominance.**  First-price-with-reserve weakly
