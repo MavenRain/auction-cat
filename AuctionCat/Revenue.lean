@@ -428,4 +428,71 @@ theorem spsbReserve_revenue_bid_swap (n : Nat) (r : Fin n) (i : Fin (n * n)) :
       Fin.first_pair, Fin.second_pair hn]
   (repeat' split) <;> omega
 
+/-! ## Bundled reserve-revenue summaries -/
+
+/-- **Main reserve-price revenue results.**  The unconditional core of the
+    two-bidder reserve-revenue layer, bundled into one citable node: both
+    closed forms (first-price = the top bid when it clears `r`, else `0`;
+    second-price = `max(r, low bid)` on a sale, else `0`), the pointwise
+    weak revenue dominance `fpsbReserve ≥ spsbReserve`, the exact revenue
+    gap between the two formats, and the bidder-anonymity (bid-swap
+    invariance) of each.  Reserve analogue of the no-reserve
+    `fpsb`/`spsb` revenue results.  The strict dominance
+    `fpsbReserve_revenue_gt_spsbReserve_of_ne` is a separate node: it needs
+    the extra distinct-bids and strict-clearance hypotheses, so it is
+    intentionally not bundled here. -/
+theorem reserveRevenue_main (n : Nat) (r : Fin n) (i : Fin (n * n)) :
+    -- closed forms
+    outcomeRevenue n (fpsbReserveFn n r i)
+      = (if r.val ≤ max (Fin.first i).val (Fin.second i).val
+         then max (Fin.first i).val (Fin.second i).val else 0)
+    ∧ outcomeRevenue n (spsbReserveFn n r i)
+      = (if r.val ≤ max (Fin.first i).val (Fin.second i).val
+         then max r.val (min (Fin.first i).val (Fin.second i).val) else 0)
+    -- weak revenue dominance
+    ∧ outcomeRevenue n (fpsbReserveFn n r i) ≥ outcomeRevenue n (spsbReserveFn n r i)
+    -- exact revenue gap
+    ∧ outcomeRevenue n (fpsbReserveFn n r i)
+      = outcomeRevenue n (spsbReserveFn n r i)
+        + (if r.val ≤ max (Fin.first i).val (Fin.second i).val
+          then max (Fin.first i).val (Fin.second i).val
+            - max r.val (min (Fin.first i).val (Fin.second i).val)
+          else 0)
+    -- bidder anonymity of each format
+    ∧ outcomeRevenue n (fpsbReserveFn n r (Fin.pair (Fin.second i) (Fin.first i)))
+      = outcomeRevenue n (fpsbReserveFn n r i)
+    ∧ outcomeRevenue n (spsbReserveFn n r (Fin.pair (Fin.second i) (Fin.first i)))
+      = outcomeRevenue n (spsbReserveFn n r i) :=
+  ⟨fpsbReserve_revenue_eq n r i,
+   spsbReserve_revenue_eq n r i,
+   fpsbReserve_revenue_ge_spsbReserve n r i,
+   fpsbReserve_minus_spsbReserve_revenue n r i,
+   fpsbReserve_revenue_bid_swap n r i,
+   spsbReserve_revenue_bid_swap n r i⟩
+
+/-- **The reserve guarantee, both formats.**  Whenever a sale occurs (the
+    high bid clears the reserve `r`), both the first-price and second-price
+    reserve formats pay the seller at least the reserve.  This is the
+    defining purpose of a reserve price: a floor on every completed sale,
+    in either format.  Bundles `fpsbReserve_revenue_ge_reserve_of_sale`
+    and `spsbReserve_revenue_ge_reserve_of_sale`. -/
+theorem reserveRevenue_ge_reserve_of_sale_main (n : Nat) (r : Fin n) (i : Fin (n * n))
+    (h : r.val ≤ max (Fin.first i).val (Fin.second i).val) :
+    outcomeRevenue n (fpsbReserveFn n r i) ≥ r.val
+    ∧ outcomeRevenue n (spsbReserveFn n r i) ≥ r.val :=
+  ⟨fpsbReserve_revenue_ge_reserve_of_sale n r i h,
+   spsbReserve_revenue_ge_reserve_of_sale n r i h⟩
+
+/-- **No sale below the reserve, both formats.**  When both bids fall
+    strictly below the reserve `r`, neither reserve format sells: the
+    first-price and second-price formats alike withhold the item and raise
+    `0` revenue.  Bundles `fpsbReserve_revenue_eq_zero_of_below_reserve`
+    and `spsbReserve_revenue_eq_zero_of_below_reserve`. -/
+theorem reserveRevenue_eq_zero_of_below_reserve_main (n : Nat) (r : Fin n) (i : Fin (n * n))
+    (h : max (Fin.first i).val (Fin.second i).val < r.val) :
+    outcomeRevenue n (fpsbReserveFn n r i) = 0
+    ∧ outcomeRevenue n (spsbReserveFn n r i) = 0 :=
+  ⟨fpsbReserve_revenue_eq_zero_of_below_reserve n r i h,
+   spsbReserve_revenue_eq_zero_of_below_reserve n r i h⟩
+
 end AuctionCat
