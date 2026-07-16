@@ -449,14 +449,165 @@ theorem fpsb3Reserve_minus_spsb3Reserve_revenue (n : Nat) (r : Fin n) (i : Fin (
   rw [fpsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
   (repeat' split) <;> omega
 
+/-! ## Bidder-anonymity of three-bidder reserve revenue
+
+  Both three-bidder reserve-revenue closed forms price off symmetric
+  functions of the three bids: first-price collects the `max` of the three
+  (invariant under any relabeling), and second-price collects `max r s`
+  where the second-highest `s` is the largest of the three pairwise minima
+  (also symmetric).  Permuting the bidders therefore leaves the revenue
+  unchanged.  The three adjacent transpositions (1 2), (2 3), (1 3)
+  generate the full symmetric group `S3` on the three bidders, so
+  invariance under each of them witnesses full bidder-anonymity.  These are
+  the three-bidder analogues of the two-bidder
+  `fpsbReserve_revenue_bid_swap` / `spsbReserve_revenue_bid_swap`, and reuse
+  the input-permutation encodings of the `outcomeRevenue3_swap_..._symmetric`
+  family. -/
+
+/-- **Anonymity of three-bidder fpsb-with-reserve revenue under (1 2).**
+    Swapping bidders 1 and 2 leaves first-price-with-reserve revenue
+    unchanged: the format prices off the `max` of the three bids, symmetric
+    in the bidders. -/
+theorem fpsb3Reserve_revenue_bid_swap_12 (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i)) (Fin.first (Fin.first i)))
+                  (Fin.second i)))
+    = outcomeRevenue3 n (fpsb3ReserveFn n r i) := by
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  rw [fpsb3Reserve_revenue_eq, fpsb3Reserve_revenue_eq]
+  simp only [Fin.first_pair, Fin.second_pair hnn, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
+/-- **Anonymity of three-bidder fpsb-with-reserve revenue under (2 3).**
+    Swapping bidders 2 and 3 leaves first-price-with-reserve revenue
+    unchanged. -/
+theorem fpsb3Reserve_revenue_bid_swap_23 (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.first (Fin.first i)) (Fin.second i))
+                  (Fin.second (Fin.first i))))
+    = outcomeRevenue3 n (fpsb3ReserveFn n r i) := by
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  rw [fpsb3Reserve_revenue_eq, fpsb3Reserve_revenue_eq]
+  simp only [Fin.first_pair, Fin.second_pair hnn, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
+/-- **Anonymity of three-bidder fpsb-with-reserve revenue under (1 3).**
+    Swapping bidders 1 and 3 leaves first-price-with-reserve revenue
+    unchanged. -/
+theorem fpsb3Reserve_revenue_bid_swap_13 (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second i) (Fin.second (Fin.first i)))
+                  (Fin.first (Fin.first i))))
+    = outcomeRevenue3 n (fpsb3ReserveFn n r i) := by
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  rw [fpsb3Reserve_revenue_eq, fpsb3Reserve_revenue_eq]
+  simp only [Fin.first_pair, Fin.second_pair hnn, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
+/-- **Anonymity of three-bidder spsb-with-reserve revenue under (1 2).**
+    Swapping bidders 1 and 2 leaves second-price-with-reserve revenue
+    unchanged: the winner still pays `max r s`, and both the top bid and the
+    second-highest `s` are symmetric in the bidders. -/
+theorem spsb3Reserve_revenue_bid_swap_12 (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (spsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i)) (Fin.first (Fin.first i)))
+                  (Fin.second i)))
+    = outcomeRevenue3 n (spsb3ReserveFn n r i) := by
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  rw [spsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  simp only [Fin.first_pair, Fin.second_pair hnn, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
+/-- **Anonymity of three-bidder spsb-with-reserve revenue under (2 3).**
+    Swapping bidders 2 and 3 leaves second-price-with-reserve revenue
+    unchanged. -/
+theorem spsb3Reserve_revenue_bid_swap_23 (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (spsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.first (Fin.first i)) (Fin.second i))
+                  (Fin.second (Fin.first i))))
+    = outcomeRevenue3 n (spsb3ReserveFn n r i) := by
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  rw [spsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  simp only [Fin.first_pair, Fin.second_pair hnn, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
+/-- **Anonymity of three-bidder spsb-with-reserve revenue under (1 3).**
+    Swapping bidders 1 and 3 leaves second-price-with-reserve revenue
+    unchanged. -/
+theorem spsb3Reserve_revenue_bid_swap_13 (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (spsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second i) (Fin.second (Fin.first i)))
+                  (Fin.first (Fin.first i))))
+    = outcomeRevenue3 n (spsb3ReserveFn n r i) := by
+  have hn  : 0 < n := Nat.pos_of_mul_pos_left (Nat.lt_of_le_of_lt (Nat.zero_le _) i.isLt)
+  have hnn : 0 < n * n := Nat.mul_pos hn hn
+  rw [spsb3Reserve_revenue_eq, spsb3Reserve_revenue_eq]
+  simp only [Fin.first_pair, Fin.second_pair hnn, Fin.second_pair hn]
+  (repeat' split) <;> omega
+
+/-- **Full bidder-anonymity of three-bidder fpsb-with-reserve revenue.**
+    The three transpositions (1 2), (2 3), (1 3) generate `S3`, so revenue
+    invariance under all three witnesses invariance under every bidder
+    relabeling.  Three-bidder reserve analogue of
+    `outcomeRevenue3_three_transpositions`. -/
+theorem fpsb3Reserve_revenue_bid_swap_transpositions (n : Nat) (r : Fin n)
+    (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (fpsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i)) (Fin.first (Fin.first i)))
+                  (Fin.second i)))
+      = outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    ∧ outcomeRevenue3 n (fpsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.first (Fin.first i)) (Fin.second i))
+                  (Fin.second (Fin.first i))))
+      = outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    ∧ outcomeRevenue3 n (fpsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second i) (Fin.second (Fin.first i)))
+                  (Fin.first (Fin.first i))))
+      = outcomeRevenue3 n (fpsb3ReserveFn n r i) :=
+  ⟨fpsb3Reserve_revenue_bid_swap_12 n r i,
+   fpsb3Reserve_revenue_bid_swap_23 n r i,
+   fpsb3Reserve_revenue_bid_swap_13 n r i⟩
+
+/-- **Full bidder-anonymity of three-bidder spsb-with-reserve revenue.**
+    The three transpositions (1 2), (2 3), (1 3) generate `S3`, so revenue
+    invariance under all three witnesses invariance under every bidder
+    relabeling.  Second-price reserve twin of
+    `fpsb3Reserve_revenue_bid_swap_transpositions`. -/
+theorem spsb3Reserve_revenue_bid_swap_transpositions (n : Nat) (r : Fin n)
+    (i : Fin ((n * n) * n)) :
+    outcomeRevenue3 n (spsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i)) (Fin.first (Fin.first i)))
+                  (Fin.second i)))
+      = outcomeRevenue3 n (spsb3ReserveFn n r i)
+    ∧ outcomeRevenue3 n (spsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.first (Fin.first i)) (Fin.second i))
+                  (Fin.second (Fin.first i))))
+      = outcomeRevenue3 n (spsb3ReserveFn n r i)
+    ∧ outcomeRevenue3 n (spsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second i) (Fin.second (Fin.first i)))
+                  (Fin.first (Fin.first i))))
+      = outcomeRevenue3 n (spsb3ReserveFn n r i) :=
+  ⟨spsb3Reserve_revenue_bid_swap_12 n r i,
+   spsb3Reserve_revenue_bid_swap_23 n r i,
+   spsb3Reserve_revenue_bid_swap_13 n r i⟩
+
 /-- **Main three-bidder reserve-price revenue results.**  The unconditional
     core of the three-bidder reserve-revenue layer, bundled into one citable
     node: both closed forms (first-price = the top of the three bids when it
-    clears `r`, else `0`; second-price = `max r s` on a sale, else `0`), the
-    pointwise weak revenue dominance `fpsb3Reserve ≥ spsb3Reserve`, and the
-    exact revenue gap between the two formats.  Three-bidder analogue of the
-    unconditional core of `reserveRevenue_main` (the two-bidder bundle also
-    carries bidder-anonymity conjuncts with no three-bidder counterpart yet).
+    clears `r`, else `0`; second-price = `max(r, second-highest bid)` on a
+    sale, else `0`), the
+    pointwise weak revenue dominance `fpsb3Reserve ≥ spsb3Reserve`, the
+    exact revenue gap between the two formats, and the bidder-anonymity of
+    each format under the (1 2) transposition.  Three-bidder analogue of the
+    unconditional core of `reserveRevenue_main`.  Full `S3` anonymity (all
+    three transpositions) is carried separately by
+    `fpsb3Reserve_revenue_bid_swap_transpositions` and
+    `spsb3Reserve_revenue_bid_swap_transpositions`.
     The strict dominance
     `fpsb3Reserve_revenue_gt_spsb3Reserve_of_unique_top` is a separate node: it needs
     the extra unique-top and strict-clearance hypotheses, so it is
@@ -490,10 +641,21 @@ theorem reserveRevenue3_main (n : Nat) (r : Fin n) (i : Fin ((n * n) * n)) :
                   (max (min (Fin.first (Fin.first i)).val (Fin.second (Fin.first i)).val)
                        (max (min (Fin.first (Fin.first i)).val (Fin.second i).val)
                             (min (Fin.second (Fin.first i)).val (Fin.second i).val)))
-          else 0) :=
+          else 0)
+    -- bidder anonymity of each format under the (1 2) transposition
+    ∧ outcomeRevenue3 n (fpsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i)) (Fin.first (Fin.first i)))
+                  (Fin.second i)))
+      = outcomeRevenue3 n (fpsb3ReserveFn n r i)
+    ∧ outcomeRevenue3 n (spsb3ReserveFn n r
+        (Fin.pair (Fin.pair (Fin.second (Fin.first i)) (Fin.first (Fin.first i)))
+                  (Fin.second i)))
+      = outcomeRevenue3 n (spsb3ReserveFn n r i) :=
   ⟨fpsb3Reserve_revenue_eq n r i,
    spsb3Reserve_revenue_eq n r i,
    fpsb3Reserve_revenue_ge_spsb3Reserve n r i,
-   fpsb3Reserve_minus_spsb3Reserve_revenue n r i⟩
+   fpsb3Reserve_minus_spsb3Reserve_revenue n r i,
+   fpsb3Reserve_revenue_bid_swap_12 n r i,
+   spsb3Reserve_revenue_bid_swap_12 n r i⟩
 
 end AuctionCat
