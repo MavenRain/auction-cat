@@ -602,4 +602,69 @@ theorem fpsb3Reserve_revenue_eq_fpsb3_uniform :
   unfold expectedRevenue3 uniformPrior3
   native_decide
 
+/-- **Reserve-format revenue coincidence (two bidders).**  At binary
+    valuations with a binding reserve `r = 1` under the uniform prior with
+    truthful bidding, the two-bidder reserve second-price and reserve
+    first-price mechanisms raise the same expected revenue (both `3/4`).
+    Turns the "the two reserve formats coincide" observation in the section
+    header into a theorem, term-derived from `spsbReserve_revenue_eq_uniform`
+    and `fpsbReserve_revenue_eq_uniform` (both pin the value `3/4`). -/
+theorem spsbReserve_revenue_eq_fpsbReserve_uniform :
+    expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
+    = expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2) :=
+  spsbReserve_revenue_eq_uniform.trans fpsbReserve_revenue_eq_uniform.symm
+
+/-- **Reserve-format revenue coincidence (three bidders).**  At binary
+    valuations with a binding reserve `r = 1` under the uniform prior with
+    truthful bidding, the three-bidder reserve second-price and reserve
+    first-price mechanisms raise the same expected revenue (both `7/8`).
+    Three-bidder analogue of `spsbReserve_revenue_eq_fpsbReserve_uniform`,
+    term-derived from `spsb3Reserve_revenue_eq_uniform` (Revenue3.lean) and
+    `fpsb3Reserve_revenue_eq_uniform` (both pin the value `7/8`). -/
+theorem spsb3Reserve_revenue_eq_fpsb3Reserve_uniform :
+    expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2)
+    = expectedRevenue3 2 (fpsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2) :=
+  spsb3Reserve_revenue_eq_uniform.trans fpsb3Reserve_revenue_eq_uniform.symm
+
+/-- **Concrete reserve expected-revenue witness table.**  The qualitative
+    story of reserve prices at binary valuations `Fin 2`, reserve `r = 1`,
+    uniform prior, truthful bidding, bundled into one citable node: the
+    second-price reserve values (`3/4` at two bidders, `7/8` at three); the
+    strict revenue gain of a binding reserve for second-price over the
+    no-reserve Vickrey auction, at both two and three bidders; the revenue
+    neutrality of the same reserve for first-price, at both; and the
+    coincidence of the two reserve formats, at both.  The concrete numeric
+    companion to the symbolic `reserveRevenue_main` (Revenue.lean) and
+    `reserveRevenue3_main` (Revenue3.lean) bundles.  The first-price reserve
+    values are omitted as conjuncts: `fpsbReserve = 3/4` and
+    `fpsb3Reserve = 7/8` follow from the second-price values and the
+    format-coincidence conjuncts. -/
+theorem reserveRevenueExamples_main :
+    -- second-price reserve values
+    expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2) = 3 / 4
+    ∧ expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2) = 7 / 8
+    -- a binding reserve strictly raises second-price revenue
+    ∧ expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
+        > expectedRevenue 2 (secondPriceSealedBid 2) (uniformPrior 2)
+    ∧ expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2)
+        > expectedRevenue3 2 (secondPriceSealedBid3 2) (uniformPrior3 2)
+    -- the same reserve is revenue-neutral for first-price
+    ∧ expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
+        = expectedRevenue 2 (firstPriceSealedBid 2) (uniformPrior 2)
+    ∧ expectedRevenue3 2 (fpsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2)
+        = expectedRevenue3 2 (firstPriceSealedBid3 2) (uniformPrior3 2)
+    -- the two reserve formats coincide
+    ∧ expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
+        = expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
+    ∧ expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2)
+        = expectedRevenue3 2 (fpsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2) :=
+  ⟨spsbReserve_revenue_eq_uniform,
+   spsb3Reserve_revenue_eq_uniform,
+   spsbReserve_revenue_gt_spsb_uniform,
+   spsb3Reserve_revenue_gt_spsb3_uniform,
+   fpsbReserve_revenue_eq_fpsb_uniform,
+   fpsb3Reserve_revenue_eq_fpsb3_uniform,
+   spsbReserve_revenue_eq_fpsbReserve_uniform,
+   spsb3Reserve_revenue_eq_fpsb3Reserve_uniform⟩
+
 end AuctionCat
