@@ -602,17 +602,68 @@ theorem fpsb3Reserve_revenue_eq_fpsb3_uniform :
   unfold expectedRevenue3 uniformPrior3
   native_decide
 
+/-! ### Reserve-format outcome equivalence
+
+  At binary valuations `Fin 2` with the binding reserve `r = 1`, the
+  two-bidder reserve formats agree POINTWISE: on every bid profile the
+  second-price and first-price reserve rules compute the same
+  allocation and the same payment, because a winning bid can only be
+  `1`, which already equals the reserve-clearing price
+  `max r (losing bid)`.  This is strictly stronger than revenue
+  coincidence: the mechanisms are equal as functions, so every outcome
+  statistic coincides, not just expected revenue. -/
+
+/-- **Reserve-format outcome equivalence (two bidders), function
+    level.**  At binary valuations with reserve `r = 1`, the underlying
+    allocation+payment functions of reserve second-price and reserve
+    first-price are EQUAL: on each of the four bid profiles both
+    produce the same allocation at the same price, including the
+    no-sale profile `(0, 0)` where the reserve excludes both bids and
+    neither format awards the item.  Any winning bid is
+    necessarily `1`, so first-price's own-bid price and second-price's
+    `max r (losing bid)` price agree.  Kernel-decidable: the proof is
+    plain `decide` over the `Fin 4` profile domain, with no
+    `native_decide` axiom. -/
+theorem spsbReserveFn_eq_fpsbReserveFn_binary :
+    spsbReserveFn 2 (⟨1, by decide⟩ : Fin 2)
+    = fpsbReserveFn 2 (⟨1, by decide⟩ : Fin 2) := by
+  funext i
+  revert i
+  decide
+
+/-- **Reserve-format outcome equivalence (two bidders), mechanism
+    level.**  The deterministic mechanisms themselves are equal as
+    stochastic matrices, by `congrArg detMatrix` on the function-level
+    equality `spsbReserveFn_eq_fpsbReserveFn_binary`. -/
+theorem spsbReserve_eq_fpsbReserve_binary :
+    spsbReserve 2 (⟨1, by decide⟩ : Fin 2)
+    = fpsbReserve 2 (⟨1, by decide⟩ : Fin 2) :=
+  congrArg detMatrix spsbReserveFn_eq_fpsbReserveFn_binary
+
+/-- **Reserve-format revenue coincidence, every prior (two bidders).**
+    Because the two reserve mechanisms are EQUAL at binary valuations
+    with reserve `r = 1` (`spsbReserve_eq_fpsbReserve_binary`), their
+    expected revenues agree under EVERY prior, not just the uniform
+    one: a `congrArg` on the mechanism equality. -/
+theorem spsbReserve_revenue_eq_fpsbReserve_binary (prior : Fin (2 * 2) → Rat) :
+    expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2)) prior
+    = expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2)) prior :=
+  congrArg (fun M => expectedRevenue 2 M prior) spsbReserve_eq_fpsbReserve_binary
+
 /-- **Reserve-format revenue coincidence (two bidders).**  At binary
     valuations with a binding reserve `r = 1` under the uniform prior with
     truthful bidding, the two-bidder reserve second-price and reserve
-    first-price mechanisms raise the same expected revenue (both `3/4`).
-    Turns the "the two reserve formats coincide" observation in the section
-    header into a theorem, term-derived from `spsbReserve_revenue_eq_uniform`
-    and `fpsbReserve_revenue_eq_uniform` (both pin the value `3/4`). -/
+    first-price mechanisms raise the same expected revenue (both `3/4`,
+    the value `spsbReserve_revenue_eq_uniform` pins and this coincidence
+    transports to the first-price side).  Turns the "the two reserve
+    formats coincide" observation in the section header into a theorem,
+    now the uniform-prior specialization of the every-prior coincidence
+    `spsbReserve_revenue_eq_fpsbReserve_binary`, itself a corollary of
+    the outcome equivalence `spsbReserve_eq_fpsbReserve_binary`. -/
 theorem spsbReserve_revenue_eq_fpsbReserve_uniform :
     expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
     = expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2) :=
-  spsbReserve_revenue_eq_uniform.trans fpsbReserve_revenue_eq_uniform.symm
+  spsbReserve_revenue_eq_fpsbReserve_binary (uniformPrior 2)
 
 /-- **Reserve-format revenue coincidence (three bidders).**  At binary
     valuations with a binding reserve `r = 1` under the uniform prior with
@@ -666,5 +717,163 @@ theorem reserveRevenueExamples_main :
    fpsb3Reserve_revenue_eq_fpsb3_uniform,
    spsbReserve_revenue_eq_fpsbReserve_uniform,
    spsb3Reserve_revenue_eq_fpsb3Reserve_uniform⟩
+
+/-! ### Optimal reserve price
+
+  At binary valuations `Fin 2` the only reserve prices are `r = 0`
+  (never binding) and `r = 1` (binding).  Under the uniform prior with
+  truthful bidding, `r = 1` maximizes seller expected revenue in every
+  format and at both bidder counts: strictly for second-price, where
+  the binding reserve lifts the price the winner pays
+  (`spsbReserve_revenue_one_gt_zero_uniform` and its three-bidder
+  analogue), and weakly for first-price, where the reserve is
+  revenue-neutral.  The `_zero_` theorems pin the `r = 0` endpoint
+  values, so every revenue quoted in this section is theorem-backed.
+  Each argmax theorem quantifies over ALL reserves `r : Fin 2`, so
+  `r = 1` is a genuine argmax over the reserve range, not a pairwise
+  comparison. -/
+
+/-- **Reserve endpoint value `r = 0`, second-price, two bidders.**
+    A reserve of `0` never binds, so two-bidder reserve Vickrey earns
+    the no-reserve value: `1/4` under the uniform prior with truthful
+    bidding.  Pins the lower endpoint of the reserve range, so the
+    argmax theorems below compare two theorem-backed values. -/
+theorem spsbReserve_zero_revenue_eq_uniform :
+    expectedRevenue 2 (spsbReserve 2 (⟨0, by decide⟩ : Fin 2)) (uniformPrior 2)
+    = 1 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- **Reserve endpoint value `r = 0`, first-price, two bidders.**
+    A reserve of `0` never binds, so two-bidder reserve first-price
+    earns the no-reserve value: `3/4` under the uniform prior with
+    truthful bidding, the same revenue as `r = 1` (first-price reserve
+    neutrality). -/
+theorem fpsbReserve_zero_revenue_eq_uniform :
+    expectedRevenue 2 (fpsbReserve 2 (⟨0, by decide⟩ : Fin 2)) (uniformPrior 2)
+    = 3 / 4 := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- **Reserve endpoint value `r = 0`, second-price, three bidders.**
+    A reserve of `0` never binds, so three-bidder reserve Vickrey earns
+    the no-reserve value: `1/2` under the uniform prior with truthful
+    bidding. -/
+theorem spsb3Reserve_zero_revenue_eq_uniform :
+    expectedRevenue3 2 (spsb3Reserve 2 (⟨0, by decide⟩ : Fin 2)) (uniformPrior3 2)
+    = 1 / 2 := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- **Reserve endpoint value `r = 0`, first-price, three bidders.**
+    A reserve of `0` never binds, so three-bidder reserve first-price
+    earns the no-reserve value: `7/8` under the uniform prior with
+    truthful bidding, the same revenue as `r = 1` (first-price reserve
+    neutrality). -/
+theorem fpsb3Reserve_zero_revenue_eq_uniform :
+    expectedRevenue3 2 (fpsb3Reserve 2 (⟨0, by decide⟩ : Fin 2)) (uniformPrior3 2)
+    = 7 / 8 := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- **Strict reserve gain, second-price, two bidders.**  The binding
+    reserve `r = 1` earns STRICTLY more than the never-binding `r = 0`
+    for two-bidder Vickrey under the uniform prior with truthful
+    bidding: `3/4 > 1/4`.  The strict half of the optimality story; the
+    argmax theorems below state the weak `≤` that holds over the whole
+    reserve range. -/
+theorem spsbReserve_revenue_one_gt_zero_uniform :
+    expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior 2)
+    > expectedRevenue 2 (spsbReserve 2 (⟨0, by decide⟩ : Fin 2)) (uniformPrior 2) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- **Strict reserve gain, second-price, three bidders.**  The binding
+    reserve `r = 1` earns STRICTLY more than the never-binding `r = 0`
+    for three-bidder Vickrey under the uniform prior with truthful
+    bidding: `7/8 > 1/2`. -/
+theorem spsb3Reserve_revenue_one_gt_zero_uniform :
+    expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2)) (uniformPrior3 2)
+    > expectedRevenue3 2 (spsb3Reserve 2 (⟨0, by decide⟩ : Fin 2)) (uniformPrior3 2) := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- **Optimal reserve, second-price, two bidders.**  Among all reserve
+    prices `r : Fin 2`, the binding reserve `r = 1` maximizes two-bidder
+    Vickrey expected revenue under the uniform prior with truthful
+    bidding (`r = 0` earns `1/4` by `spsbReserve_zero_revenue_eq_uniform`,
+    `r = 1` earns `3/4` by `spsbReserve_revenue_eq_uniform`). -/
+theorem spsbReserve_reserve_one_optimal_uniform : ∀ r : Fin 2,
+    expectedRevenue 2 (spsbReserve 2 r) (uniformPrior 2)
+    ≤ expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2))
+        (uniformPrior 2) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- **Optimal reserve, first-price, two bidders.**  Among all reserve
+    prices `r : Fin 2`, the binding reserve `r = 1` maximizes two-bidder
+    first-price expected revenue under the uniform prior with truthful
+    bidding, weakly: both `r = 0` and `r = 1` earn `3/4`
+    (`fpsbReserve_zero_revenue_eq_uniform`,
+    `fpsbReserve_revenue_eq_uniform`; first-price reserve neutrality,
+    `fpsbReserve_revenue_eq_fpsb_uniform`). -/
+theorem fpsbReserve_reserve_one_optimal_uniform : ∀ r : Fin 2,
+    expectedRevenue 2 (fpsbReserve 2 r) (uniformPrior 2)
+    ≤ expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2))
+        (uniformPrior 2) := by
+  unfold expectedRevenue uniformPrior
+  native_decide
+
+/-- **Optimal reserve, second-price, three bidders.**  Among all
+    reserve prices `r : Fin 2`, the binding reserve `r = 1` maximizes
+    three-bidder Vickrey expected revenue under the uniform prior with
+    truthful bidding (`r = 0` earns `1/2` by
+    `spsb3Reserve_zero_revenue_eq_uniform`, `r = 1` earns `7/8` by
+    `spsb3Reserve_revenue_eq_uniform`). -/
+theorem spsb3Reserve_reserve_one_optimal_uniform : ∀ r : Fin 2,
+    expectedRevenue3 2 (spsb3Reserve 2 r) (uniformPrior3 2)
+    ≤ expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2))
+        (uniformPrior3 2) := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- **Optimal reserve, first-price, three bidders.**  Among all reserve
+    prices `r : Fin 2`, the binding reserve `r = 1` maximizes
+    three-bidder first-price expected revenue under the uniform prior
+    with truthful bidding, weakly: both `r = 0` and `r = 1` earn `7/8`
+    (`fpsb3Reserve_zero_revenue_eq_uniform`,
+    `fpsb3Reserve_revenue_eq_uniform`; first-price reserve neutrality,
+    `fpsb3Reserve_revenue_eq_fpsb3_uniform`). -/
+theorem fpsb3Reserve_reserve_one_optimal_uniform : ∀ r : Fin 2,
+    expectedRevenue3 2 (fpsb3Reserve 2 r) (uniformPrior3 2)
+    ≤ expectedRevenue3 2 (fpsb3Reserve 2 (⟨1, by decide⟩ : Fin 2))
+        (uniformPrior3 2) := by
+  unfold expectedRevenue3 uniformPrior3
+  native_decide
+
+/-- **Optimal reserve price bundle.**  `r = 1` maximizes seller
+    expected revenue over all reserves `r : Fin 2` at binary
+    valuations under the uniform prior with truthful bidding, in both
+    formats and at both bidder counts.  Completes the "optimal reserve
+    price" item of the Chapter 2 scope: the reserve values pinned by
+    `reserveRevenueExamples_main` are not only improvements over the
+    no-reserve baselines but maxima over the whole reserve range. -/
+theorem optimalReserveExamples_main :
+    (∀ r : Fin 2, expectedRevenue 2 (spsbReserve 2 r) (uniformPrior 2)
+      ≤ expectedRevenue 2 (spsbReserve 2 (⟨1, by decide⟩ : Fin 2))
+          (uniformPrior 2))
+    ∧ (∀ r : Fin 2, expectedRevenue 2 (fpsbReserve 2 r) (uniformPrior 2)
+      ≤ expectedRevenue 2 (fpsbReserve 2 (⟨1, by decide⟩ : Fin 2))
+          (uniformPrior 2))
+    ∧ (∀ r : Fin 2, expectedRevenue3 2 (spsb3Reserve 2 r) (uniformPrior3 2)
+      ≤ expectedRevenue3 2 (spsb3Reserve 2 (⟨1, by decide⟩ : Fin 2))
+          (uniformPrior3 2))
+    ∧ (∀ r : Fin 2, expectedRevenue3 2 (fpsb3Reserve 2 r) (uniformPrior3 2)
+      ≤ expectedRevenue3 2 (fpsb3Reserve 2 (⟨1, by decide⟩ : Fin 2))
+          (uniformPrior3 2)) :=
+  ⟨spsbReserve_reserve_one_optimal_uniform,
+   fpsbReserve_reserve_one_optimal_uniform,
+   spsb3Reserve_reserve_one_optimal_uniform,
+   fpsb3Reserve_reserve_one_optimal_uniform⟩
 
 end AuctionCat
