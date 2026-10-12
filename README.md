@@ -21,7 +21,7 @@ The repository contains three Lake libraries that build on each other:
 |---|---|
 | `MarkovCat` | Markov category foundation: symmetric monoidal categories with commutative comonoid structure and total morphisms.  Hosts `FinStoch` and `BorelStoch` instances. |
 | `OpenGamesCat` | Bayesian open games as morphisms in a Markov category, following Bolt-Hedges-Zahn.  Optic-based, with simultaneous play via the tensor and sequential play via composition. |
-| `AuctionCat` | Menezes-Monteiro Chapter 2 (Independent Private Values): first-price sealed-bid, second-price (Vickrey), Dutch, English, reserve prices, entry fees.  Future chapters cover common values, affiliated values, mechanism design, and multiple objects. |
+| `AuctionCat` | Menezes-Monteiro Chapter 2 (Preliminaries) and Section 3.1 (Independent Private Values): first-price sealed-bid, second-price (Vickrey), Dutch, English, reserve prices, entry fees.  Future chapters cover common values, affiliated values, mechanism design, and multiple objects. |
 
 ## Status
 
@@ -49,9 +49,9 @@ v0.1 in progress.  Targeted contents:
 - [ ] Cleanup: shared `highestBid3` / `secondHighest3` helpers across
       `Revenue.lean` and `Revenue3.lean`
 
-Completion marker: when each box above shows a check, the Chapter 2 IPV
+Completion marker: when each box above shows a check, the Section 3.1 IPV
 formalization is complete.  At that point, replace this paragraph with
-"**v1.0: Chapter 2 IPV scope complete**" and report completion.
+"**v1.0: Section 3.1 IPV scope complete**" and report completion.
 
 ## Building
 
